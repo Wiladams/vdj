@@ -8,7 +8,7 @@
 //
 // Some simple samplers
 // Return solid color
-class SolidColorSampler : public ISampleRGBA<PixelRGBA, PixelCoord>
+class SolidColorSampler : public ISampleRGBA<PixelRGBA>
 {
     PixelRGBA fColor;
 
@@ -16,9 +16,9 @@ public:
     SolidColorSampler(uint32_t c) :fColor(c) {}
     SolidColorSampler(const PixelRGBA& c) :fColor(c){}
 
-    virtual PixelRGBA getValue(double u, const PixelCoord& p) { return fColor; }
-    virtual PixelRGBA getValue(double u, double v, const PixelCoord& p) { return fColor; }
-    virtual PixelRGBA getValue(double u, double v, double w, const PixelCoord& p) { return fColor; }
+    virtual PixelRGBA getValue(double u) override { return fColor; }
+    virtual PixelRGBA getValue(double u, double v) override { return fColor; }
+    virtual PixelRGBA getValue(double u, double v, double w) override { return fColor; }
 };
 
 
@@ -29,20 +29,20 @@ public:
 // Converts rgb to a single luminance value.  This goes
 // pretty quick as it uses pre-computed lookup tables
 // so nothing but lookups and additions.
-class LumaSampler : public ISample2D<PixelRGBA, PixelCoord>
+class LumaSampler : public ISample2D<PixelRGBA>
 {
     NTSCGray fLuminance;
-    std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fWrapped = nullptr;
+    std::shared_ptr<ISample2D<PixelRGBA> > fWrapped = nullptr;
 
 public:
-    LumaSampler(std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > wrapped)
+    LumaSampler(std::shared_ptr<ISample2D<PixelRGBA> > wrapped)
         :fWrapped(wrapped)
     {}
 
-    PixelRGBA getValue(double u, double v, const PixelCoord& p)
+    PixelRGBA getValue(double u, double v) override
     {
         // get value from our wrapped sampler
-        PixelRGBA c = fWrapped->getValue(u, v, p);
+        PixelRGBA c = fWrapped->getValue(u, v);
 
         // convert to grayscale, preserving alpha
         uint8_t g = fLuminance.toLuminance(c);
@@ -109,7 +109,7 @@ static inline PixelRGBA  ColorRGBAFromWavelength(double wl, double gamma = 1.0)
     return PixelRGBA(red * 255, green * 255, blue * 255, 255);
 }
 
-class RainbowSampler : public ISample1D<PixelRGBA, PixelCoord>
+class RainbowSampler : public ISample1D<PixelRGBA>
 {
     double fGamma;
 
@@ -122,9 +122,11 @@ public:
         :fGamma(gamma)
     {}
 
-    PixelRGBA getValue(double u, const PixelCoord& p) 
+    PixelRGBA getValue(double u) override
     {
-        double wl = maths::Map(u, 0, 1, 380, 780);
+        //double wl = maths::Map(u, 0, 1, 380, 780);
+        double wl =  380 + (u * 400);
+
         auto c = ColorRGBAFromWavelength(wl, fGamma);
         return c;
     }

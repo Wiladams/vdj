@@ -21,6 +21,7 @@ template <typename T>
 using PFunc2Ref = std::function< T &(const double u, T& value) >;
 
 
+
 using PFunc1Double = PFunc1<double>;
 
 /*

@@ -6,23 +6,23 @@
 // No clipping is performed
 // This is really a specialization of a one
 // line rectangle
-inline void sampleSpan(PixelMap& pmap, const int x, const int y, const int width, ISample1D<PixelRGBA, PixelCoord>& s)
+inline void sampleSpan(PixelMap& pmap, const int x, const int y, const int width, ISample1D<PixelRGBA>& s)
 {
     for (int col = x; col < x + width; col++)
     {
         double u = maths::Map(col, x, (double)x + width - 1, 0, 1);
-        PixelRGBA c = s.getValue(u, PixelCoord({ col,y }));
+        PixelRGBA c = s.getValue(u);
         pmap.set(col, y, c);
     }
 }
 
-inline void sampleHLine2D(PixelMap& pb, int x1, int y1, int w,
-    double v, ISample2D<PixelRGBA, PixelCoord>& src)
+inline void sampleHLine2D(PixelMap& pb, const GeoSpan<int> &span,
+    double v, ISample2D<PixelRGBA>& src)
 {
-    for (int x = x1; x < x1 + w - 1; x++)
+    for (int x = span.x(); x < span.rightMost(); x++)
     {
-        double u = maths::Map(x, x1, x1 + w - 1, 0, 1);
-        pb.set(x, y1, src.getValue(u, v, PixelCoord({ x,y1 })));
+        double u = maths::Map(x, span.x(), span.rightMost(), 0.0, 1.0);
+        pb.set(x, span.y(), src.getValue(u, v));
     }
 }
 
@@ -32,7 +32,7 @@ inline void sampleHLine2D(PixelMap& pb, int x1, int y1, int w,
 // Here we assume clipping has already occured
 // and the srcExt is already calculated  to capture
 // the desired section of the sampler
-inline void sampleRect(PixelMap& pmap, const PixelRect & dstisect, TexelRect srcExt, ISample2D<PixelRGBA, PixelCoord>& src)
+inline void sampleRect(PixelMap& pmap, const PixelRect & dstisect, const RectD &srcExt, ISample2D<PixelRGBA>& src)
 {
     // find the intersection between the source rectangle
     // and the frame
@@ -43,30 +43,30 @@ inline void sampleRect(PixelMap& pmap, const PixelRect & dstisect, TexelRect src
     if (dstisect.isEmpty())
         return;
 
-    double uadv = (srcExt.right - srcExt.left) / (dstisect.width);
-    double vadv = (srcExt.bottom - srcExt.top) / (dstisect.height);
+    double uadv = (srcExt.w()) / (dstisect.w());
+    double vadv = (srcExt.h()) / (dstisect.h());
 
     // Initial u and v values
-    double u = srcExt.left;
-    double v = srcExt.top;
+    double u = srcExt.left();
+    double v = srcExt.top();
 
-    for (int row = dstisect.y; row < dstisect.y +dstisect.height; row++)
+    for (int row = dstisect.y(); row < dstisect.y() +dstisect.h()-1; row++)
     {
-        for (int col = dstisect.x; col < dstisect.x+dstisect.width; col++)
+        for (int col = dstisect.x(); col < dstisect.x()+dstisect.w()-1; col++)
         {
-            auto c = src.getValue(u, v, PixelCoord({ col,row }));
+            auto c = src.getValue(u, v);
             pmap.set(col, row, c);
             u += uadv;
         }
         v += vadv;
-        u = srcExt.left;
+        u = srcExt.left();
     }
 }
 
-void sampleRectangle(PixelMap& pmap, const PixelRect& dstFrame, ISample2D<PixelRGBA, PixelCoord>& samp)
+void sampleRectangle(PixelMap& pmap, const PixelRect& dstFrame, ISample2D<PixelRGBA>& samp)
 {
     PixelRect dstisect = pmap.frame().intersection(dstFrame);
-    TexelRect trex = TexelRect::create(dstisect, pmap.frame());
+    RectD trex = RectD::create(dstisect, pmap.frame());
 
     // could we just do this?
     sampleRect(pmap, dstisect, trex, samp);
@@ -74,20 +74,19 @@ void sampleRectangle(PixelMap& pmap, const PixelRect& dstFrame, ISample2D<PixelR
 
 // 
 // Draw a bezier line using a single line sampler
-inline void sampledBezier(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2,
-    const int x3, const int y3, const int x4, const int y4, int segments, ISample1D<PixelRGBA, PixelCoord>& c)
+INLINE void sampledBezier(PixelMap& pmap, GeoBezier<int> &bez, int segments, ISample1D<PixelRGBA>& c)
 {
     // Get starting point
-    PixelCoord lp = bezier_point(0, x1, y1, x2, y2, x3, y3, x4, y4);
+    auto lp = bez.eval(0);
 
     int i = 1;
     while (i <= segments) {
         double u = (double)i / segments;
 
-        PixelCoord p = bezier_point(u, x1, y1, x2, y2, x3, y3, x4, y4);
+        auto p = bez.eval(u);
 
         // draw line segment from last point to current point
-        line(pmap, lp.x(), lp.y(), p.x(), p.y(), c.getValue(u,p));
+        line(pmap, lp.x(), lp.y(), p.x(), p.y(), c.getValue(u));
 
         // Assign current to last
         lp = p;
@@ -98,9 +97,9 @@ inline void sampledBezier(PixelMap& pmap, const int x1, const int y1, const int 
 
 
 
-inline void sampleConvexPolygon(PixelMap& pb, 
+INLINE void sampleConvexPolygon(PixelMap& pb,
     PixelCoord* verts, const int nverts, int vmin, 
-    ISample2D<PixelRGBA, PixelCoord>& src,
+    ISample2D<PixelRGBA>& src,
     const PixelRect& clipRect)
 {
     // set starting line
@@ -157,7 +156,7 @@ inline void sampleConvexPolygon(PixelMap& pb,
 
         // fill span between two line-drawers, advance drawers when
         // hit vertices
-        if (y >= clipRect.y) {
+        if (y >= clipRect.y()) {
             int y1 = y;
             int y2 = y;
             int rx = round(rdda.x);
@@ -170,7 +169,7 @@ inline void sampleConvexPolygon(PixelMap& pb,
             {
                 double v = maths::Map(y1, miny, maxy, 0, 1);
                 w = x2 - x1;
-                sampleHLine2D(pb, x1, y1, w, v, src);
+                sampleHLine2D(pb, GeoSpan<int>(x1, y1, w), v, src);
             }
         }
 
@@ -179,7 +178,7 @@ inline void sampleConvexPolygon(PixelMap& pb,
 
         // Advance y position.  Exit if run off its bottom
         y += 1;
-        if (y >= clipRect.y + clipRect.height)
+        if (y >= clipRect.y() + clipRect.h())
         {
             break;
         }
@@ -187,10 +186,10 @@ inline void sampleConvexPolygon(PixelMap& pb,
 }
 
 
-inline void sampleTriangle(PixelMap& pb, const int x1, const int y1,
+INLINE void sampleTriangle(PixelMap& pb, const int x1, const int y1,
     const int x2, const int y2,
     const int x3, const int y3, 
-    ISample2D<PixelRGBA, PixelCoord>& src,
+    ISample2D<PixelRGBA>& src,
     const PixelRect& clipRect)
 {
     // Create a triangle object
@@ -203,7 +202,7 @@ inline void sampleTriangle(PixelMap& pb, const int x1, const int y1,
     sampleConvexPolygon(pb, tri.verts, nverts, vmin, src, clipRect);
 }
 
-void sampleCircle(PixelMap& pmap, int centerX, int centerY, int radius, ISample2D<PixelRGBA, PixelCoord>& fillStyle)
+INLINE void sampleCircle(PixelMap& pmap, int centerX, int centerY, int radius, ISample2D<PixelRGBA>& fillStyle)
 {
     auto x1 = centerX - radius, y1 = centerY - radius;
     auto  x2 = centerX + radius, y2 = centerY + radius;
@@ -222,9 +221,20 @@ void sampleCircle(PixelMap& pmap, int centerX, int centerY, int radius, ISample2
             if (distance <= radius) {
                 auto u = maths::Map(x, x1, x2,0,1);
                 auto v = maths::Map(y, y1, y2, 0, 1);
-                auto rgb = fillStyle.getValue(u, v, PixelCoord({ x,y }));
+                auto rgb = fillStyle.getValue(u, v);
                 pmap.set(x, y, rgb);
             }
         }
     }
+}
+
+
+// Some useful functions
+// return a pixel value from a ISample2D based on the texture coordinates
+// this is purely a convenience to match what you can do in OpenGL GLSL language
+using TextureCoord = vec<2, double>;
+
+INLINE PixelRGBA texture2D(ISample2D<PixelRGBA>& tex0, const TextureCoord& st) noexcept
+{
+    return tex0.getValue(st.s(), st.t());
 }

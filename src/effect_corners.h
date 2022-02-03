@@ -8,35 +8,34 @@
 // https://www.varsitytutors.com/hotmath/hotmath_help/topics/shortest-distance-between-a-point-and-a-circle
 //
 
-// Barn doors do an open reveal
-class CornersFlyOut : public WindowAnimation
+class CornersFlyOut : public AnimationWindow
 {
 protected:
 
 public:
 	CornersFlyOut(double duration,
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
-		: WindowAnimation(duration)
+		SourceSampler s1,
+		SourceSampler s2)
+		: AnimationWindow(duration)
 	{
-		auto destinationBounds = TexelRect(0, 0, 1, 1);
-		auto door1Bounds = TexelRect(0.0, 0.0, 0.4999, 0.5);
-		auto door2Bounds = TexelRect(0.5, 0.0, 1.0, 0.5);
-		auto door3Bounds = TexelRect(0.0, 0.5, 0.5, 1.0);
-		auto door4Bounds = TexelRect(0.5, 0.5, 1.0, 1.0);
+		auto destinationBounds = RectD(0, 0, 1, 1);
+		RectD door1Bounds(0.0, 0.0, 0.5, 0.5);
+		RectD door2Bounds(0.5, 0.0, 0.5, 0.5);
+		RectD door3Bounds(0.0, 0.5, 0.5, 0.5);
+		RectD door4Bounds(0.5, 0.5, 0.5, 0.5);
 
-		auto fDoor1 = std::make_shared<SampledWindow>(s1, door1Bounds);
-		auto fDoor2 = std::make_shared<SampledWindow>(s1, door2Bounds);
-		auto fDoor3 = std::make_shared<SampledWindow>(s1, door3Bounds);
-		auto fDoor4 = std::make_shared<SampledWindow>(s1, door4Bounds);
+		auto fDoor1 = std::make_shared<SamplerWrapper>(s1, door1Bounds);
+		auto fDoor2 = std::make_shared<SamplerWrapper>(s1, door2Bounds);
+		auto fDoor3 = std::make_shared<SamplerWrapper>(s1, door3Bounds);
+		auto fDoor4 = std::make_shared<SamplerWrapper>(s1, door4Bounds);
 
-		addMotion(std::make_shared<TexelRectMotion>(fDoor1->fMovingFrame, TexelRect(0.0, 0.0, 0.4999, 0.5), TexelRect(-0.5, -0.5, 0.0, 0.0)));
-		addMotion(std::make_shared<TexelRectMotion>(fDoor2->fMovingFrame, TexelRect(0.5, 0.0, 1.0, 0.5), TexelRect(1.0, -0.5, 1.5, 0.0)));
-		addMotion(std::make_shared<TexelRectMotion>(fDoor3->fMovingFrame, TexelRect(0.0, 0.5, 0.5, 1.0), TexelRect(-0.5, 1.0, 0.0, 1.5)));
-		addMotion(std::make_shared<TexelRectMotion>(fDoor4->fMovingFrame, TexelRect(0.5, 0.5, 1.0, 1.0), TexelRect(1.0, 1.0, 1.5, 1.5)));
+		addMotion(std::make_shared<TexelRectMotion>(fDoor1->fMovingFrame, RectD(0.0, 0.0, 0.5, 0.5), RectD(-0.5, -0.5, 0.5, 0.5)));
+		addMotion(std::make_shared<TexelRectMotion>(fDoor2->fMovingFrame, RectD(0.5, 0.0, 0.5, 0.5), RectD(1.0, -0.5, 0.5, 0.5)));
+		addMotion(std::make_shared<TexelRectMotion>(fDoor3->fMovingFrame, RectD(0.0, 0.5, 0.5, 0.5), RectD(-0.5, 1.0, 0.5, 0.5)));
+		addMotion(std::make_shared<TexelRectMotion>(fDoor4->fMovingFrame, RectD(0.5, 0.5, 0.5, 0.5), RectD(1.0, 1.0, 0.5, 0.5)));
 
 
-		auto fDestination = std::make_shared<SampledWindow>(s2, destinationBounds);
+		auto fDestination = std::make_shared<SamplerWrapper>(s2, destinationBounds);
 
 		addChild(fDestination);
 		addChild(fDoor1);

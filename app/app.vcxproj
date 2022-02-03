@@ -147,7 +147,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\animator.h" />
+    <ClInclude Include="..\src\blend2d.h" />
+    <ClInclude Include="..\src\coloring.h" />
     <ClInclude Include="..\src\core\apphost.h" />
+    <ClInclude Include="..\src\core\draw2d.h" />
+    <ClInclude Include="..\src\core\maths.hpp" />
+    <ClInclude Include="..\src\core\pixelmap.h" />
+    <ClInclude Include="..\src\core\pixeltypes.h" />
+    <ClInclude Include="..\src\core\sampledraw2d.h" />
+    <ClInclude Include="..\src\core\sampler.h" />
     <ClInclude Include="..\src\easing.h" />
     <ClInclude Include="..\src\effect_barndoor.h" />
     <ClInclude Include="..\src\effect_corners.h" />
@@ -156,6 +164,7 @@
     <ClInclude Include="..\src\effect_push.h" />
     <ClInclude Include="..\src\effect_rainblocks.h" />
     <ClInclude Include="..\src\effect_wiper.h" />
+    <ClInclude Include="..\src\geotypes.h" />
     <ClInclude Include="..\src\interpolator.h" />
     <ClInclude Include="..\src\normalizedwindow.h" />
   </ItemGroup>

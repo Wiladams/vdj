@@ -4,10 +4,10 @@
 
 #define lerp255(bg, fg, a) ((uint32_t)div255((fg*a+bg*(255-a))))
 
-class CrossFadeEffect : public WindowAnimation
+class CrossFadeEffect : public AnimationWindow
 {
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fSource1;
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > fSource2;
+	SourceSampler fSource1;
+	SourceSampler fSource2;
 
 	INLINE static PixelRGBA lerp_pixel(double u, const PixelRGBA& bg, const PixelRGBA& fg)
 	{
@@ -21,21 +21,21 @@ class CrossFadeEffect : public WindowAnimation
 public:
 	CrossFadeEffect(
 		double duration,
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
-		:WindowAnimation(duration)
+		SourceSampler s1,
+		SourceSampler s2)
+		:AnimationWindow(duration)
 		,fSource1(s1)
 		,fSource2(s2)
 	{
 	}
 
-	INLINE std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source1() { return fSource1; }
-	INLINE std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> >  source2() { return fSource2; }
+	INLINE SourceSampler  source1() { return fSource1; }
+	INLINE SourceSampler  source2() { return fSource2; }
 
-	PixelRGBA getValue(double u, double v, const PixelCoord& p) override
+	PixelRGBA getValue(double u, double v) override
 	{
-		auto c1 = source1()->getValue(u, v, p);
-		auto c2 = source2()->getValue(u, v, p);
+		auto c1 = source1()->getValue(u, v);
+		auto c2 = source2()->getValue(u, v);
 
 		return lerp_pixel(progress(), c1, c2);
 	}

@@ -9,13 +9,13 @@
 // Do a cover zipper coming from left and right
 // Specify how many fingers
 //
-INLINE std::shared_ptr<WindowAnimation> createHFingersIn(double duration, int howMany,
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
+INLINE std::shared_ptr<AnimationWindow> createHFingersIn(double duration, int howMany,
+	SourceSampler s1,
+	SourceSampler s2)
 {
-	auto res = std::make_shared<WindowAnimation>(duration);
+	auto res = std::make_shared<AnimationWindow>(duration);
 
-	auto backing = std::make_shared<SampledWindow>(s1, TexelRect(0, 0, 1, 1));
+	auto backing = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
 
 	// Add the background that is to be covered
 	res->addChild(backing);
@@ -27,16 +27,16 @@ INLINE std::shared_ptr<WindowAnimation> createHFingersIn(double duration, int ho
 
 	for (int i = 0; i < howMany; i++)
 	{
-		TexelRect beginPos;
-		TexelRect endPos(0, i * vSize, 1, (i * vSize) + vSize);
+		RectD beginPos;
+		RectD endPos(0, i * vSize, 1, vSize);
 
 		if (fromTheLeft) {
-			beginPos = TexelRect(-1.0, i * vSize, 0.0, (i * vSize) + vSize);
+			beginPos = RectD(-1.0, i * vSize, 1.0, vSize);
 		}
 		else {
-			beginPos = TexelRect(1.0, i * vSize, 2.0, (i * vSize) + vSize);
+			beginPos = RectD(1.0, i * vSize, 1.0, vSize);
 		}
-		auto finger = std::make_shared<SampledWindow>(s2, endPos);
+		auto finger = std::make_shared<SamplerWrapper>(s2, endPos);
 		auto motion = std::make_shared<TexelRectMotion>(finger->fMovingFrame, beginPos, endPos);
 
 		res->addChild(finger);
@@ -52,13 +52,13 @@ INLINE std::shared_ptr<WindowAnimation> createHFingersIn(double duration, int ho
 // Vertical Fingers
 // do a cover zipper from top and bottom
 //
-INLINE std::shared_ptr<WindowAnimation> createVFingersIn(double duration, int howMany,
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
+INLINE std::shared_ptr<AnimationWindow> createVFingersIn(double duration, int howMany,
+	SourceSampler s1,
+	SourceSampler s2)
 {
-	auto res = std::make_shared<WindowAnimation>(duration);
+	auto res = std::make_shared<AnimationWindow>(duration);
 
-	auto backing = std::make_shared<SampledWindow>(s1, TexelRect(0, 0, 1, 1));
+	auto backing = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
 
 	// Add the background that is to be covered
 	res->addChild(backing);
@@ -70,16 +70,16 @@ INLINE std::shared_ptr<WindowAnimation> createVFingersIn(double duration, int ho
 
 	for (int i = 0; i < howMany; i++)
 	{
-		TexelRect beginPos;
-		TexelRect endPos(i * uSize, 0, (i * uSize) + uSize, 1);
+		RectD beginPos;
+		RectD endPos(i * uSize, 0, uSize, 1);
 
 		if (fromThisSide) {
-			beginPos = TexelRect(i * uSize, -1.0, (i * uSize) + uSize, 0.0);
+			beginPos = RectD(i * uSize, -1.0, uSize, 1.0);
 		}
 		else {
-			beginPos = TexelRect(i * uSize, 1.0, (i * uSize) + uSize, 2.0);
+			beginPos = RectD(i * uSize, 1.0, uSize, 1.0);
 		}
-		auto finger = std::make_shared<SampledWindow>(s2, endPos);
+		auto finger = std::make_shared<SamplerWrapper>(s2, endPos);
 		auto motion = std::make_shared<TexelRectMotion>(finger->fMovingFrame, beginPos, endPos);
 
 		res->addChild(finger);

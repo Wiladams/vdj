@@ -3,14 +3,14 @@
 #include "animator.h"
 #include <memory>
 
-INLINE std::shared_ptr<WindowAnimation> createRainBlocks(double duration,
+INLINE std::shared_ptr<AnimationWindow> createRainBlocks(double duration,
 	int maxRows, int maxColumns,
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
+	SourceSampler s1,
+	SourceSampler s2)
 {
-	auto res = std::make_shared<WindowAnimation>(duration);
+	auto res = std::make_shared<AnimationWindow>(duration);
 
-	auto backing = std::make_shared<SampledWindow>(s1, TexelRect(0, 0, 1, 1));
+	auto backing = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
 
 
 	// Add the background that is to be covered
@@ -31,19 +31,22 @@ INLINE std::shared_ptr<WindowAnimation> createRainBlocks(double duration,
 		while  (row-->0) 
 		{
 			double vOffset = row * vSize;
-			TexelRect endPos(uOffset, vOffset, uOffset + uSize, vOffset + vSize);
-			TexelRect beginPos(uOffset, -vSize, uOffset + uSize, -0.01);
+			RectD endPos(uOffset, vOffset, uSize, vSize);
+			RectD beginPos(uOffset, -vSize, uSize, vSize-0.01);
 
-			auto block = std::make_shared<SampledWindow>(s2, endPos);
+			auto block = std::make_shared<SamplerWrapper>(s2, endPos);
 			block->setFrame(beginPos);
 
 			auto motion = std::make_shared<TexelRectMotion>(block->fMovingFrame, beginPos, endPos);
-			//double endTime = ((double)(maxRows - row)) * dropOffset;
+
 			double endTime = maths::random_double(0.25, 1.0);
 			double duration = 0.25;
 			double startTime = endTime - duration;
 
-			motion->setTiming(startTime, endTime);
+			motion->setProgressEnvelope(startTime, endTime);
+
+			// we want blocks hitting the last row to bounce
+			// off the bottom
 			if (row == maxRows - 1)
 			{
 				motion->setEasing(easing::bounceOut);
@@ -51,6 +54,7 @@ INLINE std::shared_ptr<WindowAnimation> createRainBlocks(double duration,
 
 			res->addChild(block);
 			res->addMotion(motion);
+
 			vOffset += vSize;
 		}
 		uOffset += uSize;

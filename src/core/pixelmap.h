@@ -10,93 +10,6 @@
     that's expected by the screen, or whatever is displaying the values.
 */
 
-// Representation of a line segment
-struct PixelLine {
-    PixelCoord pt1;
-    PixelCoord pt2;
-};
-
-
-
-/*
-  PixelTriangle
-
-  A triangle representation
-*/
-struct PixelTriangle {
-    PixelCoord verts[3];   // A triangle has 3 vertices
-
-    // Basic constructor take coordinates in any order, sorts them
-    // so that subsequent drawing will be faster.
-    PixelTriangle(const int x1, const int y1,
-        const int x2, const int y2,
-        const int x3, const int y3)
-    {
-        verts[0] = { x1, y1 };
-        verts[1] = { x2, y2 };
-        verts[2] = { x3, y3 };
-
-        // sort the coordinates from topmost
-        // to bottommost, so drawing is easier
-        // This is essentially a 3 element bubble sort
-        PixelCoord tmp;
-        if (verts[0].y() > verts[1].y()) {
-            tmp = verts[0];
-            verts[0] = verts[1];
-            verts[1] = tmp;
-        }
-
-        if (verts[1].y() > verts[2].y()) {
-            tmp = verts[1];
-            verts[1] = verts[2];
-            verts[2] = tmp;
-        }
-
-        // One more round to ensure the second isn't the smallest
-        if (verts[0].y() > verts[1].y()) {
-            tmp = verts[0];
-            verts[0] = verts[1];
-            verts[1] = tmp;
-        }
-    }
-};
-
-// Simple description of an ellipse
-struct PixelEllipse
-{
-    int cx, cy;
-    int rx, ry;
-};
-
-
-// Cubic Bezier, defined by 4 points
-struct PixelBezier
-{
-    PixelCoord p1;
-    PixelCoord p2;
-    PixelCoord p3;
-    PixelCoord p4;
-    size_t fSegments;
-
-public:
-    PixelBezier(const PixelCoord &pp1, const PixelCoord& pp2, const PixelCoord& pp3, const PixelCoord& pp4, size_t segments = 60)
-        :p1(pp1),p2(pp2),p3(pp3),p4(pp4),
-        fSegments(segments)
-    {
-
-    }
-    
-    PixelBezier(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, size_t segments = 60)
-            :p1({ x1, y1 }),
-            p2({ x2, y2 }),
-            p3({x3, y3}),
-            p4({x4, y4}),
-            fSegments(segments)
-    {
-    }
-
-};
-
 /*
     PixelMap is an abstraction for a 2D representation of Pixel values.
     We want this abstraction layer so that we can implement different
@@ -110,7 +23,7 @@ public:
     lines.  This leaves space for implementations to optimize
     these functions in ways that are specific to them.
 */
-class PixelMap : public ISample2D<PixelRGBA, PixelCoord>
+class PixelMap : public ISample2D<PixelRGBA>
 {
 protected:
     PixelRect fFrame;
@@ -134,13 +47,13 @@ public:
     virtual PixelRGBA getPixel(const int x, const int y) const = 0;
 
     // regular things
-    INLINE constexpr int x() const noexcept { return fFrame.x; }
-    INLINE constexpr int y() const noexcept { return fFrame.y; }
-    INLINE constexpr int width() const noexcept { return fFrame.width; }
-    INLINE constexpr int height() const noexcept { return fFrame.height; }
+    INLINE constexpr int x() const noexcept { return fFrame.x(); }
+    INLINE constexpr int y() const noexcept { return fFrame.y(); }
+    INLINE constexpr int width() const noexcept { return fFrame.w(); }
+    INLINE constexpr int height() const noexcept { return fFrame.h(); }
     
     // Calculate whether a point is whithin our bounds
-    INLINE bool contains(double x, double y) const { return fFrame.containsPoint((int)x, (int)y); }
+    INLINE bool contains(double x, double y) const { return fFrame.contains((int)x, (int)y); }
 
     const PixelRect& getBounds() const { return fFrame; }
     INLINE const PixelRect& frame() const { return fFrame; }
@@ -151,7 +64,7 @@ public:
     // to avoid bounds checking,then use the getPixel(), and setPixel() forms
     // which MUST be implemented by a sub-class
     virtual void set(const int x, const int y, const PixelRGBA &c) {
-        if (!fFrame.containsPoint(x, y))
+        if (!fFrame.contains(x, y))
             return;
 
         if (c.isTransparent())
@@ -169,7 +82,7 @@ public:
     PixelRGBA get(const int x, const int y) const
     {
         // reject pixel if out of boundary
-        if (!fFrame.containsPoint(x, y))
+        if (!fFrame.contains(x, y))
             return PixelRGBA(0);
 
         return getPixel(x, y);
@@ -179,7 +92,7 @@ public:
     // specify location in normalized space [0..1]
     // the PixelCoord tells you where in the caller the value
     // is intended to be located.
-    PixelRGBA getValue(double u, double v, const PixelCoord& p)
+    PixelRGBA getValue(double u, double v) override
     {
         int px = int((u * ((double)width() - 1)) + 0.5);
         int py = int((v * ((double)height() - 1)) + 0.5);

@@ -13,51 +13,60 @@
 #include <vector>
 #include <memory>
 
+// Used for setting the value of a field
+template <typename T>
+using PFieldSetter = std::function< void(const T& value)>;
+
+// Used for getting the value of a field
+template <typename T>
+using PFieldGetter = std::function< T ()>;
+
+
 struct IAnimateField
 {
 protected:
 	PFunc1Double fEasing = easing::linear;
-	double fStartTime = 0.0;
-	double fEndTime = 1.0;
+	double fStartProgress = 0.0;
+	double fEndProgress = 1.0;
 
 public:
 	IAnimateField() = default;
 
 	IAnimateField(double startTime, double endTime)
-		:fStartTime(startTime),
-		fEndTime(endTime)
+		:fStartProgress(startTime),
+		fEndProgress(endTime)
 	{
 
 	}
 
 	virtual ~IAnimateField() {}
 
-	void setTiming(double startTime, double endTime)
+	void setProgressEnvelope(double startTime, double endTime)
 	{
-		fStartTime = startTime;
-		fEndTime = endTime;
+		fStartProgress = startTime;
+		fEndProgress = endTime;
 	}
 
 	virtual void setProgress(double u)
 	{
-		onUpdateField(u);
+		onUpdate(u);
 	}
 
 	virtual void updateField(double u)
 	{
 		//if ((u < fStartTime) || (u>fEndTime))
 		//	return;
-		if (u < fStartTime)
+		if (u < fStartProgress)
 			return;
 
 
-		double u1 = (u - fStartTime)/(fEndTime-fStartTime);
+		double u1 = (u - fStartProgress)/(fEndProgress - fStartProgress);
 		u1 = maths::Clamp(u1, 0, 1);
 
-		onUpdateField(u1);
+		onUpdate(u1);
 	}
 
-	virtual void onUpdateField(double u) = 0;
+	virtual void onUpdate(double u) = 0;
 
 	void setEasing(PFunc1Double ease)
 	{
@@ -70,6 +79,8 @@ public:
 // This defines the motion associated with an animation
 // it is templatized, because an animation can decide to 
 // attach motion to any number of attributes within an animation
+
+
 template <typename T>
 struct FieldAnimator : public IAnimateField
 {
@@ -78,11 +89,14 @@ private:
 	T fEndValue;
 	T& fField;
 
+	PFieldGetter<T> fGetter;
+	PFieldSetter<T> fSetter;
+
 protected:
 
 
 public:
-
+	///*
 	FieldAnimator(T& field, const T& startValue, const T& endValue)
 		: IAnimateField(0.0,1.0)
 		,fField(field)
@@ -96,11 +110,30 @@ public:
 		, fStartValue(startValue)
 		, fEndValue(endValue)
 	{}
+	//*/
+	/*
+	FieldAnimator(PFieldGetter<T> getter, PFieldSetter<T> setter, const T& startValue, const T& endValue)
+		: IAnimateField(0.0, 1.0)
+		, fGetter(getter)
+		, fSetter(setter)
+		, fStartValue(startValue)
+		, fEndValue(endValue)
+	{}
 
+	FieldAnimator(PFieldGetter<T> getter, PFieldSetter<T> setter, const T& startValue, const T& endValue, double startTime, double endTime)
+		: IAnimateField(startTime, endTime)
+		, fGetter(getter)
+		, fSetter(setter)
+		, fStartValue(startValue)
+		, fEndValue(endValue)
+	{}
+	*/
 	// When progress is made, alter the field
 	// 
-	void onUpdateField(double u) override
+	void onUpdate(double u) override
 	{
+		//if (fSetter != nullptr)
+		//	fSetter(this->operator()(u));
 		fField = this->operator()(u);
 	}
 
@@ -112,19 +145,20 @@ public:
 	}
 };
 
-using TexelRectMotion = FieldAnimator<TexelRect>;
+using TexelRectMotion = FieldAnimator<RectD>;
+using RectMotion = FieldAnimator<RectD>;
 
 
 
 //
-// WindowAnimation
+// AnimationWindow
 //
 // Animation of a Window.  The actual animation is 
 // up to a sub-class.  Any attribute of the window
 // can be animated, and interpolators are required
 // to implement the intended animation.
 //
-struct WindowAnimation : public SampledWindow
+struct AnimationWindow : public SampledWindow
 {
 	bool fIsRunning = false;
 
@@ -136,28 +170,27 @@ struct WindowAnimation : public SampledWindow
 	double fProgress = 0;	// Value from [0..1]
 	std::vector<std::shared_ptr<IAnimateField> > fAnimators;
 
-	WindowAnimation	(double duration)
+	AnimationWindow(double duration)
 		:fDuration(duration)
 	{}
 
 	virtual void setDuration(double dur) { fDuration = dur; }
 	void setEasing(PFunc1Double ease) 
 	{
-		for (auto& mover : fAnimators) {
-			mover->setEasing(ease);
+		for (auto& animator : fAnimators) {
+			animator->setEasing(ease);
 		}
 	}
 
-
-	void addMotion(std::shared_ptr<IAnimateField> motion)
+	void addMotion(std::shared_ptr<IAnimateField> animator)
 	{
-		fAnimators.push_back(motion);
+		fAnimators.push_back(animator);
 	}
 
-	void addMovingSample(std::shared_ptr<SampledWindow> win, std::shared_ptr<IAnimateField> motion)
+	void addMovingSample(std::shared_ptr<SampledWindow> win, std::shared_ptr<IAnimateField> animator)
 	{
 		addChild(win);
-		addMotion(motion);
+		addMotion(animator);
 	}
 
 // This will reset the animation to 
@@ -214,13 +247,13 @@ struct WindowAnimation : public SampledWindow
 			fIsRunning = false;
 	}
 
-
-
 	// A function to be implemented by sub-classes
 	// by default, just tell all the children
 	// of the progress
 	virtual void onProgress(double u)
 	{
+		onFrameChanged();
+
 		for (auto& motion : fAnimators)
 		{
 			motion->updateField(u);
@@ -228,3 +261,6 @@ struct WindowAnimation : public SampledWindow
 	}
 
 };
+
+
+using SourceSampler = std::shared_ptr<ISample2D<PixelRGBA> >;

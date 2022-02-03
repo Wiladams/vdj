@@ -3,24 +3,25 @@
 #include "animator.h"
 #include <memory>
 
-INLINE std::shared_ptr<WindowAnimation> createWiper(double duration,
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
-	std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
+INLINE std::shared_ptr<AnimationWindow> createWiper(double duration,
+	SourceSampler s1,
+	SourceSampler s2,
+	const vec2f &dir)
 {
 	const int maxRows = 4;
 	const int maxColumns = 4;
 
-	auto res = std::make_shared<WindowAnimation>(duration);
+	auto res = std::make_shared<AnimationWindow>(duration);
 
-	auto backing = std::make_shared<SampledWindow>(s1, TexelRect(0, 0, 1, 1));
+	auto backing = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
 	
 	// Add the background that is to be covered
 	res->addChild(backing);
 
-	TexelRect beginPos(0, 0, 0, 1);
-	TexelRect endPos(0, 0, 1, 1);
+	RectD beginPos(0, 0, 0, 1);
+	RectD endPos(0, 0, 1, 1);
 
-	auto wiper = std::make_shared<SampledWindow>(s2, TexelRect(0,0,1,1));
+	auto wiper = std::make_shared<SamplerWrapper>(s2, RectD(0,0,1,1));
 	auto frameMotion = std::make_shared<TexelRectMotion>(wiper->fMovingFrame, beginPos, endPos);
 	auto boundsMotion = std::make_shared<TexelRectMotion>(wiper->fStickyBounds, beginPos, endPos);
 

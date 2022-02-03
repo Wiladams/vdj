@@ -2,7 +2,7 @@
 
 /*
     This is a simple drawing library that has functions ranging from
-    setting a single pixel all the way up to a triangle and ellipse.
+    setting a single pixel all the way up to convex polygon, triangle and ellipse.
 
     In general, the higher level functions will do bounds checking
     and deal with clipping primitives appropriately.
@@ -10,12 +10,14 @@
     The functions work against the PixelMap class.  They are not 
     the fastest routines possible, but they should be fairly complete.
 
-    All operations are SRCCOPY.  It is relatively to add different
+    All operations are SRCCOPY.  It is relatively easy to add different
     pixel covering functions with these base routines.
 
     Reference
     https://magcius.github.io/xplain/article/rast1.html
     https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/rasterization-stage
+    https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation?url=3d-basic-rendering%2Frasterization-practical-implementation
+//
 
 */
 
@@ -50,10 +52,10 @@ static const uint32_t LN_TOP = 8;    // 1000
 INLINE int computeOutCode(const PixelRect &rct, const int x, const int y)
 {
     uint32_t code = LN_INSIDE;   // initialised as being inside of clip window
-    int xmin = rct.x;
-    int xmax = rct.x + rct.width - 1;
-    int ymin = rct.y;
-    int ymax = rct.y + rct.height - 1;
+    int xmin = rct.x();
+    int xmax = rct.x() + rct.w() - 1;
+    int ymin = rct.y();
+    int ymax = rct.y() + rct.h() - 1;
        
 
     if (x < xmin)           // to the left of clip window
@@ -84,10 +86,10 @@ inline bool clipLine(const PixelRect &bounds, int& x0, int& y0, int& x1, int& y1
     int outcode0 = computeOutCode(bounds, x0, y0);
     int outcode1 = computeOutCode(bounds, x1, y1);
     bool accept = false;
-    double xmin = bounds.x;
-    double xmax = bounds.x + bounds.width - 1;
-    double ymin = bounds.y;
-    double ymax = bounds.y + bounds.height - 1;
+    double xmin = bounds.x();
+    double xmax = bounds.x() + bounds.w() - 1;
+    double ymin = bounds.y();
+    double ymax = bounds.y() + bounds.h() - 1;
 
     while (true) {
         if (!(outcode0 | outcode1)) { // Bitwise OR is 0. Trivially accept and get out of loop
@@ -468,7 +470,7 @@ inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, 
 
         // fill span between two line-drawers, advance drawers when
         // hit vertices
-        if (y >= clipRect.y) {
+        if (y >= clipRect.y()) {
             int y1 = y;
             int y2 = y;
             int rx = round(rdda.x);
@@ -488,7 +490,7 @@ inline void setConvexPolygon(PixelMap& pb, PixelCoord* verts, const int nverts, 
 
         // Advance y position.  Exit if run off its bottom
         y += 1;
-        if (y >= clipRect.y + clipRect.height)
+        if (y >= clipRect.y() + clipRect.h())
         {
             break;
         }
@@ -539,9 +541,9 @@ INLINE void fillRectangle(PixelMap& pmap, const int x, const int y, const int w,
         return;
 
     // Do a line by line draw
-    for (int row = dstRect.y; row < dstRect.y + dstRect.height; row++)
+    for (int row = dstRect.y(); row < dstRect.y() + dstRect.h(); row++)
     {
-        setSpan(pmap, dstRect.x, row, dstRect.width, c);
+        setSpan(pmap, dstRect.x(), row, dstRect.w(), c);
     }
 }
 
@@ -588,50 +590,23 @@ INLINE void fillCircle(PixelMap& pmap, int centerX, int centerY, int radius, con
     }
 }
 
-// Value of curve at parametric position 'u'
-// control points are P0, P1, P2, P3
-// This function calculates a single component (x, y, or whatever)
-// use another function to combine
-// Cubic Bezier
-INLINE double bezier_cubic(const double u, double p1, double p2, double p3, double p4)
-{
-    double oneminusu = 1 - u;
-    double BEZ03 = oneminusu * oneminusu * oneminusu;	// (1-u)^3
-    double BEZ13 = 3 * u * (oneminusu * oneminusu);	    // 3u(1-u)^2
-    double BEZ23 = 3 * u * u * oneminusu;				// 3u^2(1-u)
-    double BEZ33 = u * u * u;							// u^3
-
-    return BEZ03 * p1 + BEZ13 * p2 + BEZ23 * p3 + BEZ33 * p4;
-}
-
-INLINE PixelCoord bezier_point(double u, 
-    double x1, double y1,
-    double x2, double y2,
-    double x3, double y3,
-    double x4, double y4)
-{
-    int x = (int)Round(bezier_cubic(u, x1, x2, x3, x4));
-    int y = (int)Round(bezier_cubic(u, y1, y2, y3, y4));
-
-    return PixelCoord({ x,y });
-
-}
 
 
 
-INLINE void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, const int y2,
-    const int x3, const int y3, const int x4, const int y4, int segments, PixelRGBA c)
-{
-    PixelBezier bez(x1, y1, x2, y2, x3, y3, x4, y4);
-    
+
+
+
+INLINE void bezier(PixelMap& pmap, GeoBezier<int> bez, int segments, PixelRGBA c)
+{   
     // Get starting point
-    PixelCoord lp = bezier_point(0, x1,y1,x2,y2,x3,y3,x4,y4);
+    auto lp = bez.eval(0);
 
     int i = 1;
-    while (i <= segments) {
-        double u = (double)i / segments;
+    double uadv = 1.0 / segments;
+    double u = uadv;
 
-        PixelCoord p = bezier_point(u, x1, y1, x2, y2, x3, y3, x4, y4);
+    while (i <= segments) {
+        auto p = bez.eval(u);
 
         // draw line segment from last point to current point
         line(pmap, lp.x(), lp.y(), p.x(), p.y(), c);
@@ -640,6 +615,7 @@ INLINE void bezier(PixelMap& pmap, const int x1, const int y1, const int x2, con
         lp = p;
 
         i = i + 1;
+        u += uadv;
     }
 }
 
@@ -660,13 +636,14 @@ INLINE void blit(PixelMap & pb, const int x, const int y, PixelMap & src)
     PixelRect bounds(0, 0, pb.width(), pb.height());
     PixelRect dstFrame(x, y, src.width(), src.height());
 
+    // Intersection of boundary and destination frame
     PixelRect dstisect = bounds.intersection(dstFrame);
 
     if (dstisect.isEmpty())
         return;
 
-    int dstX = dstisect.x;
-    int dstY = dstisect.y;
+    int dstX = dstisect.x();
+    int dstY = dstisect.y();
 
     int srcX = dstX - x;
     int srcY = dstY - y;
@@ -677,11 +654,253 @@ INLINE void blit(PixelMap & pb, const int x, const int y, PixelMap & src)
     uint32_t* dstPtr = (uint32_t *)pb.getPixelPointer(dstX,dstY);
 
     int rowCount = 0;
-    for (int srcrow = srcY; srcrow < srcY+ dstisect.height; srcrow++)
+    for (int srcrow = srcY; srcrow < srcY+ dstisect.h(); srcrow++)
     {
         uint32_t* srcPtr = (uint32_t*)src.getPixelPointer(srcX, srcrow);
-        memcpy(dstPtr, srcPtr, dstisect.width * 4);
+        memcpy(dstPtr, srcPtr, dstisect.w() * 4);
         rowCount++;
-        dstPtr = (uint32_t*)pb.getPixelPointer(dstisect.x, dstisect.y+rowCount);
+        dstPtr = (uint32_t*)pb.getPixelPointer(dstisect.x(), dstisect.y()+rowCount);
     }
 }
+
+
+/*
+// C99, public domain licensed 
+// https://gist.github.com/ideasman42/983738130f754ef58ffa66bcdbbab892
+
+#include <stdbool.h>
+
+
+// utilities 
+
+#define SWAP(type, a, b) do {  \
+	type sw_ap;                \
+	sw_ap = (a);               \
+	(a) = (b);                 \
+	(b) = sw_ap;               \
+} while (0)
+
+static INLINE int min_ii(int a, int b)
+{
+    return (a < b) ? a : b;
+}
+
+static INLINE int max_ii(int a, int b)
+{
+    return (b < a) ? a : b;
+}
+
+// sort edge-segments on y, then x axis 
+static int fill_poly_v2i_n__span_y_sort(const void* a_p, const void* b_p, void* verts_p)
+{
+    const int(*verts)[2] = verts_p;
+    const int* a = a_p;
+    const int* b = b_p;
+    const int* co_a = verts[a[0]];
+    const int* co_b = verts[b[0]];
+
+    if (co_a[1] < co_b[1]) {
+        return -1;
+    }
+    else if (co_a[1] > co_b[1]) {
+        return 1;
+    }
+    else if (co_a[0] < co_b[0]) {
+        return -1;
+    }
+    else if (co_a[0] > co_b[0]) {
+        return 1;
+    }
+    else {
+        // co_a & co_b are identical, use the line closest to the x-min 
+        const int* co = co_a;
+        co_a = verts[a[1]];
+        co_b = verts[b[1]];
+        int ord = (((co_b[0] - co[0]) * (co_a[1] - co[1])) -
+            ((co_a[0] - co[0]) * (co_b[1] - co[1])));
+        if (ord > 0) {
+            return -1;
+        }
+        if (ord < 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+//
+ // \param callback: Takes the x, y coords and x-span (\a x_end is not inclusive),
+ // note that \a x_end will always be greater than \a x, so we can use:
+ //
+ // \code{.c}
+ // do {
+ //     func(x, y);
+ // } while (++x != x_end);
+ // \endcode
+ //
+void fill_poly_v2i_n(const PixelMap &pmap,
+    const int verts[][2], const int nr,
+    void (*callback)(int x, int x_end, int y, void*), void* user_data)
+{
+    int xmin = pmap.x();
+    int ymin = pmap.y();
+    int xmax = pmap.right();
+    int ymax = pmap.bottom();
+
+    // Originally by Darel Rex Finley, 2007.
+    // Optimized by Campbell Barton, 2016 to keep sorted intersections. 
+
+    int(*span_y)[2] = malloc(sizeof(*span_y) * (size_t)nr);
+    int span_y_len = 0;
+
+    for (int i_curr = 0, i_prev = nr - 1; i_curr < nr; i_prev = i_curr++) {
+        const int* co_prev = verts[i_prev];
+        const int* co_curr = verts[i_curr];
+
+        if (co_prev[1] != co_curr[1]) {
+            // Any segments entirely above or below the area of interest can be skipped. 
+            if ((min_ii(co_prev[1], co_curr[1]) >= ymax) ||
+                (max_ii(co_prev[1], co_curr[1]) < ymin))
+            {
+                continue;
+            }
+
+            int* s = span_y[span_y_len++];
+            if (co_prev[1] < co_curr[1]) {
+                s[0] = i_prev;
+                s[1] = i_curr;
+            }
+            else {
+                s[0] = i_curr;
+                s[1] = i_prev;
+            }
+        }
+    }
+
+    qsort_r(span_y, (size_t)span_y_len, sizeof(*span_y), fill_poly_v2i_n__span_y_sort, (void*)verts);
+
+    struct NodeX {
+        int span_y_index;
+        int x;
+    } *node_x = malloc(sizeof(*node_x) * (size_t)nr, __func__);
+    int node_x_len = 0;
+
+    int span_y_index = 0;
+    if (span_y_len != 0 && verts[span_y[0][0]][1] < ymin) {
+        while ((span_y_index < span_y_len) &&
+            (verts[span_y[span_y_index][0]][1] < ymin))
+        {
+            assert(verts[span_y[span_y_index][0]][1] <
+                verts[span_y[span_y_index][1]][1]);
+            if (verts[span_y[span_y_index][1]][1] >= ymin) {
+                struct NodeX* n = &node_x[node_x_len++];
+                n->span_y_index = span_y_index;
+            }
+            span_y_index += 1;
+        }
+    }
+
+    // Loop through the rows of the image. 
+    for (int pixel_y = ymin; pixel_y < ymax; pixel_y++) {
+        bool is_sorted = true;
+        bool do_remove = false;
+
+        for (int i = 0, x_ix_prev = INT_MIN; i < node_x_len; i++) {
+            struct NodeX* n = &node_x[i];
+            const int* s = span_y[n->span_y_index];
+            const int* co_prev = verts[s[0]];
+            const int* co_curr = verts[s[1]];
+
+            assert(co_prev[1] < pixel_y && co_curr[1] >= pixel_y);
+
+            const double x = (co_prev[0] - co_curr[0]);
+            const double y = (co_prev[1] - co_curr[1]);
+            const double y_px = (pixel_y - co_curr[1]);
+            const int    x_ix = (int)round((double)co_curr[0] + ((y_px / y) * x));
+            n->x = x_ix;
+
+            if (is_sorted && (x_ix_prev > x_ix)) {
+                is_sorted = false;
+            }
+            if (do_remove == false && co_curr[1] == pixel_y) {
+                do_remove = true;
+            }
+            x_ix_prev = x_ix;
+        }
+
+        // Sort the nodes, via a simple "Bubble" sort. 
+        if (is_sorted == false) {
+            int i = 0;
+            const int current_end = node_x_len - 1;
+            while (i < current_end) {
+                if (node_x[i].x > node_x[i + 1].x) {
+                    SWAP(struct NodeX, node_x[i], node_x[i + 1]);
+                    if (i != 0) {
+                        i -= 1;
+                    }
+                }
+                else {
+                    i += 1;
+                }
+            }
+        }
+
+        // Fill the pixels between node pairs. 
+        for (int i = 0; i < node_x_len; i += 2) {
+            int x_src = node_x[i].x;
+            int x_dst = node_x[i + 1].x;
+
+            if (x_src >= xmax) {
+                break;
+            }
+
+            if (x_dst > xmin) {
+                if (x_src < xmin) {
+                    x_src = xmin;
+                }
+                if (x_dst > xmax) {
+                    x_dst = xmax;
+                }
+                // for single call per x-span 
+                if (x_src < x_dst) {
+                    callback(x_src - xmin, x_dst - xmin, pixel_y - ymin, user_data);
+                }
+            }
+        }
+
+        // Clear finalized nodes in one pass, only when needed
+         // (avoids excessive array-resizing). 
+        if (do_remove == true) {
+            int i_dst = 0;
+            for (int i_src = 0; i_src < node_x_len; i_src += 1) {
+                const int* s = span_y[node_x[i_src].span_y_index];
+                const int* co = verts[s[1]];
+                if (co[1] != pixel_y) {
+                    if (i_dst != i_src) {
+                        // x is initialized for the next pixel_y (no need to adjust here) 
+                        node_x[i_dst].span_y_index = node_x[i_src].span_y_index;
+                    }
+                    i_dst += 1;
+                }
+            }
+            node_x_len = i_dst;
+        }
+
+        // scan for new x-nodes 
+        while ((span_y_index < span_y_len) &&
+            (verts[span_y[span_y_index][0]][1] == pixel_y))
+        {
+            // note, node_x these are just added at the end,
+            // not ideal but sorting once will resolve. 
+
+             // x is initialized for the next pixel_y 
+            struct NodeX* n = &node_x[node_x_len++];
+            n->span_y_index = span_y_index;
+            span_y_index += 1;
+        }
+    }
+
+    free(span_y);
+    free(node_x);
+}
+*/

@@ -9,9 +9,6 @@
 
 
 #include "effect_barndoor.h"
-//#include "effect_circlegrid.h"
-//#include "effect_slabs.h"
-//#include "effect_checkers.h"
 #include "effect_crossfade.h"
 #include "effect_corners.h"
 #include "effect_fingers.h"
@@ -27,9 +24,9 @@ StopWatch appClock;
 
 // Source Samplers
 std::shared_ptr<ScreenSnapshot> screenCapture = nullptr;
-std::shared_ptr< SampledWindow> screenCap1 = nullptr;
-std::shared_ptr< SampledWindow> screenCap2 = nullptr;
-//std::shared_ptr<SolidColorSampler> transSampler = nullptr;
+std::shared_ptr< SamplerWrapper> screenCap1 = nullptr;
+std::shared_ptr< SamplerWrapper> screenCap2 = nullptr;
+
 
 // Wrapping Samplers
 //std::shared_ptr<CheckerSampler> checkSamp = nullptr;
@@ -37,16 +34,16 @@ std::shared_ptr<LumaSampler> graySamp = nullptr;
 //std::shared_ptr<EffectCheckers> checkersEffect = nullptr;
 
 // Pixel Effects
-std::shared_ptr<WindowAnimation> blankEffect = nullptr;
+std::shared_ptr<AnimationWindow> blankEffect = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeFromBlack = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeToBlack = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeScreen1ToScreen2 = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeScreen2ToScreen1 = nullptr;
 
 // Multi-Block effects
-std::shared_ptr<WindowAnimation> horizontalFingersIn = nullptr;
-std::shared_ptr<WindowAnimation> verticalFingersIn = nullptr;
-std::shared_ptr<WindowAnimation> rainBlocks = nullptr;
+std::shared_ptr<AnimationWindow> horizontalFingersIn = nullptr;
+std::shared_ptr<AnimationWindow> verticalFingersIn = nullptr;
+std::shared_ptr<AnimationWindow> rainBlocks = nullptr;
 
 // Push and Slide Effects
 std::shared_ptr<BarnDoorOpenEffect> barnDoorOpen = nullptr;
@@ -55,14 +52,14 @@ std::shared_ptr<CornersFlyOut> cornersFlyOut = nullptr;
 std::shared_ptr<Push> pushLeftToRight = nullptr;
 std::shared_ptr<Push> pushFromUpperLeft = nullptr;
 std::shared_ptr<Push> pushFromTop = nullptr;
-std::shared_ptr<WindowAnimation> wiper = nullptr;
+std::shared_ptr<AnimationWindow> wiper = nullptr;
 
-std::shared_ptr<WindowAnimation> currentEffect = nullptr;
+std::shared_ptr<AnimationWindow> currentEffect = nullptr;
 
 std::shared_ptr<Recorder> reco = nullptr;
 
 
-constexpr int FRAMERATE = 15;
+constexpr int FRAMERATE = 30;
 double progress = 0;
 
 
@@ -76,7 +73,7 @@ void keyReleased(const KeyboardEvent& e)
 		break;
 
 	case VK_SPACE:
-		reco->toggleRecording();
+		//reco->toggleRecording();
 		break;
 
 		// Select from our known effects
@@ -220,11 +217,11 @@ void setup()
 
 	// Setup screen captures
 	screenCapture = std::make_shared<ScreenSnapshot>(0, 0, displayWidth, displayHeight / 2);
-	screenCap1 = std::make_shared<SampledWindow>(screenCapture,TexelRect(0, 0, 0.499, 1.0));
-	screenCap2 = std::make_shared<SampledWindow>(screenCapture, TexelRect(0.50, 0, 1.0, 1.0));
+	screenCap1 = std::make_shared<SamplerWrapper>(screenCapture, RectD(0, 0, 0.5, 1.0));
+	screenCap2 = std::make_shared<SamplerWrapper>(screenCapture, RectD(0.50, 0, 0.5, 1.0));
 
 
-	blankEffect = std::make_shared<WindowAnimation>(1);
+	blankEffect = std::make_shared<AnimationWindow>(1);
 	
 	// dissolve
 	fadeFromBlack = std::make_shared<CrossFadeEffect>(2, blankEffect, screenCap1);
@@ -246,10 +243,10 @@ void setup()
 
 	// Miscellaneous
 	//                        seconds, rows, columns, source 1,   source 2
-	rainBlocks = createRainBlocks(5,     19,     20,    screenCap1, screenCap2);
+	rainBlocks = createRainBlocks(2,     4,     8,    screenCap1, screenCap2);
 	//rainBlocks->setEasing(easing::bounceOut);
 
-	wiper = createWiper(3, screenCap1, screenCap2);
+	wiper = createWiper(1, screenCap1, screenCap2, vec2f({ 1,1 }));
 
 	//checkersEffect = std::make_shared<EffectCheckers>(1, 8, screenCap1, blankEffect);
 	//checkSamp = std::make_shared<CheckerSampler>(8, screenCap1, blankEffect);
@@ -259,16 +256,16 @@ void setup()
 	pushLeftToRight->setEasing(easing::backIn);
 
 	pushFromUpperLeft = std::make_shared<Push>(1,
-		screenCap2, TexelRect(0,0,1,1), TexelRect(0,0,1,1), TexelRect(1,1,2,2),
-		screenCap1, TexelRect(0,0,1,1), TexelRect(-1,-1,0,0), TexelRect(0,0,1,1));
+		screenCap2, RectD(0,0,1,1), RectD(0,0,1,1), RectD(1,1,1,1),
+		screenCap1, RectD(0,0,1,1), RectD(-1,-1,1,1), RectD(0,0,1,1));
 	
 	pushFromTop = std::make_shared<Push>(1.5,
-		screenCap2, TexelRect(0, 0, 1, 1), TexelRect(0, 0, 1, 1), TexelRect(0, 1, 1, 2),
-		screenCap1, TexelRect(0, 0, 1, 1), TexelRect(0, -1, 1, 0), TexelRect(0, 0, 1, 1));
+		screenCap2, RectD(0, 0, 1, 1), RectD(0, 0, 1, 1), RectD(0, 1, 1,1),
+		screenCap1, RectD(0, 0, 1, 1), RectD(0, -1, 1, 1), RectD(0, 0, 1, 1));
 	pushFromTop->setEasing(easing::bounceOut);
 
 
-	currentEffect = rainBlocks;
+	currentEffect = fadeFromBlack;
 
 	// setup the recorder
 	reco = std::make_shared<Recorder>(&(*gAppSurface), "frame-", 0);

@@ -9,28 +9,26 @@
 // achieve a push from anywhere, and since the source and
 // destinations can be anything, it doesn't even have to be a push
 
-
 #include "animator.h"
 
-struct Push : public WindowAnimation
+struct Push : public AnimationWindow
 {
 	// Quick and dirty left to right horizontal push
 	//
 	Push(double duration, 
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1,
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2)
-		:WindowAnimation(duration)
+		SourceSampler s1,
+		SourceSampler s2)
+		:AnimationWindow(duration)
 	{
-		auto pusher = std::make_shared<SampledWindow>(s2, TexelRect(0, 0, 1, 1));
-		auto pushee = std::make_shared<SampledWindow>(s1, TexelRect(0, 0, 1, 1));
+		auto pusher = std::make_shared<SamplerWrapper>(s2, RectD(0, 0, 1, 1));
+		auto pushee = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
 
 
-		addMotion(std::make_shared<TexelRectMotion>(pusher->fMovingFrame, TexelRect(-1, 0, 0, 1), TexelRect(0, 0, 1, 1)));
-		addMotion(std::make_shared<TexelRectMotion>(pushee->fMovingFrame, TexelRect(0, 0, 1, 1), TexelRect(1, 0, 2, 1)));
+		addMotion(std::make_shared<TexelRectMotion>(pusher->fMovingFrame, RectD(-1, 0, 1, 1), RectD(0, 0, 1, 1)));
+		addMotion(std::make_shared<TexelRectMotion>(pushee->fMovingFrame, RectD(0, 0, 1, 1), RectD(1, 0, 1, 1)));
 		
 		addChild(pusher);
 		addChild(pushee);
-
 	}
 
 	//
@@ -38,15 +36,15 @@ struct Push : public WindowAnimation
 	// but, you can implement any kind of push by specifying
 	// all these parameters
 	Push(double duration,
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s1, const TexelRect &s1bounds, const TexelRect &s1starting, const TexelRect &s1ending,
-		std::shared_ptr<ISample2D<PixelRGBA, PixelCoord> > s2, const TexelRect &s2bounds, const TexelRect &s2starting, const TexelRect &s2ending)
-		:WindowAnimation(duration)
+		SourceSampler s1, const RectD&s1bounds, const RectD&s1starting, const RectD&s1ending,
+		SourceSampler s2, const RectD&s2bounds, const RectD&s2starting, const RectD&s2ending)
+		:AnimationWindow(duration)
 	{
 		auto pusher = std::make_shared<SampledWindow>(s2, s2bounds);
 		auto pushee = std::make_shared<SampledWindow>(s1, s1bounds);
 
-		addMotion(std::make_shared<TexelRectMotion>(pusher->fMovingFrame, TexelRect(-1, 0, 0, 1), TexelRect(0, 0, 1, 1)));
-		addMotion(std::make_shared<TexelRectMotion>(pushee->fMovingFrame, TexelRect(0, 0, 1, 1), TexelRect(1, 0, 2, 1)));
+		addMotion(std::make_shared<TexelRectMotion>(pusher->fMovingFrame, s1starting, s1ending));
+		addMotion(std::make_shared<TexelRectMotion>(pushee->fMovingFrame, s2starting, s2ending));
 
 		addChild(pusher);
 		addChild(pushee);
