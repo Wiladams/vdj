@@ -30,7 +30,7 @@ std::shared_ptr< SamplerWrapper> screenCap2 = nullptr;
 
 // Wrapping Samplers
 //std::shared_ptr<CheckerSampler> checkSamp = nullptr;
-std::shared_ptr<LumaSampler> graySamp = nullptr;
+std::shared_ptr<LumaWrapper> graySamp = nullptr;
 //std::shared_ptr<EffectCheckers> checkersEffect = nullptr;
 
 // Pixel Effects
@@ -53,6 +53,8 @@ std::shared_ptr<Push> pushLeftToRight = nullptr;
 std::shared_ptr<Push> pushFromUpperLeft = nullptr;
 std::shared_ptr<Push> pushFromTop = nullptr;
 std::shared_ptr<AnimationWindow> wiper = nullptr;
+std::shared_ptr<AnimationWindow> wiper2 = nullptr;
+std::shared_ptr<AnimationWindow> wiper3 = nullptr;
 
 std::shared_ptr<AnimationWindow> currentEffect = nullptr;
 
@@ -134,23 +136,31 @@ void keyReleased(const KeyboardEvent& e)
 		currentEffect = verticalFingersIn;
 		currentEffect->start();
 		break;
-/*
-	case VK_F12:
+
+	case 'B':
 		currentEffect = fadeToBlack;
 		currentEffect->start();
 		break;
-*/
+
+	case 'Q':
+		currentEffect = wiper3;
+		currentEffect->start();
+	break;
+
+	case 'W':
+		currentEffect = wiper;
+		currentEffect->start();
+		break;
+	
+	case 'E':
+		currentEffect = wiper2;
+		currentEffect->start();
+		break;
 
 	case 'R':
 		currentEffect = rainBlocks;
 		currentEffect->start();
 		break;
-	
-	case 'W':
-		currentEffect = wiper;
-		currentEffect->start();
-		break;
-
 	}
 
 
@@ -246,11 +256,11 @@ void setup()
 	rainBlocks = createRainBlocks(2,     4,     8,    screenCap1, screenCap2);
 	//rainBlocks->setEasing(easing::bounceOut);
 
-	wiper = createWiper(1, screenCap1, screenCap2, vec2f({ 1,1 }));
+	wiper = createWiper(1, screenCap1, screenCap2, RectD(0, 0, 0, 1), RectD(0, 0, 1, 1));
+	wiper2 = createWiper(1, screenCap1, screenCap2, RectD(0, 1, 0, 0), RectD(0, 0, 1, 1));
+	wiper3 = createWiper(1, screenCap1, screenCap2, RectD(0.5, 0.5, 0, 0), RectD(0, 0, 1, 1));
 
-	//checkersEffect = std::make_shared<EffectCheckers>(1, 8, screenCap1, blankEffect);
-	//checkSamp = std::make_shared<CheckerSampler>(8, screenCap1, blankEffect);
-	
+
 	// Pushes
 	pushLeftToRight = std::make_shared<Push>(1, screenCap2, screenCap1);
 	pushLeftToRight->setEasing(easing::backIn);

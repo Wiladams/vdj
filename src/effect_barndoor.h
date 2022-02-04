@@ -41,9 +41,8 @@ public:
 		SourceSampler s2)
 		: BarnDoors(duration, s1, s2)
 	{		
-
-		addMotion(std::make_shared< TexelRectMotion>(fDoor1->fMovingFrame, RectD(0, 0, 0.5, 1), RectD(-0.5, 0, 0.5, 1)));
-		addMotion(std::make_shared<TexelRectMotion>(fDoor2->fMovingFrame, RectD(0.5, 0, 0.5, 1), RectD(1.0, 0, 0.5, 1)));
+		addMotion(SamplerPositionAnimation::create(fDoor1, RectD(0, 0, 0.5, 1), RectD(-0.5, 0, 0.5, 1)));
+		addMotion(SamplerPositionAnimation::create(fDoor2, RectD(0.5, 0, 0.5, 1), RectD(1.0, 0, 0.5, 1)));
 	}
 
 };
@@ -57,7 +56,7 @@ public:
 		SourceSampler s2)
 		: BarnDoors(duration, s1, s2)
 	{		
-		addMotion(std::make_shared< TexelRectMotion>(fDoor1->fMovingFrame, RectD(-0.5, 0, 0.5, 1), RectD(0, 0, 0.5, 1)));
-		addMotion(std::make_shared<TexelRectMotion>(fDoor2->fMovingFrame, RectD(1.0, 0, 0.5, 1), RectD(0.5, 0, 0.5, 1)));
+		addMotion(SamplerPositionAnimation::create(fDoor1, RectD(-0.5, 0, 0.5, 1), RectD(0, 0, 0.5, 1)));
+		addMotion(SamplerPositionAnimation::create(fDoor2, RectD(1.0, 0, 0.5, 1), RectD(0.5, 0, 0.5, 1)));
 	}
 };

@@ -149,9 +149,11 @@
     <ClInclude Include="..\src\animator.h" />
     <ClInclude Include="..\src\blend2d.h" />
     <ClInclude Include="..\src\coloring.h" />
+    <ClInclude Include="..\src\core\apidefs.h" />
     <ClInclude Include="..\src\core\apphost.h" />
+    <ClInclude Include="..\src\core\bitbang.h" />
     <ClInclude Include="..\src\core\draw2d.h" />
-    <ClInclude Include="..\src\core\maths.hpp" />
+    <ClInclude Include="..\src\core\maths.h" />
     <ClInclude Include="..\src\core\pixelmap.h" />
     <ClInclude Include="..\src\core\pixeltypes.h" />
     <ClInclude Include="..\src\core\sampledraw2d.h" />

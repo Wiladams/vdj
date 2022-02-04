@@ -80,13 +80,19 @@
     <ClInclude Include="..\src\coloring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\maths.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\core\draw2d.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\pixelmap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\maths.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\apidefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\bitbang.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

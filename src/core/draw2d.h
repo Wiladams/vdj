@@ -22,7 +22,7 @@
 */
 
 #include "pixelmap.h"
-#include "maths.hpp"
+#include "maths.h"
 #include "sampler.h"
 
 #include <memory>

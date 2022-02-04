@@ -29,13 +29,13 @@ public:
 // Converts rgb to a single luminance value.  This goes
 // pretty quick as it uses pre-computed lookup tables
 // so nothing but lookups and additions.
-class LumaSampler : public ISample2D<PixelRGBA>
+class LumaWrapper : public ISample2D<PixelRGBA>
 {
     NTSCGray fLuminance;
-    std::shared_ptr<ISample2D<PixelRGBA> > fWrapped = nullptr;
+    SourceSampler fWrapped = nullptr;
 
 public:
-    LumaSampler(std::shared_ptr<ISample2D<PixelRGBA> > wrapped)
+    LumaWrapper(SourceSampler wrapped)
         :fWrapped(wrapped)
     {}
 

@@ -13,7 +13,7 @@ but, far more involved to deal with.
 #pragma comment(lib, "winmm.lib")
 
 #include <joystickapi.h>
-#include "maths.hpp"
+#include "maths.h"
 #include "uievent.h"
 
 

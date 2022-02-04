@@ -124,6 +124,11 @@ public:
 		// return transparent if we're not wrapping anything
 		return PixelRGBA(0x0);
 	}
+
+	static std::shared_ptr< SamplerWrapper> create(std::shared_ptr< ISample2D<PixelRGBA> > wrapped, const RectD& bounds)
+	{
+		return std::make_shared<SamplerWrapper>(wrapped, bounds, RectD(0, 0, 1, 1));
+	}
 };
 
 
@@ -209,3 +214,6 @@ struct SampledWindow : public SamplerWrapper
 	}
 
 };
+
+
+using SharedSamplerWrapper = std::shared_ptr<SamplerWrapper>;

@@ -2,13 +2,13 @@
 
 #include "apidefs.h"
 #include "coloring.h"
-#include "maths.hpp"
+#include "maths.h"
 #include "geotypes.h"
 
 #include <cassert>
 #include <array>
 #include <cstdint>
-
+#include <memory>
 
 using RectD = GeoRect<double>;
 
@@ -47,7 +47,7 @@ struct PixelRGBA
     INLINE PixelRGBA& operator=(const PixelRGBA& other) noexcept = default;
     INLINE constexpr bool operator==(const PixelRGBA& other) const noexcept { return equals(other); }
     
-    INLINE operator ColorRGBA() { return ColorRGBA((float)r()/255.0f,g()/255.0f,b()/255.0f,a()/255.0f); }
+    //INLINE operator ColorRGBA() { return ColorRGBA((float)r()/255.0f,g()/255.0f,b()/255.0f,a()/255.0f); }
 
     INLINE constexpr bool equals(const PixelRGBA& other) const noexcept { return value == other.value; }
 
@@ -118,6 +118,7 @@ struct ISampleRGBA :
 
 };
 
+using SourceSampler = std::shared_ptr<ISample2D<PixelRGBA> >;
 
 class NTSCGray
 {

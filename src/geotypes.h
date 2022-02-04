@@ -7,10 +7,11 @@ using PixelCoord = vec<2, int>;
 template <typename T>
 using GeoCoord = vec<2, T>;
 
-struct PixelSize {
-    int w;
-    int h;
-};
+
+//struct PixelSize {
+//    int w;
+//    int h;
+//};
 
 
 // A starting of a line and a length

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "maths.hpp"
+#include "maths.h"
 
 // Reference
 // https://easings.net/

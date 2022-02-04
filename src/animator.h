@@ -21,7 +21,11 @@ using PFieldSetter = std::function< void(const T& value)>;
 template <typename T>
 using PFieldGetter = std::function< T ()>;
 
-
+//
+// IAnimateField
+// Abstract base class for animators.  The sub-class
+// MUST implement onUpdate(double u);
+//
 struct IAnimateField
 {
 protected:
@@ -75,78 +79,40 @@ public:
 };
 
 //
-// Animotion
-// This defines the motion associated with an animation
-// it is templatized, because an animation can decide to 
-// attach motion to any number of attributes within an animation
-
-
-template <typename T>
-struct FieldAnimator : public IAnimateField
+// SamplerPositionAnimation
+// Most general base class for position based animations
+// The default behavior is to change the frame of the panel
+// interpolating between a beginning and ending position
+struct SamplerPositionAnimation : public IAnimateField
 {
-private:
-	T fStartValue;
-	T fEndValue;
-	T& fField;
+	SharedSamplerWrapper fSampler;
+	RectD fBeginPos;
+	RectD fEndPos;
 
-	PFieldGetter<T> fGetter;
-	PFieldSetter<T> fSetter;
-
-protected:
-
-
-public:
-	///*
-	FieldAnimator(T& field, const T& startValue, const T& endValue)
-		: IAnimateField(0.0,1.0)
-		,fField(field)
-		,fStartValue(startValue)
-		,fEndValue(endValue)
+	SamplerPositionAnimation(SharedSamplerWrapper wrapped,
+		const RectD& beginPos,
+		const RectD& endPos)
+		: fSampler(wrapped)
+		,fBeginPos(beginPos)
+		,fEndPos(endPos)
 	{}
 
-	FieldAnimator(T& field, const T& startValue, const T& endValue, double startTime, double endTime)
-		: IAnimateField(startTime, endTime)
-		, fField(field)
-		, fStartValue(startValue)
-		, fEndValue(endValue)
-	{}
-	//*/
-	/*
-	FieldAnimator(PFieldGetter<T> getter, PFieldSetter<T> setter, const T& startValue, const T& endValue)
-		: IAnimateField(0.0, 1.0)
-		, fGetter(getter)
-		, fSetter(setter)
-		, fStartValue(startValue)
-		, fEndValue(endValue)
-	{}
-
-	FieldAnimator(PFieldGetter<T> getter, PFieldSetter<T> setter, const T& startValue, const T& endValue, double startTime, double endTime)
-		: IAnimateField(startTime, endTime)
-		, fGetter(getter)
-		, fSetter(setter)
-		, fStartValue(startValue)
-		, fEndValue(endValue)
-	{}
-	*/
-	// When progress is made, alter the field
-	// 
+	// By default, just adjust frame
 	void onUpdate(double u) override
 	{
-		//if (fSetter != nullptr)
-		//	fSetter(this->operator()(u));
-		fField = this->operator()(u);
+		double u1 = fEasing(u);
+		auto newValue = maths::Lerp(u1, fBeginPos, fEndPos);
+
+		fSampler->setFrame(newValue);
 	}
 
-	T operator() (double u)
+	static std::shared_ptr< SamplerPositionAnimation> create(SharedSamplerWrapper wrapped,
+		const RectD& beginPos,
+		const RectD& endPos)
 	{
-		double u1 = fEasing(u);
-		T newValue = maths::Lerp(u1, fStartValue, fEndValue);
-		return newValue;
+		return std::make_shared< SamplerPositionAnimation>(wrapped, beginPos, endPos);
 	}
 };
-
-using TexelRectMotion = FieldAnimator<RectD>;
-using RectMotion = FieldAnimator<RectD>;
 
 
 
@@ -193,15 +159,15 @@ struct AnimationWindow : public SampledWindow
 		addMotion(animator);
 	}
 
-// This will reset the animation to 
-// its starting point.  It just resets
-// the start time and progress
-// BUGBUG
-// WAA - The problem here is that although 
-// we start, progress is governed by calling
-// udate(), or setProgress()
-// if neither of those occur, we don't actually
-// progress
+	// This will reset the animation to 
+	// its starting point.  It just resets
+	// the start time and progress
+	// BUGBUG
+	// WAA - The problem here is that although 
+	// we start, progress is governed by calling
+	// udate(), or setProgress()
+	// if neither of those occur, we don't actually
+	// progress
 	void start() noexcept
 	{
 		// reset all the animators
@@ -252,7 +218,7 @@ struct AnimationWindow : public SampledWindow
 	// of the progress
 	virtual void onProgress(double u)
 	{
-		onFrameChanged();
+		//onFrameChanged();
 
 		for (auto& motion : fAnimators)
 		{
@@ -261,6 +227,3 @@ struct AnimationWindow : public SampledWindow
 	}
 
 };
-
-
-using SourceSampler = std::shared_ptr<ISample2D<PixelRGBA> >;

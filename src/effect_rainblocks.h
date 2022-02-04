@@ -37,7 +37,7 @@ INLINE std::shared_ptr<AnimationWindow> createRainBlocks(double duration,
 			auto block = std::make_shared<SamplerWrapper>(s2, endPos);
 			block->setFrame(beginPos);
 
-			auto motion = std::make_shared<TexelRectMotion>(block->fMovingFrame, beginPos, endPos);
+			auto motion = SamplerPositionAnimation::create(block, beginPos, endPos);
 
 			double endTime = maths::random_double(0.25, 1.0);
 			double duration = 0.25;

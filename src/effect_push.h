@@ -24,8 +24,8 @@ struct Push : public AnimationWindow
 		auto pushee = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
 
 
-		addMotion(std::make_shared<TexelRectMotion>(pusher->fMovingFrame, RectD(-1, 0, 1, 1), RectD(0, 0, 1, 1)));
-		addMotion(std::make_shared<TexelRectMotion>(pushee->fMovingFrame, RectD(0, 0, 1, 1), RectD(1, 0, 1, 1)));
+		addMotion(SamplerPositionAnimation::create(pusher, RectD(-1, 0, 1, 1), RectD(0, 0, 1, 1)));
+		addMotion(SamplerPositionAnimation::create(pushee, RectD(0, 0, 1, 1), RectD(1, 0, 1, 1)));
 		
 		addChild(pusher);
 		addChild(pushee);
@@ -43,8 +43,8 @@ struct Push : public AnimationWindow
 		auto pusher = std::make_shared<SampledWindow>(s2, s2bounds);
 		auto pushee = std::make_shared<SampledWindow>(s1, s1bounds);
 
-		addMotion(std::make_shared<TexelRectMotion>(pusher->fMovingFrame, s1starting, s1ending));
-		addMotion(std::make_shared<TexelRectMotion>(pushee->fMovingFrame, s2starting, s2ending));
+		addMotion(SamplerPositionAnimation::create(pusher, s1starting, s1ending));
+		addMotion(SamplerPositionAnimation::create(pushee, s2starting, s2ending));
 
 		addChild(pusher);
 		addChild(pushee);

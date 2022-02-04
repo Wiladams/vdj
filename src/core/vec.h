@@ -20,7 +20,7 @@
 
 */
 #include "apidefs.h"
-#include "maths.hpp"
+#include "maths.h"
 
 #include <cassert>
 #include <cmath>
@@ -197,6 +197,7 @@ using vec2i = vec<2, int>;
 using vec2f = vec<2, float>;
 
 using vec3f = vec<3, float>;
-
+using float3 = vec<3, float>;
 
 using vec4f = vec<4, float>;
+using float4 = vec<4, float>;

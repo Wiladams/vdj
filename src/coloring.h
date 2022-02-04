@@ -1,8 +1,12 @@
 #pragma once
 
 #include <cmath>
+#include "vec.h"
 
+using ColorRGBA = float4;
+using ColorRGB = float3;
 
+/*
 //
 // Representation of color using
 // float values.  The intention is to do most
@@ -41,4 +45,4 @@ struct ColorRGBA
     INLINE constexpr bool isTransparent() const noexcept { return (0.0f == fA); }
 
 };
-
+*/

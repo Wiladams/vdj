@@ -2,6 +2,7 @@
 
 
 #include "animator.h"
+
 #include <memory>
 
 //
@@ -15,7 +16,7 @@ INLINE std::shared_ptr<AnimationWindow> createHFingersIn(double duration, int ho
 {
 	auto res = std::make_shared<AnimationWindow>(duration);
 
-	auto backing = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
+	auto backing = SamplerWrapper::create(s1, RectD(0, 0, 1, 1));
 
 	// Add the background that is to be covered
 	res->addChild(backing);
@@ -36,8 +37,8 @@ INLINE std::shared_ptr<AnimationWindow> createHFingersIn(double duration, int ho
 		else {
 			beginPos = RectD(1.0, i * vSize, 1.0, vSize);
 		}
-		auto finger = std::make_shared<SamplerWrapper>(s2, endPos);
-		auto motion = std::make_shared<TexelRectMotion>(finger->fMovingFrame, beginPos, endPos);
+		auto finger = SamplerWrapper::create(s2, endPos);
+		auto motion = SamplerPositionAnimation::create(finger, beginPos, endPos);
 
 		res->addChild(finger);
 		res->addMotion(motion);
@@ -58,7 +59,7 @@ INLINE std::shared_ptr<AnimationWindow> createVFingersIn(double duration, int ho
 {
 	auto res = std::make_shared<AnimationWindow>(duration);
 
-	auto backing = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
+	auto backing = SamplerWrapper::create(s1, RectD(0, 0, 1, 1));
 
 	// Add the background that is to be covered
 	res->addChild(backing);
@@ -79,8 +80,8 @@ INLINE std::shared_ptr<AnimationWindow> createVFingersIn(double duration, int ho
 		else {
 			beginPos = RectD(i * uSize, 1.0, uSize, 1.0);
 		}
-		auto finger = std::make_shared<SamplerWrapper>(s2, endPos);
-		auto motion = std::make_shared<TexelRectMotion>(finger->fMovingFrame, beginPos, endPos);
+		auto finger = SamplerWrapper::create(s2, endPos);
+		auto motion = SamplerPositionAnimation::create(finger, beginPos, endPos);
 
 		res->addChild(finger);
 		res->addMotion(motion);
