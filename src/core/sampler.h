@@ -28,7 +28,8 @@ public:
 //
 // Converts rgb to a single luminance value.  This goes
 // pretty quick as it uses pre-computed lookup tables
-// so nothing but lookups and additions.
+// so nothing but lookups and additions.  Assuming lookups
+// are faster than the calculations they replace.
 class LumaWrapper : public ISample2D<PixelRGBA>
 {
     NTSCGray fLuminance;
@@ -49,6 +50,11 @@ public:
 
         // return it
         return PixelRGBA(g,g,g,c.a());
+    }
+
+    static std::shared_ptr< LumaWrapper> create(SourceSampler wrapped)
+    {
+        return std::make_shared<LumaWrapper>(wrapped);
     }
 };
 

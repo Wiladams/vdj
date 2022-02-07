@@ -6,7 +6,7 @@
 #include "recorder.h"
 #include "stopwatch.h"
 #include "sampledraw2d.h"
-
+#include "windowcaptures.h"
 
 #include "effect_barndoor.h"
 #include "effect_crossfade.h"
@@ -14,6 +14,8 @@
 #include "effect_fingers.h"
 #include "effect_push.h"
 #include "effect_rainblocks.h"
+#include "effect_spin.h"
+
 #include "effect_wiper.h"
 
 using namespace maths;
@@ -31,6 +33,8 @@ std::shared_ptr< SamplerWrapper> screenCap2 = nullptr;
 // Wrapping Samplers
 //std::shared_ptr<CheckerSampler> checkSamp = nullptr;
 std::shared_ptr<LumaWrapper> graySamp = nullptr;
+std::shared_ptr<AnimationWindow> spinner = nullptr;
+
 //std::shared_ptr<EffectCheckers> checkersEffect = nullptr;
 
 // Pixel Effects
@@ -46,9 +50,12 @@ std::shared_ptr<AnimationWindow> verticalFingersIn = nullptr;
 std::shared_ptr<AnimationWindow> rainBlocks = nullptr;
 
 // Push and Slide Effects
-std::shared_ptr<BarnDoorOpenEffect> barnDoorOpen = nullptr;
-std::shared_ptr<BarnDoorCloseEffect> barnDoorClose = nullptr;
-std::shared_ptr<CornersFlyOut> cornersFlyOut = nullptr;
+std::shared_ptr<BarnDoors> barnDoorOpen = nullptr;
+std::shared_ptr<BarnDoors> barnDoorClose = nullptr;
+
+std::shared_ptr<CornersFly> cornersFlyOut = nullptr;
+std::shared_ptr<CornersFly> cornersFlyIn = nullptr;
+
 std::shared_ptr<Push> pushLeftToRight = nullptr;
 std::shared_ptr<Push> pushFromUpperLeft = nullptr;
 std::shared_ptr<Push> pushFromTop = nullptr;
@@ -64,6 +71,8 @@ std::shared_ptr<Recorder> reco = nullptr;
 constexpr int FRAMERATE = 30;
 double progress = 0;
 
+int gDirection = 1;
+
 
 
 void keyReleased(const KeyboardEvent& e)
@@ -76,6 +85,18 @@ void keyReleased(const KeyboardEvent& e)
 
 	case VK_SPACE:
 		//reco->toggleRecording();
+		break;
+
+	case VK_OEM_PLUS:
+	case VK_ADD:
+		gDirection = 1;
+		currentEffect->setDirection(gDirection);
+		break;
+
+	case VK_OEM_MINUS:
+	case VK_SUBTRACT:
+		gDirection = -1;
+		currentEffect->setDirection(gDirection);
 		break;
 
 		// Select from our known effects
@@ -108,6 +129,11 @@ void keyReleased(const KeyboardEvent& e)
 
 	case VK_F6:
 		currentEffect = cornersFlyOut;
+		currentEffect->start();
+		break;
+	
+	case '6':
+		currentEffect = cornersFlyIn;
 		currentEffect->start();
 		break;
 
@@ -161,6 +187,12 @@ void keyReleased(const KeyboardEvent& e)
 		currentEffect = rainBlocks;
 		currentEffect->start();
 		break;
+
+	case 'S':
+		currentEffect = spinner;
+		currentEffect->start();
+		break;
+
 	}
 
 
@@ -220,15 +252,21 @@ void onFrame()
 	reco->saveFrame();
 }
 
+std::vector<HWND> gWinHandles;
+
 void setup()
 {
 	setCanvasSize(displayWidth/2, displayHeight/2);
 	setFrameRate(FRAMERATE);
 
+	// Enumerate windows
+	WindowCaptures::getVisibleWindowHandles(gWinHandles);
+
 	// Setup screen captures
-	screenCapture = std::make_shared<ScreenSnapshot>(0, 0, displayWidth, displayHeight / 2);
+	screenCapture = ScreenSnapshot::createForDisplay(0, 0, displayWidth, displayHeight / 2);
 	screenCap1 = std::make_shared<SamplerWrapper>(screenCapture, RectD(0, 0, 0.5, 1.0));
 	screenCap2 = std::make_shared<SamplerWrapper>(screenCapture, RectD(0.50, 0, 0.5, 1.0));
+
 
 
 	blankEffect = std::make_shared<AnimationWindow>(1);
@@ -244,20 +282,28 @@ void setup()
 	verticalFingersIn = createVFingersIn(1, 64, screenCap1, screenCap2);
 
 	// Barn Doors
-	barnDoorOpen = std::make_shared<BarnDoorOpenEffect>(1, screenCap1, screenCap2);
-	barnDoorClose = std::make_shared<BarnDoorCloseEffect>(1, screenCap1, screenCap2);
+	barnDoorOpen = std::make_shared<BarnDoors>(1, screenCap1, screenCap2);
+	barnDoorClose = std::make_shared<BarnDoors>(1, screenCap1, screenCap2,-1);
 
 	// Flying pieces
-	cornersFlyOut = std::make_shared<CornersFlyOut>(1, screenCap1, screenCap2);
+	cornersFlyOut = std::make_shared<CornersFly>(1, screenCap1, screenCap2);
 	cornersFlyOut->setEasing(easing::circIn);
+	cornersFlyIn = std::make_shared<CornersFly>(1, screenCap1, screenCap2);
+	cornersFlyIn->setDirection(-1);
 
 	// Miscellaneous
 	//                        seconds, rows, columns, source 1,   source 2
-	rainBlocks = createRainBlocks(2,     4,     8,    screenCap1, screenCap2);
-	//rainBlocks->setEasing(easing::bounceOut);
+	rainBlocks = createRainBlocks(1.5,     8,     16,    screenCap1, screenCap2);
+	//rainBlocks->setDirection(-1);
 
-	wiper = createWiper(1, screenCap1, screenCap2, RectD(0, 0, 0, 1), RectD(0, 0, 1, 1));
+	// Wipers
+	// Left to right
+	// do a gray tint while wiping
+	auto lumaCap1 = SamplerWrapper::create(LumaWrapper::create(screenCap1));
+	wiper = createWiper(1.5, screenCap1, lumaCap1, RectD(0, 0, 0, 1), RectD(0, 0, 1, 1));
+	// wipe up from bottom left corner to top right
 	wiper2 = createWiper(1, screenCap1, screenCap2, RectD(0, 1, 0, 0), RectD(0, 0, 1, 1));
+	// Center outward
 	wiper3 = createWiper(1, screenCap1, screenCap2, RectD(0.5, 0.5, 0, 0), RectD(0, 0, 1, 1));
 
 
@@ -274,6 +320,8 @@ void setup()
 		screenCap1, RectD(0, 0, 1, 1), RectD(0, -1, 1, 1), RectD(0, 0, 1, 1));
 	pushFromTop->setEasing(easing::bounceOut);
 
+	// Geometry transformations
+	spinner = createSpinner(3, screenCap2, screenCap1, 0, maths::Radians(360.0));
 
 	currentEffect = fadeFromBlack;
 

@@ -1,7 +1,8 @@
 #pragma once
 
-// Reference: http://www.guyrutenberg.com/2007/11/19/c-goes-to-operator/
-// useful for while loops
+#include <cstdint>
+
+
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -15,4 +16,16 @@
 #define INLINE inline
 #endif
 
-#include <cstdint>
+// EXPORT allows us to declare a function as exported
+// this will make it possible to then lookup that 
+// function in the .dll using GetProcAddress
+// So, if that's needed, just put EXPORT at the front
+// of a declaration.
+#define APP_EXPORT		__declspec(dllexport)
+//#define APP_EXPORT
+
+#define APP_EXTERN  extern
+
+
+// Reference: http://www.guyrutenberg.com/2007/11/19/c-goes-to-operator/
+// useful for while loops

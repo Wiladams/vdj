@@ -95,7 +95,7 @@ static Joystick gJoystick2(JOYSTICKID2);
 void refreshScreen ()
 {
     if ((gAppSurface == nullptr)) {
-        printf("forceRedraw, NULL PTRs\n");
+        printf("refreshScreen, NULL PTRs\n");
         return;
     }
 

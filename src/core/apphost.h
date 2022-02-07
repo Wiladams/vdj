@@ -34,17 +34,7 @@
 #include <stdio.h>
 #include <string>
 
-
-// EXPORT allows us to declare a function as exported
-// this will make it possible to then lookup that 
-// function in the .dll using GetProcAddress
-// So, if that's needed, just put EXPORT at the front
-// of a declaration.
-#define APP_EXPORT		__declspec(dllexport)
-//#define APP_EXPORT
-
-#define APP_INLINE  static inline
-#define APP_EXTERN  extern
+#include "apidefs.h"
 
 
 #include "pubsub.h"
@@ -109,7 +99,6 @@ APP_EXPORT void onLoop();	// called each time through application main loop
 APP_EXPORT void showAppWindow();
 APP_EXPORT void halt();
 
-//EXPORT void forceRedraw(void* param, int64_t tickCount);
 APP_EXPORT void refreshScreen();
 
 APP_EXPORT void layered();

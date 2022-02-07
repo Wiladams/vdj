@@ -148,9 +148,9 @@
   <ItemGroup>
     <ClInclude Include="..\src\animator.h" />
     <ClInclude Include="..\src\blend2d.h" />
-    <ClInclude Include="..\src\coloring.h" />
     <ClInclude Include="..\src\core\apidefs.h" />
     <ClInclude Include="..\src\core\apphost.h" />
+    <ClInclude Include="..\src\core\binstream.h" />
     <ClInclude Include="..\src\core\bitbang.h" />
     <ClInclude Include="..\src\core\draw2d.h" />
     <ClInclude Include="..\src\core\maths.h" />
@@ -158,6 +158,8 @@
     <ClInclude Include="..\src\core\pixeltypes.h" />
     <ClInclude Include="..\src\core\sampledraw2d.h" />
     <ClInclude Include="..\src\core\sampler.h" />
+    <ClInclude Include="..\src\core\screensnapshot.h" />
+    <ClInclude Include="..\src\core\vec.h" />
     <ClInclude Include="..\src\easing.h" />
     <ClInclude Include="..\src\effect_barndoor.h" />
     <ClInclude Include="..\src\effect_corners.h" />
@@ -165,10 +167,11 @@
     <ClInclude Include="..\src\effect_fingers.h" />
     <ClInclude Include="..\src\effect_push.h" />
     <ClInclude Include="..\src\effect_rainblocks.h" />
+    <ClInclude Include="..\src\effect_spin.h" />
     <ClInclude Include="..\src\effect_wiper.h" />
     <ClInclude Include="..\src\geotypes.h" />
-    <ClInclude Include="..\src\interpolator.h" />
     <ClInclude Include="..\src\normalizedwindow.h" />
+    <ClInclude Include="..\src\windowcaptures.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -232,10 +232,10 @@ namespace maths {
     INLINE double Degrees(double x) { return x * 57.29577951308232; }
     
     // Input degrees, return radians
-    template <typename T>
-    INLINE T Radians(T x) { return x * 0.017453292519943295; }
+    //template <typename T>
+    //INLINE T Radians(T x) { return x * 0.017453292519943295; }
 
-    template<>
+    //template<>
     INLINE double Radians(double x) { return x * 0.017453292519943295; }
 
     

@@ -2,54 +2,8 @@
 
 #include "pixeltypes.h"
 
-
 #include <vector>
 #include <memory>
-
-//
-// SamplerFrame
-// Implement a sampler base class that has a frame
-// The coordinates are meant to be expressed in normalized
-// coordinate space, so they should range [0..1], but they 
-// don't have to be in that range at all.  The only
-// criteria is doubles are used, and getValue() typically takes
-// parameters in the [0..1] range
-//
-struct SamplerFrame : public ISample2D<PixelRGBA>
-{
-protected:
-
-public:
-	RectD fMovingFrame;
-
-	SamplerFrame()
-		:fMovingFrame(0, 0, 1, 1) {}
-
-	SamplerFrame(const RectD& frame)
-		: fMovingFrame(frame)
-	{
-		onFrameChanged();
-	}
-
-	virtual ~SamplerFrame() {}
-
-	RectD frame() const { return fMovingFrame; }
-	void setFrame(const RectD& frame)
-	{
-		fMovingFrame = frame;
-		onFrameChanged();
-	}
-
-	virtual void onFrameChanged() {}
-
-	virtual bool contains(double u, double v)
-	{
-		return fMovingFrame.contains(u, v);
-	}
-
-	virtual PixelRGBA getValue(double u, double v) { return PixelRGBA(0x0); }
-};
-
 
 // 
 // Trying to get the math right on Sub-samples
@@ -62,7 +16,7 @@ public:
 // it maps the range of [0..1] to span the wrapped
 // range.  This is good for sprite sheets for example.
 //
-struct SamplerWrapper : public SamplerFrame
+struct SamplerWrapper : public ISample2D<PixelRGBA> // public SamplerFrame
 {
 protected:
 	double uFactor = 1;
@@ -70,28 +24,31 @@ protected:
 
 public:
 	std::shared_ptr< ISample2D<PixelRGBA> > fBackground;	// The thing we're sub-sampling from
+	RectD fMovingFrame;
 	RectD fStickyBounds;
 
+public:
 	SamplerWrapper()
-		: SamplerFrame()
-		, fBackground(nullptr)
+		: fBackground(nullptr)
 		, fStickyBounds(RectD(0,0,1,1))
+		,fMovingFrame(RectD(0,0,1,1))
 	{
+		onFrameChanged();
 	}
 
 	SamplerWrapper(std::shared_ptr< ISample2D<PixelRGBA> > wrapped, const RectD &bounds)
-		:SamplerFrame(RectD(0,0,1,1))
-		,fBackground(wrapped)
+		:fBackground(wrapped)
 		, fStickyBounds(bounds)
+		, fMovingFrame(RectD(0, 0, 1, 1))
 	{
 		onFrameChanged();
 	}
 
 	SamplerWrapper(std::shared_ptr< ISample2D<PixelRGBA> > wrapped,
 		const RectD&bounds, const RectD&frame)
-		:SamplerFrame(frame)
-		,fBackground(wrapped)
+		:fBackground(wrapped)
 		,fStickyBounds(bounds)
+		,fMovingFrame(frame)
 	{
 		onFrameChanged();
 	}
@@ -105,10 +62,22 @@ public:
 		onFrameChanged();
 	}
 
-	void onFrameChanged() override
+	RectD frame() const { return fMovingFrame; }
+	void setFrame(const RectD& frame)
+	{
+		fMovingFrame = frame;
+		onFrameChanged();
+	}
+
+	virtual void onFrameChanged()
 	{
 		uFactor = ((fStickyBounds.w()) / (fMovingFrame.w()));
 		vFactor = ((fStickyBounds.h()) / (fMovingFrame.h()));
+	}
+
+	virtual bool contains(double u, double v)
+	{
+		return fMovingFrame.contains(u, v);
 	}
 
 	PixelRGBA getValue(double u, double v) override
@@ -123,6 +92,11 @@ public:
 
 		// return transparent if we're not wrapping anything
 		return PixelRGBA(0x0);
+	}
+
+	static std::shared_ptr< SamplerWrapper> create(std::shared_ptr< ISample2D<PixelRGBA> > wrapped)
+	{
+		return std::make_shared<SamplerWrapper>(wrapped, RectD(0, 0, 1, 1), RectD(0, 0, 1, 1));
 	}
 
 	static std::shared_ptr< SamplerWrapper> create(std::shared_ptr< ISample2D<PixelRGBA> > wrapped, const RectD& bounds)

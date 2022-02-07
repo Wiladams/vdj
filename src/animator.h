@@ -134,11 +134,15 @@ struct AnimationWindow : public SampledWindow
 	double fStartTime = 0;
 	double fEndTime = 0;
 	double fProgress = 0;	// Value from [0..1]
+	int fDirection = 1;
+
 	std::vector<std::shared_ptr<IAnimateField> > fAnimators;
 
 	AnimationWindow(double duration)
 		:fDuration(duration)
 	{}
+
+	void setDirection(int dir) { fDirection = dir; }
 
 	virtual void setDuration(double dur) { fDuration = dur; }
 	void setEasing(PFunc1Double ease) 
@@ -205,6 +209,9 @@ struct AnimationWindow : public SampledWindow
 			return;
 
 		auto u = maths::Map(fTimer.seconds(), fStartTime, fEndTime, 0.0, 1.0);
+		if (fDirection < 0)
+			u = 1.0 - u;
+
 		fProgress = maths::Clamp(u, 0.0, 1.0);
 
 		onProgress(fProgress);

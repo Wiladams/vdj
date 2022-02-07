@@ -4,6 +4,10 @@
 
 #define lerp255(bg, fg, a) ((uint32_t)div255((fg*a+bg*(255-a))))
 
+//
+// Cross fade, or dissolve, is a per pixel operation
+// essentially go from the source1 image to the source2
+// image with a mix of the two.
 class CrossFadeEffect : public AnimationWindow
 {
 	SourceSampler fSource1;

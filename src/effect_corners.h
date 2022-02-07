@@ -8,12 +8,12 @@
 // https://www.varsitytutors.com/hotmath/hotmath_help/topics/shortest-distance-between-a-point-and-a-circle
 //
 
-class CornersFlyOut : public AnimationWindow
+class CornersFly : public AnimationWindow
 {
 protected:
 
 public:
-	CornersFlyOut(double duration,
+	CornersFly(double duration,
 		SourceSampler s1,
 		SourceSampler s2)
 		: AnimationWindow(duration)
@@ -28,20 +28,20 @@ public:
 		RectD door3Bounds(0.0, 0.5, 0.5, 0.5);
 		RectD door4Bounds(0.5, 0.5, 0.5, 0.5);
 
-		auto fDoor1 = SamplerWrapper::create(s1, door1Bounds);
-		auto fDoor2 = SamplerWrapper::create(s1, door2Bounds);
-		auto fDoor3 = SamplerWrapper::create(s1, door3Bounds);
-		auto fDoor4 = SamplerWrapper::create(s1, door4Bounds);
+		auto door1 = SamplerWrapper::create(s1, door1Bounds);
+		auto door2 = SamplerWrapper::create(s1, door2Bounds);
+		auto door3 = SamplerWrapper::create(s1, door3Bounds);
+		auto door4 = SamplerWrapper::create(s1, door4Bounds);
 
-		addMotion(SamplerPositionAnimation::create(fDoor1, door1Bounds, RectD(-0.5, -0.5, 0.5, 0.5)));
-		addMotion(SamplerPositionAnimation::create(fDoor2, door2Bounds, RectD(1.0, -0.5, 0.5, 0.5)));
-		addMotion(SamplerPositionAnimation::create(fDoor3, door3Bounds, RectD(-0.5, 1.0, 0.5, 0.5)));
-		addMotion(SamplerPositionAnimation::create(fDoor4, door4Bounds, RectD(1.0, 1.0, 0.5, 0.5)));
+		addMotion(SamplerPositionAnimation::create(door1, door1Bounds, RectD(-0.5, -0.5, 0.5, 0.5)));
+		addMotion(SamplerPositionAnimation::create(door2, door2Bounds, RectD(1.0, -0.5, 0.5, 0.5)));
+		addMotion(SamplerPositionAnimation::create(door3, door3Bounds, RectD(-0.5, 1.0, 0.5, 0.5)));
+		addMotion(SamplerPositionAnimation::create(door4, door4Bounds, RectD(1.0, 1.0, 0.5, 0.5)));
 
-		addChild(fDoor1);
-		addChild(fDoor2);
-		addChild(fDoor3);
-		addChild(fDoor4);
+		addChild(door1);
+		addChild(door2);
+		addChild(door3);
+		addChild(door4);
 	}
 };
 
