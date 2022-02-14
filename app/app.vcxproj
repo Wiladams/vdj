@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -132,6 +132,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\src;..\src\core</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,15 +151,18 @@
     <ClInclude Include="..\src\blend2d.h" />
     <ClInclude Include="..\src\core\apidefs.h" />
     <ClInclude Include="..\src\core\apphost.h" />
-    <ClInclude Include="..\src\core\binstream.h" />
-    <ClInclude Include="..\src\core\bitbang.h" />
+    <ClInclude Include="..\src\core\binstream.hpp" />
+    <ClInclude Include="..\src\core\bitbang.hpp" />
     <ClInclude Include="..\src\core\draw2d.h" />
+    <ClInclude Include="..\src\core\geotypes.hpp" />
     <ClInclude Include="..\src\core\maths.h" />
     <ClInclude Include="..\src\core\pixelmap.h" />
     <ClInclude Include="..\src\core\pixeltypes.h" />
     <ClInclude Include="..\src\core\sampledraw2d.h" />
-    <ClInclude Include="..\src\core\sampler.h" />
+    <ClInclude Include="..\src\core\sampler.hpp" />
     <ClInclude Include="..\src\core\screensnapshot.h" />
+    <ClInclude Include="..\src\core\User32PixelMap.h" />
+    <ClInclude Include="..\src\core\vdjPoint.hpp" />
     <ClInclude Include="..\src\core\vec.h" />
     <ClInclude Include="..\src\easing.h" />
     <ClInclude Include="..\src\effect_barndoor.h" />
@@ -169,7 +173,6 @@
     <ClInclude Include="..\src\effect_rainblocks.h" />
     <ClInclude Include="..\src\effect_spin.h" />
     <ClInclude Include="..\src\effect_wiper.h" />
-    <ClInclude Include="..\src\geotypes.h" />
     <ClInclude Include="..\src\normalizedwindow.h" />
     <ClInclude Include="..\src\windowcaptures.h" />
   </ItemGroup>

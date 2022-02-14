@@ -65,13 +65,10 @@
     <ClInclude Include="..\src\core\pixeltypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\geotypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\core\sampledraw2d.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\sampler.h">
+    <ClInclude Include="..\src\core\sampler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\draw2d.h">
@@ -86,7 +83,7 @@
     <ClInclude Include="..\src\core\apidefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\bitbang.h">
+    <ClInclude Include="..\src\core\bitbang.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\screensnapshot.h">
@@ -98,10 +95,19 @@
     <ClInclude Include="..\src\core\vec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\binstream.h">
+    <ClInclude Include="..\src\core\binstream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\windowcaptures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\geotypes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\User32PixelMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\vdjPoint.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

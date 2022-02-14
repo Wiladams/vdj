@@ -10,13 +10,13 @@
 // Do a cover zipper coming from left and right
 // Specify how many fingers
 //
-INLINE std::shared_ptr<AnimationWindow> createHFingersIn(double duration, int howMany,
-	SourceSampler s1,
-	SourceSampler s2)
+INLINE std::shared_ptr<vdj::AnimationWindow> createHFingersIn(double duration, int howMany,
+	vdj::SourceSampler s1,
+	vdj::SourceSampler s2)
 {
-	auto res = std::make_shared<AnimationWindow>(duration);
+	auto res = std::make_shared<vdj::AnimationWindow>(duration);
 
-	auto backing = SamplerWrapper::create(s1, RectD(0, 0, 1, 1));
+	auto backing = vdj::SamplerWrapper::create(s1, vdj::RectD(0, 0, 1, 1));
 
 	// Add the background that is to be covered
 	res->addChild(backing);
@@ -28,17 +28,17 @@ INLINE std::shared_ptr<AnimationWindow> createHFingersIn(double duration, int ho
 
 	for (int i = 0; i < howMany; i++)
 	{
-		RectD beginPos;
-		RectD endPos(0, i * vSize, 1, vSize);
+		vdj::RectD beginPos;
+		vdj::RectD endPos(0, i * vSize, 1, vSize);
 
 		if (fromTheLeft) {
-			beginPos = RectD(-1.0, i * vSize, 1.0, vSize);
+			beginPos = vdj::RectD(-1.0, i * vSize, 1.0, vSize);
 		}
 		else {
-			beginPos = RectD(1.0, i * vSize, 1.0, vSize);
+			beginPos = vdj::RectD(1.0, i * vSize, 1.0, vSize);
 		}
-		auto finger = SamplerWrapper::create(s2, endPos);
-		auto motion = SamplerPositionAnimation::create(finger, beginPos, endPos);
+		auto finger = vdj::SamplerWrapper::create(s2, endPos);
+		auto motion = vdj::SamplerPositionAnimation::create(finger, beginPos, endPos);
 
 		res->addChild(finger);
 		res->addMotion(motion);
@@ -53,13 +53,13 @@ INLINE std::shared_ptr<AnimationWindow> createHFingersIn(double duration, int ho
 // Vertical Fingers
 // do a cover zipper from top and bottom
 //
-INLINE std::shared_ptr<AnimationWindow> createVFingersIn(double duration, int howMany,
-	SourceSampler s1,
-	SourceSampler s2)
+INLINE std::shared_ptr<vdj::AnimationWindow> createVFingersIn(double duration, int howMany,
+	vdj::SourceSampler s1,
+	vdj::SourceSampler s2)
 {
-	auto res = std::make_shared<AnimationWindow>(duration);
+	auto res = std::make_shared<vdj::AnimationWindow>(duration);
 
-	auto backing = SamplerWrapper::create(s1, RectD(0, 0, 1, 1));
+	auto backing = vdj::SamplerWrapper::create(s1, vdj::RectD(0, 0, 1, 1));
 
 	// Add the background that is to be covered
 	res->addChild(backing);
@@ -71,17 +71,17 @@ INLINE std::shared_ptr<AnimationWindow> createVFingersIn(double duration, int ho
 
 	for (int i = 0; i < howMany; i++)
 	{
-		RectD beginPos;
-		RectD endPos(i * uSize, 0, uSize, 1);
+		vdj::RectD beginPos;
+		vdj::RectD endPos(i * uSize, 0, uSize, 1);
 
 		if (fromThisSide) {
-			beginPos = RectD(i * uSize, -1.0, uSize, 1.0);
+			beginPos = vdj::RectD(i * uSize, -1.0, uSize, 1.0);
 		}
 		else {
-			beginPos = RectD(i * uSize, 1.0, uSize, 1.0);
+			beginPos = vdj::RectD(i * uSize, 1.0, uSize, 1.0);
 		}
-		auto finger = SamplerWrapper::create(s2, endPos);
-		auto motion = SamplerPositionAnimation::create(finger, beginPos, endPos);
+		auto finger = vdj::SamplerWrapper::create(s2, endPos);
+		auto motion = vdj::SamplerPositionAnimation::create(finger, beginPos, endPos);
 
 		res->addChild(finger);
 		res->addMotion(motion);

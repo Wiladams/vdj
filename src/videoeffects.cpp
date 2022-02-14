@@ -26,28 +26,28 @@ StopWatch appClock;
 
 // Source Samplers
 std::shared_ptr<ScreenSnapshot> screenCapture = nullptr;
-std::shared_ptr< SamplerWrapper> screenCap1 = nullptr;
-std::shared_ptr< SamplerWrapper> screenCap2 = nullptr;
+std::shared_ptr< vdj::SamplerWrapper> screenCap1 = nullptr;
+std::shared_ptr< vdj::SamplerWrapper> screenCap2 = nullptr;
 
 
 // Wrapping Samplers
 //std::shared_ptr<CheckerSampler> checkSamp = nullptr;
-std::shared_ptr<LumaWrapper> graySamp = nullptr;
-std::shared_ptr<AnimationWindow> spinner = nullptr;
+std::shared_ptr<vdj::LumaWrapper> graySamp = nullptr;
+std::shared_ptr<vdj::AnimationWindow> spinner = nullptr;
 
 //std::shared_ptr<EffectCheckers> checkersEffect = nullptr;
 
 // Pixel Effects
-std::shared_ptr<AnimationWindow> blankEffect = nullptr;
+std::shared_ptr<vdj::AnimationWindow> blankEffect = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeFromBlack = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeToBlack = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeScreen1ToScreen2 = nullptr;
 std::shared_ptr<CrossFadeEffect> fadeScreen2ToScreen1 = nullptr;
 
 // Multi-Block effects
-std::shared_ptr<AnimationWindow> horizontalFingersIn = nullptr;
-std::shared_ptr<AnimationWindow> verticalFingersIn = nullptr;
-std::shared_ptr<AnimationWindow> rainBlocks = nullptr;
+std::shared_ptr<vdj::AnimationWindow> horizontalFingersIn = nullptr;
+std::shared_ptr<vdj::AnimationWindow> verticalFingersIn = nullptr;
+std::shared_ptr<vdj::AnimationWindow> rainBlocks = nullptr;
 
 // Push and Slide Effects
 std::shared_ptr<BarnDoors> barnDoorOpen = nullptr;
@@ -59,13 +59,13 @@ std::shared_ptr<CornersFly> cornersFlyIn = nullptr;
 std::shared_ptr<Push> pushLeftToRight = nullptr;
 std::shared_ptr<Push> pushFromUpperLeft = nullptr;
 std::shared_ptr<Push> pushFromTop = nullptr;
-std::shared_ptr<AnimationWindow> wiper = nullptr;
-std::shared_ptr<AnimationWindow> wiper2 = nullptr;
-std::shared_ptr<AnimationWindow> wiper3 = nullptr;
+std::shared_ptr<vdj::AnimationWindow> wiper = nullptr;
+std::shared_ptr<vdj::AnimationWindow> wiper2 = nullptr;
+std::shared_ptr<vdj::AnimationWindow> wiper3 = nullptr;
 
-std::shared_ptr<AnimationWindow> currentEffect = nullptr;
+std::shared_ptr<vdj::AnimationWindow> currentEffect = nullptr;
 
-std::shared_ptr<Recorder> reco = nullptr;
+std::shared_ptr<vdj::Recorder> reco = nullptr;
 
 
 constexpr int FRAMERATE = 30;
@@ -238,7 +238,7 @@ void onFrame()
 
 
 	// start with blank slate
-	background(PixelRGBA(0));
+	background(vdj::PixelRGBA(0));
 
 	// Either call update(), or setProgress()
 	// update will be based on the clock within the effect
@@ -246,8 +246,8 @@ void onFrame()
 	currentEffect->update();
 
 	
-	sampleRectangle(*gAppSurface, PixelRect(0, 0, canvasWidth, canvasHeight), *currentEffect);
-
+	//sampleRectangle(*gAppSurface, PixelRect(0, 0, canvasWidth, canvasHeight), *currentEffect);
+	sampleRect(*gAppSurface, vdj::PixelRect(0, 0, canvasWidth, canvasHeight), vdj::RectD(0, 0, 1, 1), *currentEffect);
 
 	reco->saveFrame();
 }
@@ -264,12 +264,12 @@ void setup()
 
 	// Setup screen captures
 	screenCapture = ScreenSnapshot::createForDisplay(0, 0, displayWidth, displayHeight / 2);
-	screenCap1 = std::make_shared<SamplerWrapper>(screenCapture, RectD(0, 0, 0.5, 1.0));
-	screenCap2 = std::make_shared<SamplerWrapper>(screenCapture, RectD(0.50, 0, 0.5, 1.0));
+	screenCap1 = std::make_shared<vdj::SamplerWrapper>(screenCapture, vdj::RectD(0, 0, 0.5, 1.0));
+	screenCap2 = std::make_shared<vdj::SamplerWrapper>(screenCapture, vdj::RectD(0.50, 0, 0.5, 1.0));
 
 
 
-	blankEffect = std::make_shared<AnimationWindow>(1);
+	blankEffect = std::make_shared<vdj::AnimationWindow>(1);
 	
 	// dissolve
 	fadeFromBlack = std::make_shared<CrossFadeEffect>(2, blankEffect, screenCap1);
@@ -299,12 +299,12 @@ void setup()
 	// Wipers
 	// Left to right
 	// do a gray tint while wiping
-	auto lumaCap1 = SamplerWrapper::create(LumaWrapper::create(screenCap1));
-	wiper = createWiper(1.5, screenCap1, lumaCap1, RectD(0, 0, 0, 1), RectD(0, 0, 1, 1));
+	auto lumaCap1 = vdj::SamplerWrapper::create(vdj::LumaWrapper::create(screenCap1));
+	wiper = createWiper(1.5, screenCap1, lumaCap1, vdj::RectD(0, 0, 0, 1), vdj::RectD(0, 0, 1, 1));
 	// wipe up from bottom left corner to top right
-	wiper2 = createWiper(1, screenCap1, screenCap2, RectD(0, 1, 0, 0), RectD(0, 0, 1, 1));
+	wiper2 = createWiper(1, screenCap1, screenCap2, vdj::RectD(0, 1, 0, 0), vdj::RectD(0, 0, 1, 1));
 	// Center outward
-	wiper3 = createWiper(1, screenCap1, screenCap2, RectD(0.5, 0.5, 0, 0), RectD(0, 0, 1, 1));
+	wiper3 = createWiper(1, screenCap1, screenCap2, vdj::RectD(0.5, 0.5, 0, 0), vdj::RectD(0, 0, 1, 1));
 
 
 	// Pushes
@@ -312,12 +312,12 @@ void setup()
 	pushLeftToRight->setEasing(easing::backIn);
 
 	pushFromUpperLeft = std::make_shared<Push>(1,
-		screenCap2, RectD(0,0,1,1), RectD(0,0,1,1), RectD(1,1,1,1),
-		screenCap1, RectD(0,0,1,1), RectD(-1,-1,1,1), RectD(0,0,1,1));
+		screenCap2, vdj::RectD(0,0,1,1), vdj::RectD(0,0,1,1), vdj::RectD(1,1,1,1),
+		screenCap1, vdj::RectD(0,0,1,1), vdj::RectD(-1,-1,1,1), vdj::RectD(0,0,1,1));
 	
 	pushFromTop = std::make_shared<Push>(1.5,
-		screenCap2, RectD(0, 0, 1, 1), RectD(0, 0, 1, 1), RectD(0, 1, 1,1),
-		screenCap1, RectD(0, 0, 1, 1), RectD(0, -1, 1, 1), RectD(0, 0, 1, 1));
+		screenCap2, vdj::RectD(0, 0, 1, 1), vdj::RectD(0, 0, 1, 1), vdj::RectD(0, 1, 1,1),
+		screenCap1, vdj::RectD(0, 0, 1, 1), vdj::RectD(0, -1, 1, 1), vdj::RectD(0, 0, 1, 1));
 	pushFromTop->setEasing(easing::bounceOut);
 
 	// Geometry transformations
@@ -326,6 +326,6 @@ void setup()
 	currentEffect = fadeFromBlack;
 
 	// setup the recorder
-	reco = std::make_shared<Recorder>(&(*gAppSurface), "frame-", 0);
+	reco = std::make_shared<vdj::Recorder>(&(*gAppSurface), "frame-", 0);
 
 }

@@ -20,7 +20,7 @@
 
 
 #include "apidefs.h"
-#include "bitbang.h"
+#include "bitbang.hpp"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -149,6 +149,11 @@ namespace maths {
             return std::floor(val - 0.5);
         
         return 0;
+    }
+
+    INLINE int Round(double value)
+    {
+        return (int)(value + (value >= 0 ? 0.5 : -0.5));
     }
 
     // isNaN only applies to floating point (float, double)

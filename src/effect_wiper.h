@@ -1,15 +1,16 @@
 #pragma once
 
 #include "animator.h"
+
 #include <memory>
 
 
 
+//using namespace vdj;
 
-
-struct WipeAnimation : public SamplerPositionAnimation
+struct WipeAnimation : public vdj::SamplerPositionAnimation
 {
-	WipeAnimation(SharedSamplerWrapper sampler, const RectD &beginPos, const RectD &endPos)
+	WipeAnimation(SharedSamplerWrapper sampler, const vdj::RectD &beginPos, const vdj::RectD &endPos)
 		:SamplerPositionAnimation(sampler, beginPos, endPos)
 	{}
 
@@ -25,24 +26,24 @@ struct WipeAnimation : public SamplerPositionAnimation
 		fSampler->setBounds(newValue);
 	}
 
-	static std::shared_ptr< WipeAnimation> create(SharedSamplerWrapper sampler, const RectD& beginPos, const RectD& endPos)
+	static std::shared_ptr< WipeAnimation> create(SharedSamplerWrapper sampler, const vdj::RectD& beginPos, const vdj::RectD& endPos)
 	{
 		return std::make_shared< WipeAnimation>(sampler, beginPos, endPos);
 	}
 };
 
-INLINE std::shared_ptr<AnimationWindow> createWiper(double duration,
-	SourceSampler s1,
-	SourceSampler s2,
-	const RectD &beginPos, const RectD &endPos)
+INLINE std::shared_ptr<vdj::AnimationWindow> createWiper(double duration,
+	vdj::SourceSampler s1,
+	vdj::SourceSampler s2,
+	const vdj::RectD &beginPos, const vdj::RectD &endPos)
 {
 	// Form the backing window
-	auto res = std::make_shared<AnimationWindow>(duration);
-	auto backing = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
+	auto res = std::make_shared<vdj::AnimationWindow>(duration);
+	auto backing = std::make_shared<vdj::SamplerWrapper>(s1, vdj::RectD(0, 0, 1, 1));
 	res->addChild(backing);
 
 	// Create the animator
-	auto wiper = std::make_shared<SamplerWrapper>(s2, RectD(0,0,1,1));
+	auto wiper = std::make_shared<vdj::SamplerWrapper>(s2, vdj::RectD(0,0,1,1));
 	res->addChild(wiper);
 
 	// Create the animator

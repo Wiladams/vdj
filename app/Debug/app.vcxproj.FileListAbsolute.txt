@@ -1,2 +1,3 @@
 D:\repos\vdj\app\Debug\app.exe
 D:\repos\vdj\app\Debug\app.pdb
+C:\repos\vdj\app\Debug\app.exe

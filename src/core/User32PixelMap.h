@@ -11,43 +11,32 @@
     to interact with other User32 and GDI interfaces.
 */
 
-#include <windows.h>
-#include <cstdio>
-#include <intrin.h>
 
-#include "bitbang.h"
-#include "maths.h"
+
 #include "pixelmap.h"
 
-// Use this intrinsic for fast memory copies
-#pragma intrinsic(__stosd)
+#include <windows.h>
+#include <cstdio>
 
-
-class User32PixelMap : public PixelMap
+class User32PixelMap : public vdj::PixelView
 {
     // for interacting with win32
     BITMAPINFO fBMInfo{0};
     HBITMAP fDIBHandle = nullptr;
     HGDIOBJ fOriginDIBHandle = nullptr;
     HDC     fBitmapDC = nullptr;
-    void * fData = nullptr;       // A pointer to the data
+
     size_t fDataSize=0;       // How much data is allocated
-    size_t fBytesPerRow = 0;        // Row stride
 
     // A couple of constants
     static const int bitsPerPixel = 32;
     static const int alignment = 4;
 
 public:
-    User32PixelMap()
-    {
-    }
 
     User32PixelMap(const long awidth, const long aheight)
-        : PixelMap(0,0,awidth,aheight)
+        : PixelView(awidth,aheight,awidth*4, PixelView::Format::Bgra32)
     {
-        fDataSize = 0;
-
         init(awidth, aheight);
     }
 
@@ -57,23 +46,20 @@ public:
         // unload the dib section
         //::SelectObject(fBitmapDC, fOriginDIBHandle);
 
-
         // and destroy it
         ::DeleteObject(fDIBHandle);
     }
 
     bool init(int awidth, int aheight)
     {
-        fFrame = { 0,0,awidth,aheight };
-
-        fBytesPerRow = winme::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
+        fStride = vdj::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
 
         fBMInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         fBMInfo.bmiHeader.biWidth = awidth;
         fBMInfo.bmiHeader.biHeight = -(LONG)aheight;	// top-down DIB Section
         fBMInfo.bmiHeader.biPlanes = 1;
         fBMInfo.bmiHeader.biBitCount = bitsPerPixel;
-        fBMInfo.bmiHeader.biSizeImage = fBytesPerRow * aheight;
+        fBMInfo.bmiHeader.biSizeImage = fStride * aheight;
         fBMInfo.bmiHeader.biClrImportant = 0;
         fBMInfo.bmiHeader.biClrUsed = 0;
         fBMInfo.bmiHeader.biCompression = BI_RGB;
@@ -82,7 +68,7 @@ public:
         // We'll create a DIBSection so we have an actual backing
         // storage for the context to draw into
         // BUGBUG - check for nullptr and fail if found
-        fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, &fData, nullptr, 0);
+        fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, (void **) & fData, nullptr, 0);
 
 
         // Create a GDI Device Context
@@ -107,63 +93,6 @@ public:
     }
 
     INLINE BITMAPINFO getBitmapInfo() { return fBMInfo; }
-    INLINE HDC getDC() { return fBitmapDC; }
-    INLINE PixelRGBA* getData() { return (PixelRGBA*)fData; }
-    INLINE PixelRGBA* getPixelPointer(const int x, const int y) {return &((PixelRGBA*)fData)[(y * width()) + x]; }
-    INLINE size_t bytesPerRow() const { return fBytesPerRow; }
-
-    // Retrieve a single pixel
-    // This one does no bounds checking, so the behavior is undefined
-    // if the coordinates are beyond the boundary
-    INLINE PixelRGBA getPixel(const int x, const int y) const
-    {
-        // Get data from BLContext
-        size_t offset = (size_t)(y * width()) + (size_t)x;
-        return ((PixelRGBA*)fData)[offset];
-    }
-
-
-    // Set a single pixel value
-    // Assume range checking has already occured
-    // Perform SRCCOPY operation on a pixel
-    INLINE void copyPixel(const int x, const int y, const PixelRGBA &c) override
-    {
-        size_t offset = (size_t)(y * width()) + (size_t)x;
-        ((PixelRGBA*)fData)[offset] = c;
-    }
-
-    // Perform SRCOVER operation on a pixel
-    INLINE void blendPixel(const int x, const int y, const PixelRGBA &c) override
-    {
-        size_t offset = (size_t)(y * width()) + (size_t)x;
-        ((PixelRGBA*)fData)[offset] = blend_pixel(((PixelRGBA*)fData)[offset],c);
-    }
-
-    // set consecutive pixels in a row 
-    // Assume the range has already been clipped
-    INLINE void setPixels(const int x, const int y, const int w, const PixelRGBA src)
-    {
-        // do line clipping
-        // copy actual pixel data
-        uint32_t* pixelPtr = (uint32_t*)getPixelPointer(x, y);
-        __stosd((unsigned long*)pixelPtr, src.value, w);
-    }
-
-    // Set every pixel to a specified value
-    // we can use this fast intrinsic to fill
-    // the whole area
-    INLINE void setAllPixels(const PixelRGBA &c)
-    {
-        size_t nPixels = width() * height();
-        __stosd((unsigned long*)fData, c.value, nPixels);
-    }
-
-    /*
-    INLINE void setAllPixels(const uint32_t value)
-    {
-        size_t nPixels = width() * height();
-        __stosd((unsigned long*)fData, value, nPixels);
-    }
-    */
+    INLINE HDC getDC() { return fBitmapDC; }                // Memory DC we can use for GDI
 
  };

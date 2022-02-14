@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pixeltypes.h"
+#include "normalizedwindow.h"
 
 //
 // A SpinWrapper does a rotation around the center
@@ -8,13 +9,15 @@
 // To generalize this, a transform should be a part 
 // of the SamplerWrapper
 // translation, scale, rotate should be core
-struct SpinWrapper : public SamplerWrapper
+struct SpinWrapper : public vdj::SamplerWrapper
 {
     double fCurrentAngle;
+    double fPivotU=0.5;
+    double fPivotV=0.5;
 
 public:
-    SpinWrapper(SourceSampler wrapped, double rads)
-        : SamplerWrapper(wrapped, RectD(0,0,1,1))
+    SpinWrapper(vdj::SourceSampler wrapped, double rads)
+        : SamplerWrapper(wrapped, vdj::RectD(0,0,1,1))
         ,fCurrentAngle(rads)
     {}
 
@@ -23,33 +26,41 @@ public:
         fCurrentAngle = rads;
     }
 
-    PixelRGBA getValue(double u, double v) override
+    vdj::PixelRGBA getValue(double u, double v) override
     {
         auto s = sin(fCurrentAngle);
         auto c = cos(fCurrentAngle);
 
-        u -= 0.5;
-        v -= 0.5;
+        u -= fPivotU;
+        v -= fPivotV;
 
         double nx = ((u * c) - (v * s));
         double ny = ((u * s) + (v * c));
 
-        auto u1 = maths::Clamp(nx + 0.5, 0,1.0);
-        auto v1 = maths::Clamp(ny + 0.5, 0, 1.0);
+        auto u1 = maths::Clamp(nx + fPivotU, 0,1.0);
+        auto v1 = maths::Clamp(ny + fPivotV, 0, 1.0);
+
+        // If we end up out of frame
+        // return transparent
+        if ((u1<0) || (u1>1.0))
+            return vdj::PixelRGBA(0x0);
+
+        if ((v1<0) || (v1>1.0))
+            return vdj::PixelRGBA(0x0);
 
         // get value from our wrapped sampler
-        PixelRGBA co = fBackground->getValue(u1, v1);
+        vdj::PixelRGBA co = fBackground->getValue(u1, v1);
 
         return co;
     }
 
-    static std::shared_ptr< SpinWrapper> create(SourceSampler wrapped, double rads = 0.0)
+    static std::shared_ptr< SpinWrapper> create(vdj::SourceSampler wrapped, double rads = 0.0)
     {
         return std::make_shared<SpinWrapper>(wrapped, rads);
     }
 };
 
-struct SpinAnimation : public IAnimateField
+struct SpinAnimation : public vdj::IAnimateField
 {
     double beginAngle;
     double endAngle;
@@ -75,14 +86,14 @@ struct SpinAnimation : public IAnimateField
 };
 
 
-INLINE std::shared_ptr<AnimationWindow> createSpinner(double duration,
-    SourceSampler s1,
-    SourceSampler s2,
+INLINE std::shared_ptr<vdj::AnimationWindow> createSpinner(double duration,
+    vdj::SourceSampler s1,
+    vdj::SourceSampler s2,
     const double& beginPos=0, const double& endPos=maths::Radians(360.0))
 {
     // Form the backing window
-    auto res = std::make_shared<AnimationWindow>(duration);
-    auto backing = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
+    auto res = std::make_shared<vdj::AnimationWindow>(duration);
+    auto backing = std::make_shared<vdj::SamplerWrapper>(s1, vdj::RectD(0, 0, 1, 1));
     res->addChild(backing);
 
     // Create the animator

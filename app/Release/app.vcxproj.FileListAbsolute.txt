@@ -1,1 +1,2 @@
 D:\repos\vdj\app\Release\app.exe
+C:\repos\vdj\app\Release\app.exe

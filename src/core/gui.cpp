@@ -1,7 +1,7 @@
 #include "gui.h"
 #include "stopwatch.h"
 
-
+//using namespace vdj;
 
 static bool gIsFullscreen = false;
 
@@ -27,11 +27,8 @@ double fNextMillis = 0;
 uint64_t fDroppedFrames = 0;
 uint64_t frameCount;
 
-//int width;
-//int height;
 
-
-PixelRGBA* pixels = nullptr;
+vdj::PixelRGBA* pixels = nullptr;
 
 // Keyboard Globals
 int keyCode=0;
@@ -155,7 +152,7 @@ bool isFullscreen() noexcept
     return gIsFullscreen;
 }
 
-void background(const PixelRGBA &c) noexcept
+void background(const vdj::PixelRGBA &c) noexcept
 {
     gAppSurface->setAllPixels(c);
 }
@@ -246,7 +243,7 @@ void onLoad()
 
     // Start with a default background before setup
     // does something.
-    background(PixelRGBA(0xffffffff));
+    background(vdj::PixelRGBA(0xffffffff));
 
     // Call a setup routine if the user specified one
     if (gSetupHandler != nullptr) {

@@ -20,7 +20,7 @@
 //
 
 #include "User32PixelMap.h"
-#include "sampler.h"
+#include "sampler.hpp"
 
 class ScreenSnapshot : public User32PixelMap
 {

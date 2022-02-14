@@ -3,14 +3,14 @@
 #include "animator.h"
 #include <memory>
 
-INLINE std::shared_ptr<AnimationWindow> createRainBlocks(double duration,
+INLINE std::shared_ptr<vdj::AnimationWindow> createRainBlocks(double duration,
 	int maxRows, int maxColumns,
-	SourceSampler s1,
-	SourceSampler s2)
+	vdj::SourceSampler s1,
+	vdj::SourceSampler s2)
 {
-	auto res = std::make_shared<AnimationWindow>(duration);
+	auto res = std::make_shared<vdj::AnimationWindow>(duration);
 
-	auto backing = std::make_shared<SamplerWrapper>(s1, RectD(0, 0, 1, 1));
+	auto backing = std::make_shared<vdj::SamplerWrapper>(s1, vdj::RectD(0, 0, 1, 1));
 
 
 	// Add the background that is to be covered
@@ -31,13 +31,13 @@ INLINE std::shared_ptr<AnimationWindow> createRainBlocks(double duration,
 		while  (row-->0) 
 		{
 			double vOffset = row * vSize;
-			RectD endPos(uOffset, vOffset, uSize, vSize);
-			RectD beginPos(uOffset, -vSize, uSize, vSize-0.01);
+			vdj::RectD endPos(uOffset, vOffset, uSize, vSize);
+			vdj::RectD beginPos(uOffset, -vSize, uSize, vSize-0.01);
 
-			auto block = std::make_shared<SamplerWrapper>(s2, endPos);
+			auto block = std::make_shared<vdj::SamplerWrapper>(s2, endPos);
 			block->setFrame(beginPos);
 
-			auto motion = SamplerPositionAnimation::create(block, beginPos, endPos);
+			auto motion = vdj::SamplerPositionAnimation::create(block, beginPos, endPos);
 
 			double endTime = maths::random_double(0.25, 1.0);
 			double duration = 0.25;

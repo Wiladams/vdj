@@ -12,75 +12,78 @@
 
 #include <string>
 
-class Recorder
+namespace vdj
 {
-    PPMBinary fCodec;
-    PixelMap * fSurface;
-
-    std::string fBasename;
-
-    bool fIsRecording;
-    int fCurrentFrame;
-    int fMaxFrames;
-
-    Recorder() = delete;    // Don't want default constructor
-
-public:
-    Recorder(PixelMap* surf, const char* basename = "frame", int maxFrames = 0)
-        : fSurface(surf)
-        , fBasename(basename)
-        , fIsRecording(false)
-        , fMaxFrames(maxFrames)
-        , fCurrentFrame(0)
+    class Recorder
     {
-    }
+        PPMBinary fCodec;
+        PixelView* fSurface;
 
+        std::string fBasename;
 
-    void saveFrame()
-    {
-        if (!fIsRecording)
-            return;
+        bool fIsRecording;
+        int fCurrentFrame;
+        int fMaxFrames;
 
-        if (fMaxFrames > 0) {
-            if (fCurrentFrame >= fMaxFrames) {
-                return;   // reached maximum frames, maybe stop timer
-            }
+        Recorder() = delete;    // Don't want default constructor
+
+    public:
+        Recorder(PixelView* surf, const char* basename = "frame", int maxFrames = 0)
+            : fSurface(surf)
+            , fBasename(basename)
+            , fIsRecording(false)
+            , fMaxFrames(maxFrames)
+            , fCurrentFrame(0)
+        {
         }
 
-        char frameName[256];
-        sprintf_s(frameName, 255, "%s%06d.ppm", fBasename.c_str(), fCurrentFrame);
-        fCodec.write(frameName, *fSurface);
 
-        fCurrentFrame = fCurrentFrame + 1;
-    }
+        void saveFrame()
+        {
+            if (!fIsRecording)
+                return;
 
-    void toggleRecording()
-    {
-        if (fIsRecording)
-            pause();
-        else
-            record();
-    }
-    bool record()
-    {
-        if (fIsRecording)
-            return false;
+            if (fMaxFrames > 0) {
+                if (fCurrentFrame >= fMaxFrames) {
+                    return;   // reached maximum frames, maybe stop timer
+                }
+            }
 
-        fIsRecording = true;
+            char frameName[256];
+            sprintf_s(frameName, 255, "%s%06d.ppm", fBasename.c_str(), fCurrentFrame);
+            fCodec.write(frameName, *fSurface);
 
-        return true;
-    }
+            fCurrentFrame = fCurrentFrame + 1;
+        }
 
-    void pause()
-    {
-        fIsRecording = false;
-    }
+        void toggleRecording()
+        {
+            if (fIsRecording)
+                pause();
+            else
+                record();
+        }
+        bool record()
+        {
+            if (fIsRecording)
+                return false;
 
-    void stop()
-    {
-        fCurrentFrame = 0;
-        fIsRecording = false;
-    }
+            fIsRecording = true;
 
-};
+            return true;
+        }
 
+        void pause()
+        {
+            fIsRecording = false;
+        }
+
+        void stop()
+        {
+            fCurrentFrame = 0;
+            fIsRecording = false;
+        }
+
+    };
+}
+// namespace vdj

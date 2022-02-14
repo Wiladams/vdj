@@ -16,6 +16,8 @@
 
 #pragma comment (lib, "Synchronization.lib")
 
+//using namespace vdj;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,7 +26,7 @@ extern "C" {
 	APP_EXPORT void onFrame();
 
 	APP_EXPORT void fullscreen() noexcept;
-	APP_EXPORT void background(const PixelRGBA &c) noexcept;
+	APP_EXPORT void background(const vdj::PixelRGBA &c) noexcept;
 
 	// keyboard event processing
 	typedef void (*KeyEventHandler)(const KeyboardEvent& e);
@@ -60,7 +62,7 @@ extern "C" {
 	APP_EXPORT extern uint64_t frameCount;
 	APP_EXPORT extern uint64_t droppedFrames;
 
-	APP_EXPORT extern PixelRGBA* pixels;
+	APP_EXPORT extern vdj::PixelRGBA* pixels;
 
 	// Keyboard Globals
 	APP_EXPORT extern int keyCode;
