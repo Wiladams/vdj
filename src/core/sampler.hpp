@@ -1,11 +1,65 @@
 #pragma once
 
-#include "pixeltypes.h"
-
+#include "pixeltypes.hpp"
 
 #include <array>
 
 namespace vdj {
+    // The ISample interface is meant to support a generic interface
+// for generating color values based on parameters.
+// Doing this makes it easy to create color values for different
+// rendering situations, without limiting ourselves to bitmaps.
+//
+// You can create a sample to return a certain type using the 
+// teamplate class Sample<T>.
+//
+// struct SolidColorSample2D : ISample2D<PixelRGBA>
+//
+
+// A 1 dimensional sampler
+    template <typename T>
+    struct ISample1D
+    {
+        virtual T getValue(double u) = 0;
+        T operator()(double u)
+        {
+            return getValue(u);
+        }
+    };
+
+    // A 2 dimentional sampler
+    template <typename T>
+    struct ISample2D
+    {
+        virtual T getValue(double u, double v) = 0;
+        T operator()(double u, double v)
+        {
+            return getValue(u, v);
+        }
+    };
+
+    // A 3 dimensional sampler
+    template <typename T>
+    struct ISample3D
+    {
+        virtual T getValue(double u, double v, double w) = 0;
+        T operator()(double u, double v, double w)
+        {
+            return getValue(u, v, w);
+        }
+    };
+
+    template <typename T>
+    struct ISampleRGBA :
+        public ISample1D<T>,
+        public ISample2D<T>,
+        public ISample3D<T>
+    {
+
+    };
+
+    using SourceSampler = std::shared_ptr<ISample2D<PixelRGBA> >;
+
     //
     // Some simple samplers
     // Return solid color
@@ -41,6 +95,8 @@ namespace vdj {
             :fWrapped(wrapped)
         {}
 
+        virtual ~LumaWrapper() {}
+
         PixelRGBA getValue(double u, double v) override
         {
             // get value from our wrapped sampler
@@ -73,7 +129,6 @@ namespace vdj {
         double red = 0;
         double green = 0;
         double blue = 0;
-        double alpha = 1;
 
         if (wl >= 380.0 && wl <= 440.0) {
             red = -1.0f * ((float)wl - 440.0f) / (440.0f - 380.0f);

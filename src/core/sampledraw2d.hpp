@@ -1,6 +1,7 @@
-#pragma once
+#ifndef __sampledraw2d_hpp__
+#define __sampledraw2d_hpp__
 
-#include "draw2d.h"
+#include "draw2d.hpp"
 
 namespace vdj {
     // Use a sampler to fill in a span
@@ -64,20 +65,9 @@ namespace vdj {
         }
     }
 
-    /*
-    void sampleRectangle(PixelMap& pmap, const PixelRect& dstFrame, ISample2D<PixelRGBA>& samp)
-    {
-        PixelRect dstisect = pmap.frame().intersection(dstFrame);
-        RectD trex = RectD::create(dstisect, pmap.frame());
-
-        // could we just do this?
-        sampleRect(pmap, dstisect, trex, samp);
-    }
-    */
-
     // 
     // Draw a bezier line using a single line sampler
-    INLINE void sampledBezier(PixelView& pmap, const GeoBezier<int>& bez, const int segments, ISample1D<PixelRGBA>& c)
+    INLINE void sampledBezier(PixelView& pmap, const PixelBezier& bez, const int segments, ISample1D<PixelRGBA>& c)
     {
         // Get starting point
         auto lp = bez.eval(0);
@@ -97,97 +87,6 @@ namespace vdj {
             i = i + 1;
         }
     }
-
-
-    /*
-    INLINE void sampleConvexPolygon(PixelView& pb,
-        vdj::Point<int>* verts, const int nverts, int vmin,
-        ISample2D<PixelRGBA>& src,
-        const PixelRect& clipRect)
-    {
-        // set starting line
-        APolyDda ldda, rdda;
-        int y = verts[vmin].y();
-        ldda.yend = rdda.yend = y;
-
-        // find lowest and highest y values
-        int miny = 65535;
-        int maxy = -65536;
-        for (int i = 0; i < nverts; i++)
-        {
-            if (verts[i].y() < miny)
-                miny = verts[i].y();
-            if (verts[i].y() > maxy)
-                maxy = verts[i].y();
-        }
-
-        // setup polygon scanner for left side, starting from top
-        ldda.setupPolyDda(verts, nverts, vmin, +1);
-
-        // setup polygon scanner for right side, starting from top
-        rdda.setupPolyDda(verts, nverts, vmin, -1);
-
-        while (true)
-        {
-            if (y >= ldda.yend)
-            {
-                if (y >= rdda.yend)
-                {
-                    if (ldda.vertNext == rdda.vertNext) { // if same vertex, then done
-                        break;
-                    }
-
-                    int vnext = rdda.vertNext - 1;
-
-                    if (vnext < 0) {
-                        vnext = nverts - 1;
-                    }
-
-                    if (vnext == ldda.vertNext)
-                    {
-                        break;
-                    }
-                }
-                ldda.setupPolyDda(verts, nverts, ldda.vertNext, +1);	// reset left side
-            }
-
-            // check for right dda hitting end of polygon side
-            // if so, reset scanner
-            if (y >= rdda.yend) {
-                rdda.setupPolyDda(verts, nverts, rdda.vertNext, -1);
-            }
-
-            // fill span between two line-drawers, advance drawers when
-            // hit vertices
-            if (y >= clipRect.y()) {
-                int y1 = y;
-                int y2 = y;
-                int rx = round(rdda.x);
-                int lx = round(ldda.x);
-                int w = abs(rx - lx) + 1;
-                int x1 = lx < rx ? lx : rx;
-                int x2 = x1 + w - 1;
-
-                if (clipLine({ 0,0,pb.width(), pb.height() }, x1, y1, x2, y2))
-                {
-                    double v = maths::Map(y1, miny, maxy, 0, 1);
-                    w = x2 - x1;
-                    sampleHLine2D(pb, GeoSpan<int>(x1, y1, w), v, src);
-                }
-            }
-
-            ldda.x += ldda.dx;
-            rdda.x += rdda.dx;
-
-            // Advance y position.  Exit if run off its bottom
-            y += 1;
-            if (y >= clipRect.y() + clipRect.h())
-            {
-                break;
-            }
-        }
-    }
-    */
 
     INLINE void sampleTriangle(PixelView& pb, const int x1, const int y1,
         const int x2, const int y2,
@@ -233,3 +132,6 @@ namespace vdj {
 
 }
 // namespace vdj
+
+
+#endif

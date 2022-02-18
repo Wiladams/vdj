@@ -2,7 +2,7 @@
 
 #include "apidefs.h"
 #include "coloring.h"
-#include "maths.h"
+#include "maths.hpp"
 #include "geotypes.hpp"
 
 #include <cassert>
@@ -13,11 +13,12 @@
 namespace vdj {
     using RectD = GeoRect<double>;
 
-    using PixelBezier = GeoBezier<ptrdiff_t>;
+    using PixelBezier = GeoCubicBezier<ptrdiff_t>;
     using PixelEllipse = GeoEllipse<ptrdiff_t>;
     using PixelRect = GeoRect<ptrdiff_t>;
     using PixelSpan = GeoSpan<ptrdiff_t>;
     using PixelTriangle = GeoTriangle<ptrdiff_t>;
+    using PixelPath = GeoPath<ptrdiff_t > ;
 
     /*
 
@@ -66,60 +67,7 @@ namespace vdj {
         INLINE constexpr bool isTransparent() const noexcept { return value <= 0x00ffffff; }
     };
 
-    // The ISample interface is meant to support a generic interface
-    // for generating color values based on parameters.
-    // Doing this makes it easy to create color values for different
-    // rendering situations, without limiting ourselves to bitmaps.
-    //
-    // You can create a sample to return a certain type using the 
-    // teamplate class Sample<T>.
-    //
-    // struct SolidColorSample2D : ISample2D<PixelRGBA>
-    //
 
-    // A 1 dimensional sampler
-    template <typename T>
-    struct ISample1D
-    {
-        virtual T getValue(double u) = 0;
-        T operator()(double u)
-        {
-            return getValue(u);
-        }
-    };
-
-    // A 2 dimentional sampler
-    template <typename T>
-    struct ISample2D
-    {
-        virtual T getValue(double u, double v) = 0;
-        T operator()(double u, double v)
-        {
-            return getValue(u, v);
-        }
-    };
-
-    // A 3 dimensional sampler
-    template <typename T>
-    struct ISample3D
-    {
-        virtual T getValue(double u, double v, double w) = 0;
-        T operator()(double u, double v, double w)
-        {
-            return getValue(u, v, w);
-        }
-    };
-
-    template <typename T>
-    struct ISampleRGBA :
-        public ISample1D<T>,
-        public ISample2D<T>,
-        public ISample3D<T>
-    {
-
-    };
-
-    using SourceSampler = std::shared_ptr<ISample2D<PixelRGBA> >;
 
     class NTSCGray
     {
@@ -159,7 +107,7 @@ namespace vdj {
             return redfactor[r] + greenfactor[g] + bluefactor[b];
         }
 
-        INLINE constexpr uint32_t toLuminance(const PixelRGBA p) const
+        INLINE constexpr uint32_t toLuminance(const PixelRGBA &p) const
         {
             return redfactor[p.r()] + greenfactor[p.g()] + bluefactor[p.b()];
         }

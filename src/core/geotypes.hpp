@@ -198,6 +198,9 @@ namespace vdj {
         T r() { return fR; }
     };
 
+    
+
+
     template <typename T>
     struct GeoPolygon
     {
@@ -208,7 +211,17 @@ namespace vdj {
         GeoPolygon()
             :fTop(65535)
             , fBottom(0)
-        {}
+        {
+            clear();
+        }
+
+        // clear out existing commands and vertices
+        void clear()
+        {
+            fVertices.clear();
+            fTop = 65535;
+            fBottom = 0;
+        }
 
         void addPoint(const Point<T>& pt)
         {
@@ -245,17 +258,17 @@ namespace vdj {
             const T x2, const T y2,
             const T x3, const T y3)
         {
-            //addPoint(Point<T>(x1, y1));
-            //addPoint(Point<T>(x2, y2));
-            //addPoint(Point<T>(x3, y3));
+            GeoPolygon<T>::addPoint(Point<T>(x1, y1));
+            GeoPolygon<T>::addPoint(Point<T>(x2, y2));
+            GeoPolygon<T>::addPoint(Point<T>(x3, y3));
 
-            //findTopmost();
+            GeoPolygon<T>::findTopmost();
         }
     };
 
     // Cubic Bezier, defined by 4 points
     template <typename T>
-    struct GeoBezier
+    struct GeoCubicBezier
     {
         Point<T> p1;
         Point<T> p2;
@@ -263,11 +276,11 @@ namespace vdj {
         Point<T> p4;
 
     public:
-        GeoBezier(const Point<T>& pp1, const Point<T>& pp2, const Point<T>& pp3, const Point<T>& pp4)
+        GeoCubicBezier(const Point<T>& pp1, const Point<T>& pp2, const Point<T>& pp3, const Point<T>& pp4)
             :p1(pp1), p2(pp2), p3(pp3), p4(pp4)
         {}
 
-        GeoBezier(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+        GeoCubicBezier(const T x1, const T y1, const T x2, const T y2, const T x3, const T y3, const T x4, const T y4)
             :p1({ x1, y1 })
             , p2({ x2, y2 })
             , p3({ x3, y3 })
@@ -276,10 +289,7 @@ namespace vdj {
         {}
 
         // Value of curve at parametric position 'u'
-    // control points are P0, P1, P2, P3
-    // This function calculates a single component (x, y, or whatever)
-    // use another function to combine
-    // Cubic Bezier
+        // control points are P0, P1, P2, P3
         INLINE Point<T> eval(const double u) const
         {
             double oneminusu = 1 - u;
@@ -291,6 +301,172 @@ namespace vdj {
             return ((p1 * BEZ03) + (p2 * BEZ13) + (p3 * BEZ23) + (p4 * BEZ33));
         }
 
+    };
+
+
+    //
+    // A path should have commands and vertices
+    //
+    template <typename T>
+    struct GeoPath
+    {
+    public:
+        enum class ContourCommand
+        {
+            MoveTo = 0,
+
+            Line,
+            LineTo,
+
+            HLine,
+            HLineTo,
+
+            VLine,
+            VLineTo,
+
+            CubicBezierTo,      // pt1, control1, control2, pt2
+            QuadraticBezierTo,  // pt1, control, pt2
+
+            ArcCircleTo,
+            ArcEllipseTo,
+
+            Rect,
+            Circle,
+            Ellipse,
+
+            Close = 255,
+        };
+
+    protected:
+        void addNumber(const T& value)
+        {
+            fNumbers.push_back(value);
+        }
+
+        void addPoint(const Point<T>& pt)
+        {
+            addNumber(pt.x());
+            addNumber(pt.y());
+        }
+
+
+        void addCommand(const ContourCommand cmd)
+        {
+            fCommands.push_back(cmd);
+        }
+
+
+    public:
+        std::vector<ContourCommand> fCommands;
+        std::vector<T> fNumbers;  // vertices
+        Point<T> fLastPosition;
+
+        GeoPath()
+            :fLastPosition(T(), T())
+        {}
+
+        // clear out existing commands and vertices
+        void clear()
+        {
+            fCommands.clear();
+            fNumbers.clear();
+            fLastPosition = Point<T>();
+        }
+
+        //INLINE T numbers() { return fNumbers; }
+        INLINE T getNumber(size_t& idx) const { idx++; return fNumbers[idx-1]; }
+        INLINE Point<T> getPoint(size_t &idx) const 
+        {
+
+            T x = getNumber(idx);
+            T y = getNumber(idx);
+
+            return Point<T>(x, y);
+        }
+
+        void moveTo(const Point<T>& pt)
+        {
+            addCommand(ContourCommand::MoveTo);
+            addPoint(pt);
+
+            fLastPosition = pt;
+        }
+
+        void line(const Point<T>& p1, const Point<T>& p2)
+        {
+            addCommand(ContourCommand::Line);
+            addPoint(p1);
+            addPoint(p2);
+
+            fLastPosition = p2;
+        }
+
+        void lineTo(const Point<T>& pt)
+        {
+            addCommand(ContourCommand::LineTo);
+            addPoint(pt);
+            fLastPosition = pt;
+        }
+
+        void hLineTo(const Point<T>& pt)
+        {
+            addCommand(ContourCommand::LineTo);
+            addPoint(pt);
+            fLastPosition = pt;
+        }
+
+        void vLineTo(const Point<T>& pt)
+        {
+            addCommand(ContourCommand::VLineTo);
+            addPoint(pt);
+            fLastPosition = pt;
+        }
+
+        void cubicTo(const Point<T>& c1, const Point<T>& c2, const Point<T>& p2)
+        {
+            addCommand(ContourCommand::CubicBezierTo);
+            addPoint(c1);
+            addPoint(c2);
+            addPoint(p2);
+
+            fLastPosition = p2;
+        }
+
+        void quadraticTo(const Point<T>& c1, const Point<T>& p2)
+        {
+            addCommand(ContourCommand::QuadraticBezierTo);
+            addPoint(c1);
+            addPoint(p2);
+
+            fLastPosition = p2;
+        }
+
+        // Does not alter last point
+        void rect(const T x, const T y, const T w, const T h)
+        {
+            addCommand(ContourCommand::Rect);
+            addPoint(Point<T>(x, y));
+            addPoint(Point<T>(w, h));
+        }
+
+        void ellipse(const T cx, const T cy, const T xRadius, const T yRadius)
+        {
+            addCommand(ContourCommand::Ellipse);
+            addPoint(Point<T>(cx, cy));
+            addPoint(Point<T>(xRadius, yRadius));
+        }
+
+        void ellipse(const T cx, const T cy, const T radius)
+        {
+            addCommand(ContourCommand::Circle);
+            addPoint(Point<T>(cx, cy));
+            addPoint(Point<T>(radius, radius));
+        }
+
+        void close()
+        {
+            addCommand(ContourCommand::Close);
+        }
     };
 
 }

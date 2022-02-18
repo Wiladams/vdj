@@ -1,6 +1,8 @@
-#pragma once
+#ifndef __apidefs_h__
+#define __apidefs_h__
 
 #include <cstdint>
+#include <cstddef>
 
 
 
@@ -10,10 +12,13 @@
 #endif
 
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 #define INLINE __forceinline
+//#include <intrin.h>
+#elif defined(__GNUC__)
+#define INLINE inline __attribute__ ((always_inline))
 #else
-#define INLINE inline
+#error This compiler is unsupported!
 #endif
 
 // EXPORT allows us to declare a function as exported
@@ -29,3 +34,6 @@
 
 // Reference: http://www.guyrutenberg.com/2007/11/19/c-goes-to-operator/
 // useful for while loops
+
+
+#endif

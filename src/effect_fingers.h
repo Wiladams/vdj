@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "animator.h"
+#include "animator.hpp"
 
 #include <memory>
 
@@ -23,7 +23,7 @@ INLINE std::shared_ptr<vdj::AnimationWindow> createHFingersIn(double duration, i
 
 	// Create the set of fingers which will do the covering
 	bool fromTheLeft = true;
-	double uSize = 1.0;
+	//double uSize = 1.0;
 	double vSize = 1.0 / howMany;
 
 	for (int i = 0; i < howMany; i++)
@@ -67,7 +67,7 @@ INLINE std::shared_ptr<vdj::AnimationWindow> createVFingersIn(double duration, i
 	// Create the set of fingers which will do the covering
 	bool fromThisSide = true;
 	double uSize = 1.0 / howMany;
-	double vSize = 1.0;
+	//double vSize = 1.0;
 
 	for (int i = 0; i < howMany; i++)
 	{

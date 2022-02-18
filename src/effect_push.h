@@ -9,7 +9,7 @@
 // achieve a push from anywhere, and since the source and
 // destinations can be anything, it doesn't even have to be a push
 
-#include "animator.h"
+#include "animator.hpp"
 
 struct Push : public vdj::AnimationWindow
 {
@@ -40,8 +40,8 @@ struct Push : public vdj::AnimationWindow
 		vdj::SourceSampler s2, const vdj::RectD&s2bounds, const vdj::RectD&s2starting, const vdj::RectD&s2ending)
 		:AnimationWindow(duration)
 	{
-		auto pusher = std::make_shared<vdj::SampledWindow>(s2, s2bounds);
-		auto pushee = std::make_shared<vdj::SampledWindow>(s1, s1bounds);
+		auto pusher = std::make_shared<SamplerWrapperWindow>(s2, s2bounds);
+		auto pushee = std::make_shared<SamplerWrapperWindow>(s1, s1bounds);
 
 		addMotion(vdj::SamplerPositionAnimation::create(pusher, s1starting, s1ending));
 		addMotion(vdj::SamplerPositionAnimation::create(pushee, s2starting, s2ending));

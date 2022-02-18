@@ -24,7 +24,7 @@ struct WindowCaptures
 			RECT aRect;
 			GetWindowRect(hWnd, &aRect);
 			//printf("== enumwins %d %d %d %d ==\n", aRect.left, aRect.top, aRect.right, aRect.bottom);
-			printf("== enumwins %d %d %d %d ==\n", aRect.left, aRect.top, aRect.right-aRect.left, aRect.bottom-aRect.top);
+			printf("== enumwins %ld %ld %ld %ld ==\n", aRect.left, aRect.top, aRect.right-aRect.left, aRect.bottom-aRect.top);
 
 		}
 
@@ -35,6 +35,7 @@ struct WindowCaptures
 	// for later usage.
 	static void getVisibleWindowHandles(std::vector<HWND> &handles)
 	{
-		auto bResult = EnumWindows(enumWins, (LPARAM)&handles);
+		//auto bResult = 
+			EnumWindows(enumWins, (LPARAM)&handles);
 	}
 };

@@ -15,7 +15,10 @@
 	but at least all the Win32 specific stuff is wrapped up.
 */
 
+
 #include <SDKDDKVer.h>
+
+
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -28,13 +31,15 @@
 #include <ws2tcpip.h>
 #include <mmsystem.h>
 
+#include "apidefs.h"
+
 #include <memory>
 #include <deque>
 #include <functional>
 #include <stdio.h>
 #include <string>
 
-#include "apidefs.h"
+
 
 
 #include "pubsub.h"

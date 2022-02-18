@@ -1,6 +1,7 @@
 #pragma once
 
-#include "animator.h"
+#include "animator.hpp"
+
 using namespace std::placeholders;
 
 // Barn doors do an open reveal

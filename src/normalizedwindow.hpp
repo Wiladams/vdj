@@ -1,6 +1,7 @@
 #pragma once
 
-#include "pixeltypes.h"
+#include "pixeltypes.hpp"
+#include "sampler.hpp"
 
 #include <vector>
 #include <memory>
@@ -18,7 +19,7 @@ namespace vdj
 	// it maps the range of [0..1] to span the wrapped
 	// range.  This is good for sprite sheets for example.
 	//
-	struct SamplerWrapper : public ISample2D<PixelRGBA> // public SamplerFrame
+	struct SamplerWrapper : public ISample2D<PixelRGBA>
 	{
 	protected:
 		double uFactor = 1;
@@ -32,16 +33,16 @@ namespace vdj
 	public:
 		SamplerWrapper()
 			: fBackground(nullptr)
-			, fStickyBounds(RectD(0, 0, 1, 1))
 			, fMovingFrame(RectD(0, 0, 1, 1))
+			, fStickyBounds(RectD(0, 0, 1, 1))
 		{
 			onFrameChanged();
 		}
 
 		SamplerWrapper(std::shared_ptr< ISample2D<PixelRGBA> > wrapped, const RectD& bounds)
 			:fBackground(wrapped)
-			, fStickyBounds(bounds)
 			, fMovingFrame(RectD(0, 0, 1, 1))
+			, fStickyBounds(bounds)
 		{
 			onFrameChanged();
 		}
@@ -49,8 +50,8 @@ namespace vdj
 		SamplerWrapper(std::shared_ptr< ISample2D<PixelRGBA> > wrapped,
 			const RectD& bounds, const RectD& frame)
 			:fBackground(wrapped)
-			, fStickyBounds(bounds)
 			, fMovingFrame(frame)
+			, fStickyBounds(bounds)
 		{
 			onFrameChanged();
 		}
@@ -118,9 +119,11 @@ namespace vdj
 	// Having the sub-areas makes it relatively easy to compose scenes
 	// by just adding children and moving them around.
 	//
+	
+	template <typename CT=SamplerWrapper>
 	struct SampledWindow : public SamplerWrapper
 	{
-		std::vector<std::shared_ptr<SamplerWrapper > > fChildren;
+		std::vector<std::shared_ptr<CT > > fChildren;	// Typically SamplerWrapper
 
 
 		SampledWindow()
@@ -155,7 +158,7 @@ namespace vdj
 		}
 
 		// Dealing with Window grouping stuff
-		void addChild(std::shared_ptr<SamplerWrapper > aChild)
+		void addChild(std::shared_ptr<CT> aChild)
 		{
 			fChildren.push_back(aChild);
 		}
@@ -194,3 +197,4 @@ namespace vdj
 // namespace vdj
 
 using SharedSamplerWrapper = std::shared_ptr<vdj::SamplerWrapper>;
+using SamplerWrapperWindow = vdj::SampledWindow<vdj::SamplerWrapper>;

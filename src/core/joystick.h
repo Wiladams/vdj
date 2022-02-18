@@ -12,9 +12,11 @@ but, far more involved to deal with.
 
 #pragma comment(lib, "winmm.lib")
 
-#include <joystickapi.h>
-#include "maths.h"
+#include "maths.hpp"
 #include "uievent.h"
+
+#include <joystickapi.h>
+
 
 
 struct Joystick {

@@ -4,8 +4,10 @@
     the Windows environment, and our desired, fairly platform independent
     application environment.
 
-    All you need to setup a Windows application is this file.  It will 
-    operate either in console, or Windows mode.
+    All you need to setup a Windows application is this file, and the header files
+    included with apphost.h.  
+    
+    It will operate either in console, or Windows mode.
 
     This file deals with user input (mouse, keyboard, pointer, joystick, touch)
     initiating a pub/sub system for applications to subscribe to.
@@ -117,7 +119,7 @@ void refreshScreen ()
         //BOOL res = RedrawWindow(gAppWindow->getHandle(), nullptr, nullptr, RDW_ERASE| RDW_INVALIDATE| RDW_ERASENOW);
         
         // This one uses the WM_PAINT message
-        BOOL res = RedrawWindow(gAppWindow->getHandle(), nullptr, nullptr, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
+        ::RedrawWindow(gAppWindow->getHandle(), nullptr, nullptr, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
     }
     else {
         LayeredWindowInfo lw(canvasWidth, canvasHeight);
@@ -142,7 +144,7 @@ void hide()
 // Show the cursor, if there is one
 void cursor()
 {
-    int count = ::ShowCursor(1);
+    ::ShowCursor(1);
 }
 
 
@@ -240,7 +242,7 @@ void HID_UnregisterDevice(USHORT usage)
     hid.hwndTarget = nullptr;
     UINT uiNumDevices = 1;
 
-    BOOL bResult = ::RegisterRawInputDevices(&hid, 1, sizeof(RAWINPUTDEVICE));
+    ::RegisterRawInputDevices(&hid, uiNumDevices, sizeof(RAWINPUTDEVICE));
 }
 
 
@@ -307,7 +309,7 @@ void ParseRawInput(PRAWINPUT raw)
         break;
 
         default:
-            printf("RAW UNKNOWN TYPE: %d\n", raw->header.dwType);
+            printf("RAW UNKNOWN TYPE: %d\n", (int)raw->header.dwType);
         break;
     }
 }
@@ -404,7 +406,7 @@ LRESULT HandleMouseMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     e.mbutton = (fwKeys & MK_MBUTTON) != 0;
     e.xbutton1 = (fwKeys & MK_XBUTTON1) != 0;
     e.xbutton2 = (fwKeys & MK_XBUTTON2) != 0;
-    bool isPressed = e.lbutton || e.rbutton || e.mbutton;
+    //bool isPressed = e.lbutton || e.rbutton || e.mbutton;
 
     //printf("MOUSE: %d\n", msg);
     switch(msg) {
@@ -529,7 +531,7 @@ LRESULT HandleTouchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if (bResult == 0) {
         delete[] pInputs;
         auto err = ::GetLastError();
-        printf("getTouchInputInfo, ERROR: %d %d\n", bResult, err);
+        printf("getTouchInputInfo, ERROR: %d %ld\n", bResult, err);
 
         return 0;
     }

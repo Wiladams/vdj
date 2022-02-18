@@ -1,10 +1,12 @@
 #pragma once
 
+#include "vdjview.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "pixelmap.h"
+
 
 namespace vdj
 {
@@ -20,13 +22,13 @@ namespace vdj
 		virtual bool write(const char* filename, PixelView& pb)
 		{
 			FILE* fp;
-			auto err = fopen_s(&fp, filename, "wb");
+			fopen_s(&fp, filename, "wb");
 
 			if (!fp)
 				return false;
 
 			// write out the image header
-			fprintf(fp, "P6\n%d %d\n255\n", pb.width(), pb.height());
+			fprintf(fp, "P6\n%d %d\n255\n", (int)pb.width(), (int)pb.height());
 
 			// write the individual pixel values in binary form
 			PixelRGBA pix;

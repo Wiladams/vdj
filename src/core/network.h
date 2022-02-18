@@ -90,7 +90,7 @@ public:
     int toString(char *addressBuff, int addressBuffLen)
     {
         DWORD consumedLength = addressBuffLen;
-        int res = WSAAddressToStringA(&fAddress, fAddressLength, nullptr,addressBuff, &consumedLength);
+        WSAAddressToStringA(&fAddress, fAddressLength, nullptr,addressBuff, &consumedLength);
         
         return consumedLength;
     }
@@ -251,29 +251,32 @@ public:
     // You can default construct a socket,
     // the use init() to initialize it
     ASocket()
-        : fSocket(INVALID_SOCKET)
-        , fAutoClose(false)
-        , fIsValid(false)
+        : fIsValid(false)
         , fLastError(0)
+        , fAutoClose(false)
+        ,fSocket(INVALID_SOCKET)
+
+
+
     {
     }
 
     // Construct with an existing native socket
     ASocket(SOCKET s, const bool autoclose)
-        : fSocket(s),
-        fLastError(0), 
-        fAutoClose(autoclose)
+        : fIsValid(false)
+        , fLastError(0)
+        , fAutoClose(autoclose)
+        , fSocket(s)
     {
         fIsValid = (s != INVALID_SOCKET);
     }
     
-
-
     // Construct a particular kind of socket
     ASocket(int family, int socktype, int protocol, const bool autoclose)
-        :fSocket(INVALID_SOCKET),
-        fIsValid(false),
-        fAutoClose(autoclose)
+        : fIsValid(false)
+        , fLastError(0)
+        ,fAutoClose(autoclose)
+        ,fSocket(INVALID_SOCKET)
     {
         //printf("ASocket::constructor\n");
         init(WSASocketA(family, socktype, protocol, nullptr, 0, 0), autoclose);
@@ -282,7 +285,8 @@ public:
     // There should be a flag to autoclose
     // otherwise, if you create one of these on the 
     // stack, or copy it, it will close
-    virtual ~ASocket() {
+    virtual ~ASocket() 
+    {
         if (fAutoClose) {
             forceClose();
         }
@@ -392,7 +396,6 @@ public:
     {
         int optValue;
         int optSize = sizeof(int);
-        int size = sizeof(int);
 
         bool success = getSocketOption(SOL_SOCKET, SO_ERROR, (char*)&optValue, optSize);
 
@@ -622,7 +625,7 @@ protected:
 
             // Call extension function
             //lpOutputBuffer
-            DWORD    lpBytesReceived = 0;
+            //DWORD    lpBytesReceived = 0;
             void* lpOutputBuffer = nullptr;
             DWORD dwReceiveDataLength = 0;
             DWORD dwLocalAddressLength = 0;
@@ -655,7 +658,7 @@ protected:
             DWORD lpdwBytesSent = 0;
             LPOVERLAPPED lpOverlapped = nullptr;
 
-            CConnectEx(s.fSocket, &address.fAddress, address.fAddressLength,
+            return CConnectEx(s.fSocket, &address.fAddress, address.fAddressLength,
                 lpSendBuffer, dwSendDataLength,
                 &lpdwBytesSent, lpOverlapped);
         }
@@ -664,7 +667,7 @@ protected:
         {
             static LPFN_DISCONNECTEX CDisconnectEx = nullptr;
 
-            if (nullptr == DisconnectEx)
+            if (nullptr == CDisconnectEx)
             {
                 GUID g = WSAID_DISCONNECTEX;
                 CDisconnectEx = (LPFN_DISCONNECTEX)getExtensionFunctionPointer(g);
@@ -711,7 +714,7 @@ public :
         int optValue;
         int optSize = sizeof(int);
 
-        bool success = getSocketOption(SOL_SOCKET, SO_CONNECT_TIME, (char*)optValue, optSize);
+        bool success = getSocketOption(SOL_SOCKET, SO_CONNECT_TIME, (char*)&optValue, optSize);
 
         if (!success)
             return 0;
@@ -725,7 +728,8 @@ public :
     bool setDelay()
     {
         int oneInt = 0;
-        return setSocketOption(IPPROTO_TCP, TCP_NODELAY, (char*)&oneInt, sizeof(oneInt));
+        int optSize = sizeof(int);
+        return setSocketOption(IPPROTO_TCP, TCP_NODELAY, (char*)&oneInt, optSize);
     }
 
     // Turn off delayed send

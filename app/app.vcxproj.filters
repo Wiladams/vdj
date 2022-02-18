@@ -50,10 +50,10 @@
     <ClInclude Include="..\src\effect_wiper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\normalizedwindow.h">
+    <ClInclude Include="..\src\normalizedwindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\animator.h">
+    <ClInclude Include="..\src\animator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\easing.h">
@@ -62,22 +62,22 @@
     <ClInclude Include="..\src\blend2d.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\pixeltypes.h">
+    <ClInclude Include="..\src\core\pixeltypes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\sampledraw2d.h">
+    <ClInclude Include="..\src\core\sampledraw2d.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\sampler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\draw2d.h">
+    <ClInclude Include="..\src\core\draw2d.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\pixelmap.h">
+    <ClInclude Include="..\src\core\vdjview.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\maths.h">
+    <ClInclude Include="..\src\core\maths.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\apidefs.h">
@@ -86,7 +86,7 @@
     <ClInclude Include="..\src\core\bitbang.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\screensnapshot.h">
+    <ClInclude Include="..\src\core\screensnapshot.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\effect_spin.h">
@@ -108,6 +108,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\vdjPoint.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\gui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\imagecodec.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\vdjpixel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\xmlparse.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

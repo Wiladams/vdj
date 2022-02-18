@@ -13,7 +13,7 @@
 
 
 
-#include "pixelmap.h"
+#include "vdjview.hpp"
 
 #include <windows.h>
 #include <cstdio>
@@ -21,7 +21,7 @@
 class User32PixelMap : public vdj::PixelView
 {
     // for interacting with win32
-    BITMAPINFO fBMInfo{0};
+    BITMAPINFO fBMInfo{ {0} };
     HBITMAP fDIBHandle = nullptr;
     HGDIOBJ fOriginDIBHandle = nullptr;
     HDC     fBitmapDC = nullptr;
@@ -35,7 +35,7 @@ class User32PixelMap : public vdj::PixelView
 public:
 
     User32PixelMap(const long awidth, const long aheight)
-        : PixelView(awidth,aheight,awidth*4, PixelView::Format::Bgra32)
+        : vdj::PixelView(awidth,aheight,awidth*4, vdj::PixelView::Format::Bgra32)
     {
         init(awidth, aheight);
     }

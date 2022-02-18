@@ -1,7 +1,7 @@
 #pragma once
 
-#include "pixeltypes.h"
-#include "normalizedwindow.h"
+#include "pixeltypes.hpp"
+#include "normalizedwindow.hpp"
 
 //
 // A SpinWrapper does a rotation around the center
@@ -68,9 +68,9 @@ struct SpinAnimation : public vdj::IAnimateField
 
     SpinAnimation(std::shared_ptr< SpinWrapper> sampler, const double& beginPos, const double& endPos)
         :IAnimateField()
-        , fSampler(sampler)
         ,beginAngle(beginPos)
         ,endAngle(endPos)
+        , fSampler(sampler)
     {}
 
     void onUpdate(double u) override

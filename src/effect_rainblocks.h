@@ -1,6 +1,6 @@
 #pragma once
 
-#include "animator.h"
+#include "animator.hpp"
 #include <memory>
 
 INLINE std::shared_ptr<vdj::AnimationWindow> createRainBlocks(double duration,
@@ -19,8 +19,8 @@ INLINE std::shared_ptr<vdj::AnimationWindow> createRainBlocks(double duration,
 	// create individual blocks
 	double uSize = 1.0/maxColumns;
 	double vSize = 1.0 / maxRows;
-	double dropDuration = 1.0/(maxRows*4);
-	double dropOffset = 1.0 / (maxRows);
+	//double dropDuration = 1.0/(maxRows*4);
+	//double dropOffset = 1.0 / (maxRows);
 
 	double uOffset = 0.0;
 

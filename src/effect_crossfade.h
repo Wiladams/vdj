@@ -1,8 +1,8 @@
 #pragma once
 
-#include "animator.h"
+#include "animator.hpp"
 
-#define lerp255(bg, fg, a) ((uint32_t)div255((fg*a+bg*(255-a))))
+//#define lerp255(bg, fg, a) ((uint32_t)div255((fg*a+bg*(255-a))))
 
 //
 // Cross fade, or dissolve, is a per pixel operation
@@ -15,7 +15,7 @@ class CrossFadeEffect : public vdj::AnimationWindow
 
 	INLINE static vdj::PixelRGBA lerp_pixel(double u, const vdj::PixelRGBA& bg, const vdj::PixelRGBA& fg)
 	{
-		uint32_t a = u * 255;
+		uint32_t a = (uint32_t)(u * 255.0);
 		return vdj::PixelRGBA(
 			lerp255(bg.r(), fg.r(), a),
 			lerp255(bg.g(), fg.g(), a),

@@ -20,7 +20,7 @@
 
 */
 #include "apidefs.h"
-#include "maths.h"
+#include "maths.hpp"
 
 #include <cassert>
 #include <cmath>

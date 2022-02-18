@@ -30,7 +30,8 @@ namespace vdj
     constexpr int i4_huge = 2147483647;
     INLINE bool i4_is_even(int i) { int value = ((i % 2) == 0); return value; }
     INLINE bool i4_is_odd(int i) { int value = ((i % 2) != 0); return value; }
-    INLINE static inline bool i4_is_power_of_two(int n) {
+    INLINE bool i4_is_power_of_two(int n) 
+    {
         if (n <= 0)
         {
             return false;

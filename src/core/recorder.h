@@ -7,8 +7,8 @@
 // ffmpeg -framerate 10 -i fileprefix%06d.ppm moviename.mp4
 //
 
-#include "imagecodec.h"
-#include "pixelmap.h"
+#include "imagecodec.hpp"
+#include "vdjview.hpp"
 
 #include <string>
 
@@ -32,8 +32,8 @@ namespace vdj
             : fSurface(surf)
             , fBasename(basename)
             , fIsRecording(false)
-            , fMaxFrames(maxFrames)
             , fCurrentFrame(0)
+            , fMaxFrames(maxFrames)
         {
         }
 

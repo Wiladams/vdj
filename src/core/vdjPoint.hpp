@@ -1,7 +1,7 @@
 #pragma once
 
 #include "apidefs.h"
-#include "maths.h"
+#include "maths.hpp"
 
 namespace vdj {
 
@@ -23,8 +23,8 @@ namespace vdj {
         //template <class TP, template<class> class TPoint> Point(const TPoint<TP>& p);
 
 
-        T x() const { return fX; }
-        T y() const { return fY; }
+        T x() const;
+        T y() const;
 
         // Assignment
         template <typename TP> Point& operator = (const Point<TP>& p);
@@ -44,6 +44,11 @@ namespace vdj {
 
     };
 
+
+    // Field accessors
+    template <typename T> T Point<T>::x() const { return fX; }
+    template <typename T> T Point<T>::y() const { return fY; }
+
     // Declaration of operators
     template <typename T> Point<T> operator * (const Point<T>& p1, const Point<T>& p2);
     template <typename TP, typename TA> Point<TP> operator * (const Point<TP>& p, const TA& a);
@@ -62,13 +67,13 @@ namespace vdj {
     template<>
     INLINE ptrdiff_t Convert<ptrdiff_t, double>(double src)
     {
-        return maths::Round(src);
+        return (ptrdiff_t)maths::Round(src);
     }
 
     template<>
     INLINE ptrdiff_t Convert<ptrdiff_t, float>(float src)
     {
-        return maths::Round(src);
+        return (ptrdiff_t)maths::Round(src);
     }
 
     template <typename T>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "animator.h"
+#include "animator.hpp"
 
 #include <memory>
 

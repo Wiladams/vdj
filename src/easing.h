@@ -1,6 +1,6 @@
 #pragma once
 
-#include "maths.h"
+#include "maths.hpp"
 
 // Reference
 // https://easings.net/
@@ -53,16 +53,19 @@ namespace easing
 	}
 
 	// Bounce
-	INLINE double bounceOut(double x)
+	INLINE double bounceOut(double X)
 	{
 		constexpr double n1 = 7.5625;
 		constexpr double d1 = 2.75;
 
+		double x = X;
 
 		if (x < (1 / d1)) {
 			return n1 * x * x;
 		}
 		else if (x < (2 / d1)) {
+			//x -= (1.5 / d1);
+			//return n1 * (x) * x + 0.75;
 			return n1 * (x -= (1.5 / d1)) * x + 0.75;
 		}
 		else if (x < (2.5 / d1)) {

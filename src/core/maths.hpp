@@ -16,19 +16,16 @@
 */
 
 
-
-
-
 #include "apidefs.h"
 #include "bitbang.hpp"
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <cmath>
-#include <intrin.h>
 #include <limits>
 
-#pragma intrinsic(__stosd)
+//#pragma intrinsic(__stosd)
+
 
 // turn a division by 255 into something 
 // much cheaper to calculate
@@ -144,9 +141,9 @@ namespace maths {
     INLINE T Round(T val)
     {
         if (val > 0)
-            return std::floor(val + 0.5);
+            return (T)std::floor(val + 0.5);
         if (val < 0)
-            return std::floor(val - 0.5);
+            return (T)std::floor(val - 0.5);
         
         return 0;
     }
@@ -171,18 +168,18 @@ namespace maths {
     // This implementation of LERP is the most accurate
     // and guarantees you get v1 at 0.0 and v2 at 1.0
     // The input 't' MUST be between 0.0 >= t <= 1
-    //template <typename U, typename T>
-    template <typename T>
-    INLINE T Lerp(const double t, const T &v1, const T &v2)
+    template <typename TA, typename TB>
+    INLINE TA Lerp(const double t, const TA &v1, const TB &v2)
     {
-        return (T)(v1 *(1 - t)  + v2* t);
+        return (TA)(v1 *(1 - t)  + v2* t);
     }
 
     template<>
     INLINE double Lerp(const double t, const double &v1, const double &v2)
     {
-        return (1 - t) * v1 + t * v2;
+        return ((1.0 - t) * v1) + (t * v2);
     }
+
     /*
     template <typename U, typename T, typename V>
     inline double Map(U x, T olow, T ohigh, V rlow, V rhigh)

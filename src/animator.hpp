@@ -1,13 +1,15 @@
-#pragma once
+#ifndef __animator_hpp__
+#define __animator_hpp__
+
 
 #include "apidefs.h"
 
 
-#include "pixeltypes.h"
+#include "pixeltypes.hpp"
 #include "easing.h"
 #include "interpolator.h"
 #include "stopwatch.h"
-#include "normalizedwindow.h"
+#include "normalizedwindow.hpp"
 
 #include <functional>
 #include <vector>
@@ -126,7 +128,7 @@ namespace vdj
 	// can be animated, and interpolators are required
 	// to implement the intended animation.
 	//
-	struct AnimationWindow : public SampledWindow
+	struct AnimationWindow : public SamplerWrapperWindow
 	{
 		bool fIsRunning = false;
 
@@ -159,7 +161,7 @@ namespace vdj
 			fAnimators.push_back(animator);
 		}
 
-		void addMovingSample(std::shared_ptr<SampledWindow> win, std::shared_ptr<IAnimateField> animator)
+		void addMovingSample(std::shared_ptr<SamplerWrapperWindow> win, std::shared_ptr<IAnimateField> animator)
 		{
 			addChild(win);
 			addMotion(animator);
@@ -238,3 +240,5 @@ namespace vdj
 	};
 }
 // namespace vdj
+
+#endif

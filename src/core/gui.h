@@ -12,11 +12,10 @@
 // the functions that you use, include gui.h in your application.
 //
 #include "apphost.h"
-#include "draw2d.h"
+#include "sampledraw2d.hpp"
 
 #pragma comment (lib, "Synchronization.lib")
 
-//using namespace vdj;
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,8 +58,8 @@ extern "C" {
 	APP_EXPORT extern int width;
 	APP_EXPORT extern int height;
 
-	APP_EXPORT extern uint64_t frameCount;
-	APP_EXPORT extern uint64_t droppedFrames;
+	APP_EXPORT extern size_t frameCount;
+	APP_EXPORT extern size_t droppedFrames;
 
 	APP_EXPORT extern vdj::PixelRGBA* pixels;
 

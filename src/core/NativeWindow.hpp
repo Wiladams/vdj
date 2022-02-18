@@ -67,7 +67,7 @@ public:
     int getWidth() 
     {
         RECT wRect;
-        BOOL bResult = GetWindowRect(fHandle, &wRect);
+        ::GetWindowRect(fHandle, &wRect);
         int cx = wRect.right-wRect.left;
         return cx;
     }
@@ -75,7 +75,7 @@ public:
     int getHeight() 
     {
         RECT wRect;
-        BOOL bResult = GetWindowRect(fHandle, &wRect);
+        ::GetWindowRect(fHandle, &wRect);
         int cy = wRect.bottom-wRect.top;
         
         return cy;
@@ -85,8 +85,8 @@ public:
     {
         RECT wRect;
         BOOL bResult = ::GetWindowRect(fHandle, &wRect);
-        int cx = wRect.right - wRect.left;
-        int cy = wRect.bottom - wRect.top;
+        //int cx = wRect.right - wRect.left;
+        //int cy = wRect.bottom - wRect.top;
         int flags = SWP_NOOWNERZORDER | SWP_NOSIZE;
 
         bResult = ::SetWindowPos(fHandle, (HWND)0, x, y, 0, 0, flags);
@@ -161,9 +161,9 @@ class User32WindowClass {
 
 public:
     User32WindowClass(const char* classOrAtom)
-        : fLastError(0)
+        : fIsRegistered(false)
+        , fLastError(0)
         , fClassAtom(0)
-        , fIsRegistered(false)
     {
         // In this case, we're essentially doing a lookup
         // The classOrAtom is either a pointer to a string
@@ -184,11 +184,12 @@ public:
     }
 
     User32WindowClass(const char* className, unsigned int classStyle, WNDPROC wndProc = nullptr)
-        :fLastError(0),
-        fClassAtom(0),
-        fClassName(nullptr),
-        fIsRegistered(false),
+        :
         fWndClass{ 0 }
+        ,fIsRegistered(false)
+        ,fLastError(0)
+        ,fClassName(nullptr)
+        ,fClassAtom(0)
     {
         if (className == nullptr) {
             return;
@@ -233,13 +234,10 @@ public:
             return nullptr;
         }
 
-        HMODULE hInst = fWndClass.hInstance;
-
         // Create the window handle
         int winxstyle = xstyle;
         int winstyle = style;
 
-        //HMODULE hInst = GetModuleHandleA(NULL);
         HWND winHandle = CreateWindowExA(
             winxstyle,
             fWndClass.lpszClassName,

@@ -1,0 +1,21 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "fc272929-f0d8-4513-90e0-34bc0b7bf599": {
+      "ProjectGuid": "fc272929-f0d8-4513-90e0-34bc0b7bf599",
+      "DisplayName": "app",
+      "ColorIndex": 0
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    },
+    "1244387e-765f-4205-afc3-5b2a605d9708": {
+      "ProjectGuid": "1244387e-765f-4205-afc3-5b2a605d9708",
+      "DisplayName": "tranex",
+      "ColorIndex": 1
+    }
+  },
+  "NextColorIndex": 2
+}
