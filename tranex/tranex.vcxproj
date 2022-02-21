@@ -151,9 +151,11 @@
     <ClInclude Include="..\src\core\geotypes.hpp" />
     <ClInclude Include="..\src\core\pixeltypes.hpp" />
     <ClInclude Include="..\src\core\sampler.hpp" />
+    <ClInclude Include="..\src\core\shapebuilder.hpp" />
     <ClInclude Include="..\src\core\vdjPoint.hpp" />
     <ClInclude Include="..\src\normalizedwindow.hpp" />
     <ClInclude Include="..\src\slider.hpp" />
+    <ClInclude Include="tranexwindow.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

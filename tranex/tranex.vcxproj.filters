@@ -50,5 +50,11 @@
     <ClInclude Include="..\src\normalizedwindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="tranexwindow.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\shapebuilder.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

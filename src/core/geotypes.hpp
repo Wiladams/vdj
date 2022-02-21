@@ -27,7 +27,7 @@ namespace vdj {
     template <typename T>
     struct GeoSpan
     {
-    private:
+    public:
         T fX;
         T fY;
         T fW;
@@ -79,11 +79,11 @@ namespace vdj {
         INLINE T constexpr right() const { return fX + fWidth; }
         INLINE T constexpr bottom() const { return fY + fHeight; }
 
-        INLINE vec<2, T> center() const { return vec<2, T>({ fX + fWidth / 2.0, fY + fHeight / 2 }); }
+        INLINE Point<T> center() const { return Point<T>({ fX + fWidth / 2.0, fY + fHeight / 2.0 }); }
 
-        bool isEmpty() const { return (fWidth <= 0) || (fHeight <= 0); }
+        INLINE bool isEmpty() const { return (fWidth <= 0) || (fHeight <= 0); }
 
-        bool contains(const T& x, const T& y) const override
+        INLINE bool contains(const T& x, const T& y) const override
         {
             if ((x < fX) || (y < fY))
                 return false;
@@ -134,7 +134,7 @@ namespace vdj {
         };
 
         // The arithmetic operators are good for doing
-    // interpolation
+        // interpolation
         GeoRect<T>& operator+=(const GeoRect<T>& other)
         {
             fX += other.fX;
@@ -145,7 +145,7 @@ namespace vdj {
             return *this;
         }
 
-        GeoRect<T>& operator*=(double s)
+        GeoRect<T>& operator *= (double s)
         {
             fX *= s;
             fY *= s;
@@ -155,22 +155,27 @@ namespace vdj {
             return *this;
         }
 
-        GeoRect<T> operator+(const GeoRect<T>& rhs)
-        {
-            GeoRect<T> res(*this);
-            return res += rhs;
-        }
-
-        GeoRect<T> operator * (double s) const
-        {
-            GeoRect<T> res(*this);
-            return res *= s;
-        }
-
+        GeoRect<T> operator+(const GeoRect<T>& rhs);
+        GeoRect<T> operator * (double s) const;
     };
 
+    // GeoRect<T> Implementation
+    //
+    template <typename T>
+    GeoRect<T> GeoRect<T>::operator *(double s) const
+    {
+        GeoRect<T> res(*this);
+        return res *= s;
+    }
 
-    // Simple description of an ellipse
+    template <typename T>
+    GeoRect<T> GeoRect<T>::operator+(const GeoRect<T>& rhs)
+    {
+        GeoRect<T> res(*this);
+        return res += rhs;
+    }
+
+    // GeoEllipse Definition
     template <typename T>
     struct GeoEllipse : public Geometry<T>
     {
@@ -206,14 +211,17 @@ namespace vdj {
     {
         ptrdiff_t fTop = 65535;
         ptrdiff_t fBottom = 0;
+        bool fIsClosed = true;
         std::vector<vdj::Point<T> > fVertices;
 
-        GeoPolygon()
+        GeoPolygon(isClosed = true)
             :fTop(65535)
             , fBottom(0)
         {
             clear();
         }
+
+        bool isClosed() { return fIsClosed; }
 
         // clear out existing commands and vertices
         void clear()
@@ -257,6 +265,7 @@ namespace vdj {
         GeoTriangle(const T x1, const T y1,
             const T x2, const T y2,
             const T x3, const T y3)
+            :GeoPolygon<T>(true)
         {
             GeoPolygon<T>::addPoint(Point<T>(x1, y1));
             GeoPolygon<T>::addPoint(Point<T>(x2, y2));
@@ -303,171 +312,6 @@ namespace vdj {
 
     };
 
-
-    //
-    // A path should have commands and vertices
-    //
-    template <typename T>
-    struct GeoPath
-    {
-    public:
-        enum class ContourCommand
-        {
-            MoveTo = 0,
-
-            Line,
-            LineTo,
-
-            HLine,
-            HLineTo,
-
-            VLine,
-            VLineTo,
-
-            CubicBezierTo,      // pt1, control1, control2, pt2
-            QuadraticBezierTo,  // pt1, control, pt2
-
-            ArcCircleTo,
-            ArcEllipseTo,
-
-            Rect,
-            Circle,
-            Ellipse,
-
-            Close = 255,
-        };
-
-    protected:
-        void addNumber(const T& value)
-        {
-            fNumbers.push_back(value);
-        }
-
-        void addPoint(const Point<T>& pt)
-        {
-            addNumber(pt.x());
-            addNumber(pt.y());
-        }
-
-
-        void addCommand(const ContourCommand cmd)
-        {
-            fCommands.push_back(cmd);
-        }
-
-
-    public:
-        std::vector<ContourCommand> fCommands;
-        std::vector<T> fNumbers;  // vertices
-        Point<T> fLastPosition;
-
-        GeoPath()
-            :fLastPosition(T(), T())
-        {}
-
-        // clear out existing commands and vertices
-        void clear()
-        {
-            fCommands.clear();
-            fNumbers.clear();
-            fLastPosition = Point<T>();
-        }
-
-        //INLINE T numbers() { return fNumbers; }
-        INLINE T getNumber(size_t& idx) const { idx++; return fNumbers[idx-1]; }
-        INLINE Point<T> getPoint(size_t &idx) const 
-        {
-
-            T x = getNumber(idx);
-            T y = getNumber(idx);
-
-            return Point<T>(x, y);
-        }
-
-        void moveTo(const Point<T>& pt)
-        {
-            addCommand(ContourCommand::MoveTo);
-            addPoint(pt);
-
-            fLastPosition = pt;
-        }
-
-        void line(const Point<T>& p1, const Point<T>& p2)
-        {
-            addCommand(ContourCommand::Line);
-            addPoint(p1);
-            addPoint(p2);
-
-            fLastPosition = p2;
-        }
-
-        void lineTo(const Point<T>& pt)
-        {
-            addCommand(ContourCommand::LineTo);
-            addPoint(pt);
-            fLastPosition = pt;
-        }
-
-        void hLineTo(const Point<T>& pt)
-        {
-            addCommand(ContourCommand::LineTo);
-            addPoint(pt);
-            fLastPosition = pt;
-        }
-
-        void vLineTo(const Point<T>& pt)
-        {
-            addCommand(ContourCommand::VLineTo);
-            addPoint(pt);
-            fLastPosition = pt;
-        }
-
-        void cubicTo(const Point<T>& c1, const Point<T>& c2, const Point<T>& p2)
-        {
-            addCommand(ContourCommand::CubicBezierTo);
-            addPoint(c1);
-            addPoint(c2);
-            addPoint(p2);
-
-            fLastPosition = p2;
-        }
-
-        void quadraticTo(const Point<T>& c1, const Point<T>& p2)
-        {
-            addCommand(ContourCommand::QuadraticBezierTo);
-            addPoint(c1);
-            addPoint(p2);
-
-            fLastPosition = p2;
-        }
-
-        // Does not alter last point
-        void rect(const T x, const T y, const T w, const T h)
-        {
-            addCommand(ContourCommand::Rect);
-            addPoint(Point<T>(x, y));
-            addPoint(Point<T>(w, h));
-        }
-
-        void ellipse(const T cx, const T cy, const T xRadius, const T yRadius)
-        {
-            addCommand(ContourCommand::Ellipse);
-            addPoint(Point<T>(cx, cy));
-            addPoint(Point<T>(xRadius, yRadius));
-        }
-
-        void ellipse(const T cx, const T cy, const T radius)
-        {
-            addCommand(ContourCommand::Circle);
-            addPoint(Point<T>(cx, cy));
-            addPoint(Point<T>(radius, radius));
-        }
-
-        void close()
-        {
-            addCommand(ContourCommand::Close);
-        }
-    };
 
 }
 // vdj namespace

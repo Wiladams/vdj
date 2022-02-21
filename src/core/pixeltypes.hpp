@@ -18,7 +18,7 @@ namespace vdj {
     using PixelRect = GeoRect<ptrdiff_t>;
     using PixelSpan = GeoSpan<ptrdiff_t>;
     using PixelTriangle = GeoTriangle<ptrdiff_t>;
-    using PixelPath = GeoPath<ptrdiff_t > ;
+    //using PixelPath = GeoPath<ptrdiff_t > ;
 
     /*
 
