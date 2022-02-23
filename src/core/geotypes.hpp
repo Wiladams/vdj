@@ -214,14 +214,18 @@ namespace vdj {
         bool fIsClosed = true;
         std::vector<vdj::Point<T> > fVertices;
 
-        GeoPolygon(isClosed = true)
+        GeoPolygon(bool closed = false)
             :fTop(65535)
             , fBottom(0)
+            , fIsClosed(closed)
         {
             clear();
         }
 
         bool isClosed() { return fIsClosed; }
+        bool isEmpty() { return fVertices.size() == 0; }
+
+        void setClose(bool toClose) { fIsClosed = toClose; }
 
         // clear out existing commands and vertices
         void clear()
@@ -229,6 +233,24 @@ namespace vdj {
             fVertices.clear();
             fTop = 65535;
             fBottom = 0;
+        }
+
+        GeoRect<T> getBounds()
+        {
+            T minx = 65535;
+            T maxx = -65535;
+            T miny = 65535;
+            T maxy = -65535;
+
+            for (auto& pt : fVertices)
+            {
+                minx = maths::Min(pt.x(), minx);
+                maxx = maths::Max(pt.x(), maxx);
+                miny = maths::Min(pt.y(), miny);
+                maxy = maths::Max(pt.y(), maxy);
+            }
+
+            return GeoRect<T>(minx, miny, maxx - minx, maxy - miny0);
         }
 
         void addPoint(const Point<T>& pt)
@@ -272,6 +294,36 @@ namespace vdj {
             GeoPolygon<T>::addPoint(Point<T>(x3, y3));
 
             GeoPolygon<T>::findTopmost();
+        }
+    };
+
+    // Bezier Reference
+    // https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/Bezier/bezier-construct.html
+    // 
+    // Quadratic Bezier, defined by 3 points
+    template <typename T>
+    struct GeoQuadraticBezier
+    {
+        Point<T> p1;
+        Point<T> c1;
+        Point<T> p2;
+
+    public:
+        GeoQuadraticBezier(const Point<T>& pp1, const Point<T>& pp2, const Point<T>& pp3)
+            :p1(pp1), c1(pp2), p2(pp3)
+        {}
+
+        GeoQuadraticBezier(const T x1, const T y1, const T c1x, const T c1y, const T x3, const T y3)
+            :p1(x1, y1)
+            , c1(c1x, c1y)
+            , p2(x3, y3)
+        {}
+
+        // Value of curve at parametric position 'u'
+        INLINE Point<T> eval(const double u) const
+        {
+            double oneminusu = 1.0 - u;
+            return c1 + ((oneminusu * oneminusu) * (p1 - c1)) + ((u * u) * (p2 - c1));
         }
     };
 

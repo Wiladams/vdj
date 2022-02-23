@@ -222,27 +222,7 @@ double thisTime;
 double lastTime;
 
 
-void drawShapes()
-{
-	//vdj::GeoTriangle<ptrdiff_t> tri(400, 10, 600, 400, 200, 400);
-	GeoPolygon<ptrdiff_t> poly;
-	poly.addPoint(vdj::Point<ptrdiff_t>(10, 10));
-	poly.addPoint(vdj::Point<ptrdiff_t>(600, 30));
-	poly.addPoint(vdj::Point<ptrdiff_t>(400, 300));
-	poly.addPoint(vdj::Point<ptrdiff_t>(600, 400));
-	poly.addPoint(vdj::Point<ptrdiff_t>(10, 400));
-	poly.findTopmost();
 
-	// fill and stroke a polygon
-	fillPolygon(*gAppSurface, poly, vdj::PixelRGBA(0xffffff00));
-	strokePolygon(*gAppSurface, poly, vdj::PixelRGBA(0xff00ff00), 3);
-
-	// fill an ellipse
-	fillEllipse(*gAppSurface, 300, 300, 200, 100, vdj::PixelRGBA(0x7fff0000));
-
-	// draw some lines
-	line(*gAppSurface, 10, 400, 600, 400, vdj::PixelRGBA(0xff0000ff), 4);
-}
 
 void onFrame()
 {
@@ -270,8 +250,6 @@ void onFrame()
 	
 	//sampleRectangle(*gAppSurface, PixelRect(0, 0, canvasWidth, canvasHeight), *currentEffect);
 	sampleRect(*gAppSurface, vdj::PixelRect(0, 0, canvasWidth, canvasHeight), vdj::RectD(0, 0, 1, 1), *currentEffect);
-
-	drawShapes();
 
 	reco->saveFrame();
 }

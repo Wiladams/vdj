@@ -18,8 +18,12 @@ std::shared_ptr<ScreenSnapshot> screenCapture = nullptr;
 SharedSamplerWrapper screenCap1 = nullptr;
 SharedSamplerWrapper screenCap2 = nullptr;
 
-constexpr ptrdiff_t WINDOWWIDTH = 1024;	// 1988
-constexpr ptrdiff_t WINDOWHEIGHT = 768;	// 1200
+//constexpr ptrdiff_t WINDOWWIDTH = 1024;	// 1988
+//constexpr ptrdiff_t WINDOWHEIGHT = 768;	// 1200
+
+constexpr ptrdiff_t WINDOWWIDTH = 1988;
+constexpr ptrdiff_t WINDOWHEIGHT = 1200;
+
 
 TranexWindow mainWindow(WINDOWWIDTH, WINDOWHEIGHT);
 
@@ -30,7 +34,7 @@ void onFrame()
 
 void setup()
 {
-	setCanvasSize(1988, 1200);
+	setCanvasSize(WINDOWWIDTH, WINDOWHEIGHT);
 
 	// Setup screen captures
 	screenCapture = ScreenSnapshot::createForDisplay(0, 0, displayWidth, 1080);
