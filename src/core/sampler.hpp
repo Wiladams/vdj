@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pixeltypes.hpp"
+#include "coloring.h"
 
 #include <array>
 
@@ -106,7 +107,7 @@ namespace vdj {
             uint8_t g = fLuminance.toLuminance(c);
 
             // return it
-            return PixelRGBA(g, g, g, c.a());
+            return PixelRGBA(g, g, g, c.alpha());
         }
 
         static std::shared_ptr< LumaWrapper> create(SourceSampler wrapped)

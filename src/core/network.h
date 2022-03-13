@@ -51,7 +51,7 @@ public:
     }
 
     // Construct from traditional sockaddr and length
-    IPAddress(const struct sockaddr *addr, const int addrLen)
+    IPAddress(const struct sockaddr *addr, const size_t addrLen)
         :fAddressLength(0)
     {
         ZeroMemory(&fAddress, sizeof(fAddress));
@@ -60,7 +60,7 @@ public:
             return; 
 
         memcpy(&fAddress, addr, addrLen);
-        fAddressLength = addrLen;
+        fAddressLength = (int)addrLen;
     }
 
     void reset()
@@ -87,10 +87,10 @@ public:
     // typecast to struct sockaddr
     operator struct sockaddr& () { return fAddress; }
 
-    int toString(char *addressBuff, int addressBuffLen)
+    int toString(char *addressBuff, size_t addressBuffLen)
     {
-        DWORD consumedLength = addressBuffLen;
-        WSAAddressToStringA(&fAddress, fAddressLength, nullptr,addressBuff, &consumedLength);
+        DWORD consumedLength = (DWORD)addressBuffLen;
+        WSAAddressToStringA(&fAddress, (DWORD)fAddressLength, nullptr,addressBuff, &consumedLength);
         
         return consumedLength;
     }
@@ -192,14 +192,14 @@ public:
     {
         if (name == nullptr) {
             memset(fHostName, 0, sizeof(fHostName));
+        } else {
+            strncpy_s(fHostName, sizeof(fHostName), name, sizeof(fHostName));
         }
-
-        strncpy_s(fHostName, sizeof(fHostName), name, sizeof(fHostName));
     }
     const char * getName() const {return fHostName;}
 
     // addAddress
-    bool addAddress(const struct sockaddr *addr, const int addrlen)
+    bool addAddress(const struct sockaddr *addr, const size_t addrlen)
     {
         IPAddress anAddress(addr, addrlen);
         fAddresses.push_back(anAddress);
@@ -207,7 +207,7 @@ public:
         return true;
     }
 
-    int numberOfAddresses() {return fAddresses.size();}
+    size_t numberOfAddresses() {return fAddresses.size();}
 
     IPAddress & getAddress(const int idx = 0)
     {
@@ -461,7 +461,7 @@ public:
         //struct sockaddr clientAddr;
         //int clientAddrLen=0;
         //int res = ::accept(fSocket,&clientAddr,&clientAddrLen);
-        int res = ::accept(fSocket,nullptr,nullptr);
+        SOCKET res = ::accept(fSocket,nullptr,nullptr);
 
         if (res == INVALID_SOCKET) {
             fLastError = WSAGetLastError();
@@ -473,7 +473,7 @@ public:
 
     int bindTo(IPAddress &addr)
     {
-        return ::bind(fSocket, &addr.fAddress, addr.fAddressLength);
+        return ::bind(fSocket, &addr.fAddress, (int)addr.fAddressLength);
     }
 
     //int bindTo(const sockaddr *addr, const int addrLen)
@@ -566,7 +566,7 @@ public:
     // created the socket
     int sendTo(IPAddress &addrTo, const char *buff, const int bufflen)
     {
-        int res = ::sendto(fSocket, buff, bufflen, 0, &addrTo.fAddress, addrTo.fAddressLength);
+        int res = ::sendto(fSocket, buff, bufflen, 0, &addrTo.fAddress, (int)addrTo.fAddressLength);
         
         //printf("ASocket::sendTo: %d\n", res);
 
@@ -575,7 +575,11 @@ public:
 
     int receiveFrom(IPAddress &addrFrom, void* buff, int bufflen)
     {
-        int res = ::recvfrom(fSocket, (char*)buff, bufflen, 0, &addrFrom.fAddress, &addrFrom.fAddressLength);
+        int fromlen = addrFrom.fAddressLength;
+        int res = ::recvfrom(fSocket, (char*)buff, bufflen, 0, &addrFrom.fAddress, &fromlen);
+        
+        addrFrom.fAddressLength = fromlen;
+
         //printf("ASocket::receiveFrom: %d\n", res);
         
         return res;
@@ -650,17 +654,22 @@ protected:
                 CConnectEx = (LPFN_CONNECTEX)getExtensionFunctionPointer(g);
             }
 
+            int res = -1;
+
             if (nullptr == CConnectEx)
                 return -1;
+            else {
+                void* lpSendBuffer = nullptr;
+                DWORD dwSendDataLength = 0;
+                DWORD lpdwBytesSent = 0;
+                LPOVERLAPPED lpOverlapped = nullptr;
 
-            void* lpSendBuffer = nullptr;
-            DWORD dwSendDataLength = 0;
-            DWORD lpdwBytesSent = 0;
-            LPOVERLAPPED lpOverlapped = nullptr;
+                res = CConnectEx(s.fSocket, &address.fAddress, address.fAddressLength,
+                    lpSendBuffer, dwSendDataLength,
+                    &lpdwBytesSent, lpOverlapped);
+            }
 
-            return CConnectEx(s.fSocket, &address.fAddress, address.fAddressLength,
-                lpSendBuffer, dwSendDataLength,
-                &lpdwBytesSent, lpOverlapped);
+            return res;
         }
 
         static int DisconnectEx(ASocket s)

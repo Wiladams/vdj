@@ -63,7 +63,7 @@ char **gargv;
 
 
 User32Window * gAppWindow = nullptr;
-std::shared_ptr<User32PixelMap>  gAppSurface = nullptr;
+std::shared_ptr<vdj::User32PixelMap>  gAppSurface = nullptr;
 
 bool gIsLayered = false;
 
@@ -213,7 +213,7 @@ void subscribe(PointerEventTopic::Subscriber s)
 // Register a device for raw input
 bool HID_RegisterDevice(HWND hTarget, USHORT usage, USHORT usagePage = HID_USAGE_PAGE_GENERIC, USHORT flags = 0)
 {
-    RAWINPUTDEVICE hid;
+    RAWINPUTDEVICE hid = { 0 };
 
     hid.usUsagePage = usagePage;
     hid.usUsage = usage;
@@ -225,7 +225,7 @@ bool HID_RegisterDevice(HWND hTarget, USHORT usage, USHORT usagePage = HID_USAGE
     if (bResult == 0)
     {
         auto res = ::GetLastError();
-        printf("HID_RegisterDevice Error: 0x%x\n", res);
+        printf("HID_RegisterDevice Error: 0x%lx\n", res);
         return false;
     }
 
@@ -270,7 +270,7 @@ void ParseRawInput(PRAWINPUT raw)
             //keyboardEvent
         }
         break;
-
+        /*
         case RIM_TYPEHID:
         {
             PHIDP_PREPARSED_DATA pPreparsedData = nullptr;
@@ -281,7 +281,7 @@ void ParseRawInput(PRAWINPUT raw)
             //UINT nameBuffSize = 1024;
             //GetRawInputDeviceInfo(raw->header.hDevice, RIDI_DEVICENAME, nameBuff, &nameBuffSize);
 
-            /*
+            
             // Get the device info, using two phase allocation
             GetRawInputDeviceInfo(raw->header.hDevice, RIDI_PREPARSEDDATA, NULL, &bufferSize);
             std::vector<uint8_t> buff(bufferSize, 0);
@@ -301,13 +301,13 @@ void ParseRawInput(PRAWINPUT raw)
             capsLength = Caps.NumberFeatureButtonCaps;
             HidP_GetButtonCaps(HidP_Input, pButtonCaps, &capsLength, pPreparsedData);
             int g_NumberOfButtons = pButtonCaps->Range.UsageMax - pButtonCaps->Range.UsageMin + 1;
-            */
+            
             // It's not one of the easy ones, so need
             // to parse
             //printf("HID INPUT: 0x%p\n", raw->header.hDevice);
         }
         break;
-
+        */
         default:
             printf("RAW UNKNOWN TYPE: %d\n", (int)raw->header.dwType);
         break;
@@ -319,19 +319,19 @@ LRESULT HandleHIDMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     LRESULT res = 0;
 
     //printf("WM_INPUT\n");
-    bool inBackground = GET_RAWINPUT_CODE_WPARAM(wParam) == 1;
-    HRAWINPUT inputHandle = (HRAWINPUT)lParam;
+    //bool inBackground = GET_RAWINPUT_CODE_WPARAM(wParam) == 1;
+    //HRAWINPUT inputHandle = (HRAWINPUT)lParam;
     UINT uiCommand = RID_INPUT;
     UINT cbSize = 0;
 
     // First, find out how much space will be needed
     // to accomodate the HID message
-    UINT size = ::GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &cbSize, sizeof(RAWINPUTHEADER));
+    ::GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &cbSize, sizeof(RAWINPUTHEADER));
 
 
     // Allocate space, and try it again
     std::vector<uint8_t> buff(cbSize, 0);
-    size = ::GetRawInputData((HRAWINPUT)lParam, uiCommand, buff.data(), &cbSize, sizeof(RAWINPUTHEADER));
+    auto size = ::GetRawInputData((HRAWINPUT)lParam, uiCommand, buff.data(), &cbSize, sizeof(RAWINPUTHEADER));
     //printf("WM_INPUT: %d - %d\n", cbSize, size);
 
     // confirm we got what we expected in terms of size
@@ -352,7 +352,7 @@ LRESULT HandleHIDMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT HandleKeyboardMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT res = 0;
-    KeyboardEvent e;
+    KeyboardEvent e = { 0 };
     e.keyCode = LOWORD(wParam);
     e.repeatCount =LOWORD(lParam);  // 0 - 15
     e.scanCode = ((lParam & 0xff0000) >> 16);        // 16 - 23
@@ -392,7 +392,7 @@ LRESULT HandleKeyboardMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT HandleMouseMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {   
     LRESULT res = 0;
-    MouseEvent e;
+    MouseEvent e{ 0 };
 
     e.x = GET_X_LPARAM(lParam);
     e.y = GET_Y_LPARAM(lParam);
@@ -548,13 +548,13 @@ LRESULT HandleTouchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         e.rawX = ti.x;
         e.rawY = ti.y;
 
-        POINT PT;
+        POINT PT{ 0 };
         PT.x = TOUCH_COORD_TO_PIXEL(ti.x);
         PT.y = TOUCH_COORD_TO_PIXEL(ti.y);
 
         // Convert from screen coordinates to local
         // client coordinates
-        auto bResult = ::ScreenToClient(hwnd, &PT);
+        ::ScreenToClient(hwnd, &PT);
 
         // Assign x,y the client area value of the touch point
         e.x = PT.x;
@@ -661,12 +661,13 @@ LRESULT HandlePaintMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     BITMAPINFO info = gAppSurface->getBitmapInfo();
 
-    int pResult = StretchDIBits(hdc,
+    ::StretchDIBits(hdc,
         xDest,yDest,
         DestWidth,DestHeight,
         xSrc,ySrc,
         SrcWidth, SrcHeight,
-        gAppSurface->getData(),&info,
+        gAppSurface->row<uint8_t *>(0),
+        &info,
         DIB_RGB_COLORS,
         SRCCOPY);
         
@@ -729,13 +730,13 @@ void halt()
 
 void rawMouse()
 {
-    HWND localWindow = gAppWindow->getHandle();
+    //HWND localWindow = gAppWindow->getHandle();
     HID_RegisterDevice(gAppWindow->getHandle(), HID_USAGE_GENERIC_MOUSE);
 }
 
 void rawKeyboard()
 {
-    HWND localWindow = gAppWindow->getHandle();
+    //HWND localWindow = gAppWindow->getHandle();
     HID_RegisterDevice(gAppWindow->getHandle(), HID_USAGE_GENERIC_KEYBOARD);
 }
 
@@ -846,7 +847,7 @@ bool setCanvasSize(long aWidth, long aHeight)
     }
 
 
-    gAppSurface = std::make_shared<User32PixelMap>(aWidth, aHeight);
+    gAppSurface = std::make_shared<vdj::User32PixelMap>(aWidth, aHeight);
     canvasWidth = aWidth;
     canvasHeight = aHeight;
     
@@ -1029,7 +1030,7 @@ bool prolog()
     // Initialize Windows networking API
     uint16_t version = MAKEWORD(2, 2);
     WSADATA lpWSAData;
-    int res = ::WSAStartup(version, &lpWSAData);
+    ::WSAStartup(version, &lpWSAData);
 
 
     // Throughout the application, we want to know the true
@@ -1039,14 +1040,14 @@ bool prolog()
     //auto dpiContext = DPI_AWARENESS_CONTEXT_SYSTEM_AWARE;
     ////auto dpiContext = DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2;
     //DPI_AWARENESS_CONTEXT oldContext = ::SetThreadDpiAwarenessContext(dpiContext);
-    auto bResult = ::SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    ::SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     // based on logical inches
     systemDpi = ::GetDpiForSystem();
 
     // Get the screen size
-    auto dpiDpi = ::GetDpiFromDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
-    auto dpidisplayWidth = ::GetSystemMetricsForDpi(SM_CXSCREEN, systemDpi);
+    //auto dpiDpi = ::GetDpiFromDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+    //auto dpidisplayWidth = ::GetSystemMetricsForDpi(SM_CXSCREEN, systemDpi);
     auto dpidisplayHeight = ::GetSystemMetricsForDpi(SM_CYSCREEN, systemDpi);
 
     displayWidth = ::GetSystemMetrics(SM_CXSCREEN);
@@ -1056,15 +1057,15 @@ bool prolog()
 
     // Get screen physical size
     // DeviceCaps gives it in millimeters, so we convert to inches
-    auto screenWidth = ::GetDeviceCaps(dhdc, HORZSIZE)/25.4;
+    //auto screenWidth = ::GetDeviceCaps(dhdc, HORZSIZE)/25.4;
     auto screenHeight = ::GetDeviceCaps(dhdc, VERTSIZE)/25.4;
 
     // pixel count horizontally and vertically
-    auto pixelWidth = ::GetDeviceCaps(dhdc, LOGPIXELSX);
-    auto pixelHeight = ::GetDeviceCaps(dhdc, LOGPIXELSY);
+    //auto pixelWidth = ::GetDeviceCaps(dhdc, LOGPIXELSX);
+    //auto pixelHeight = ::GetDeviceCaps(dhdc, LOGPIXELSY);
 
     // Calculate real pixel density
-    double screenHPpi = (double)dpidisplayWidth / screenWidth;
+    //double screenHPpi = (double)dpidisplayWidth / screenWidth;
     double screenVPpi = (double)dpidisplayHeight / screenHeight;
     systemPpi = (unsigned int)screenVPpi;
 

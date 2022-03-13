@@ -154,7 +154,7 @@ bool isFullscreen() noexcept
 
 void background(const vdj::PixelRGBA &c) noexcept
 {
-    gAppSurface->setAllPixels(c);
+    vdj::fillRectangle(*gAppSurface, 0, 0, canvasWidth, canvasHeight, c);
 }
 
 

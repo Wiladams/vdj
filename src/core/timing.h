@@ -4,12 +4,12 @@
 #include <functional>
 
 #include "event.h"
-#include "thread.h"
+#include "appthread.h"
 #include "stopwatch.h"
 
 using TimedFunc = std::function< void() >;
 
-namespace timing {
+namespace vdj {
 	struct TimedRoutine {
 		unsigned long mills;
 		TimedFunc aFunc;

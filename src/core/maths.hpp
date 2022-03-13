@@ -24,8 +24,6 @@
 #include <cmath>
 #include <limits>
 
-//#pragma intrinsic(__stosd)
-
 
 // turn a division by 255 into something 
 // much cheaper to calculate

@@ -22,9 +22,9 @@
 */
 
 #include "apphost.h"
-#include "vdjview.hpp"
 #include "maths.hpp"
 #include "sampler.hpp"
+#include "vdjview.hpp"
 
 #include <memory>
 #include <algorithm>
@@ -32,55 +32,51 @@
 using namespace maths;
 
 
-
 namespace vdj 
 {
 
-    INLINE void setSpan(PixelView& pmap, const int x, const int y, const int w, const PixelRGBA& c)
+    INLINE void setSpan(PixelView &pmap, const size_t x, const size_t y, const size_t w, const PixelRGBA& c)
     {
+        // do the loop
+
         pmap.setSpan(x, y, w, c);
     }
     
-    INLINE void setSpan(PixelView& pmap, const PixelSpan& s, const PixelRGBA& c)
+    INLINE void setSpan(PixelView & pmap, const PixelSpan& s, const PixelRGBA& c)
     {
-        pmap.setSpan(s.x(), s.y(), s.w(), c);
+        setSpan(pmap, s.x(), s.y(), s.w(), c);
     }
 
  
     //
     // line()
-    // Stroke a line using the current stroking pixel.
-    // Uses Bresenham line drawing.
+    // Stroke a line using Bresenham line drawing.
     // clips line to frame of pixelmap
     //
-    INLINE void line(PixelView& pmap, ptrdiff_t x1, ptrdiff_t y1, ptrdiff_t x2, ptrdiff_t y2, const PixelRGBA& color, size_t width = 1)
+    INLINE void line(PixelView & pmap, ptrdiff_t x1, ptrdiff_t y1, ptrdiff_t x2, ptrdiff_t y2, const PixelRGBA& color, size_t width = 1)
     {
-        //assert(canvas.PixelSize() == sizeof(Color));
+        //assert(pmap.PixelSize() == sizeof(Color));
 
         const ptrdiff_t w = pmap.width() - 1;
         const ptrdiff_t h = pmap.height() - 1;
 
-        // Figure out if we need to do some clipping, or the line is completely outside
         if (x1 < 0 || y1 < 0 || x1 > w || y1 > h || x2 < 0 || y2 < 0 || x2 > w || y2 > h)
         {
-            // early reject
             if ((x1 < 0 && x2 < 0) || (y1 < 0 && y2 < 0) || (x1 > w && x2 > w) || (y1 > h && y2 > h))
                 return;
 
-            
-            if (y1 == y2)       // horizontal line
+            if (y1 == y2)
             {
                 x1 = std::min<ptrdiff_t>(std::max<ptrdiff_t>(x1, 0), w);
                 x2 = std::min<ptrdiff_t>(std::max<ptrdiff_t>(x2, 0), w);
             }
-            else if (x1 == x2)  // vertical line
+            else if (x1 == x2)
             {
                 y1 = std::min<ptrdiff_t>(std::max<ptrdiff_t>(y1, 0), h);
                 y2 = std::min<ptrdiff_t>(std::max<ptrdiff_t>(y2, 0), h);
             }
-            else                // Just a regular line
+            else
             {
-                // orient things in the most favorable way
                 ptrdiff_t x0 = (x1 * y2 - y1 * x2) / (y2 - y1);
                 ptrdiff_t y0 = (y1 * x2 - x1 * y2) / (x2 - x1);
                 ptrdiff_t xh = (x1 * y2 - y1 * x2 + h * (x2 - x1)) / (y2 - y1);
@@ -162,19 +158,13 @@ namespace vdj
                 {
                     if (inverse)
                     {
-                        if (y < w) {
-                            //At<A, Color>(canvas, y, x) = color;
-                            pmap.At(y, x) = color;
-                        }
-
+                        if (y < w)
+                            pmap.At<PixelRGBA>(y, x) = color;
                     }
                     else
                     {
-                        if (y < h) {
-                            //At<A, Color>(canvas, x, y) = color;
-                            pmap.At(x, y) = color;
-                        }
-
+                        if (y < h)
+                            pmap.At<PixelRGBA>(x, y) = color;
                     }
                 }
 
@@ -189,30 +179,28 @@ namespace vdj
         }
     }
 
-    INLINE void line(PixelView& pmap, const vdj::Point<ptrdiff_t> &p1, const vdj::Point<ptrdiff_t>& p2, const PixelRGBA& c, size_t width = 1)
+    INLINE void line(PixelView & pmap, const vdj::Point<ptrdiff_t> &p1, const vdj::Point<ptrdiff_t>& p2, const PixelRGBA& c, size_t width = 1)
     {
         line(pmap, p1.x(), p1.y(), p2.x(), p2.y(), c, width);
     }
-
-
-
 
     //
     // Polygons, and triangles
     // Triangles
     //
-    INLINE void strokePolygon(PixelView& pb, const GeoPolygon<ptrdiff_t>& poly, const PixelRGBA& c, size_t width=1)
+    INLINE void strokePolygon(PixelView & pb, const GeoPolygon<ptrdiff_t>& poly, const PixelRGBA& c, size_t width=1)
     {
         typedef vdj::Point<ptrdiff_t> Point;
 
         for (size_t i = 0; i < poly.fVertices.size(); ++i)
         {
             const Point& p1 = (i ? poly.fVertices[i - 1] : poly.fVertices.back()), p2 = poly.fVertices[i];
-            line(pb, p1, p2, c, width);
+            line(pb, p1.x(), p1.y(), p2.x(), p2.y(), c, width);
+            //aaline(pb, p1.x(), p1.y(), p2.x(), p2.y(), c, width);
         }
     }
 
-    INLINE void fillPolygon(PixelView& pb, const GeoPolygon<ptrdiff_t>& poly, const PixelRGBA& c)
+    INLINE void fillPolygon(PixelView & pb, const GeoPolygon<ptrdiff_t>& poly, const PixelRGBA& c)
     {
         for (ptrdiff_t y = poly.fTop; y < poly.fBottom; ++y)
         {
@@ -229,17 +217,15 @@ namespace vdj
             {
                 ptrdiff_t left = std::max<ptrdiff_t>(0, intersections[i + 0]);
                 ptrdiff_t right = std::min<ptrdiff_t>(pb.width(), intersections[i + 1]);
-                //PixelRGBA* dst = &At<A, PixelRGBA>(canvas, 0, y);
-                //PixelRGBA* dst = &pb.At(0, y);
 
-                pb.setSpan(left, y, right - left, c);
+                setSpan(pb, left, y, right - left, c);
             }
         }
 
     }
 
     // Draw the outline of a rectangle
-    INLINE void strokeRectangle(PixelView& pmap, const int x, const int y, const int w, const int h, const PixelRGBA& c)
+    INLINE void strokeRectangle(PixelView & pmap, const int x, const int y, const int w, const int h, const PixelRGBA& c)
     {
         // draw top and bottom
         line(pmap, x, y, x + w - 1, y, c);
@@ -251,11 +237,13 @@ namespace vdj
     }
 
     // fill the inside of a rectangle
-    INLINE void fillRectangle(PixelView& pmap, const int x, const int y, const int w, const int h, const PixelRGBA &c)
+    INLINE void fillRectangle(PixelView & pmap, const int x, const int y, const int w, const int h, const PixelRGBA &c)
     {
         // We calculate clip area up front
         // so we don't have to do clipLine for every single line
-        PixelRect dstRect = pmap.frame().intersection({ x,y,w,h });
+        //auto psize = pmap.Size();
+        PixelRect pmapRect(0, 0, pmap.width() - 1, pmap.height() - 1);
+        PixelRect dstRect = pmapRect.intersection(PixelRect{ x,y,w,h });
 
         // If the rectangle is outside the frame of the pixel map
         // there's nothing to be drawn
@@ -263,20 +251,20 @@ namespace vdj
             return;
 
         // Do a line by line draw
-        for (int row = dstRect.y(); row < dstRect.y() + dstRect.h(); row++)
+        for (int row = dstRect.top(); row < dstRect.top() + dstRect.h(); row++)
         {
-            //setSpan(pmap, dstRect.x(), row, dstRect.w(), c);
+            //setSpan(pmap, dstRect.left(), row, dstRect.w(), c);
             pmap.setSpan(dstRect.x(), row, dstRect.w(), c);
         }
     }
 
-    INLINE void fillRectangle(PixelView& pmap, const PixelRect& r, const PixelRGBA& c)
+    INLINE void fillRectangle(PixelView & pmap, const PixelRect& r, const PixelRGBA& c)
     {
         fillRectangle(pmap, r.x(), r.y(), r.w(), r.h(), c);
 
     }
 
-    INLINE void strokeEllipse(PixelView& pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA& color)
+    INLINE void strokeEllipse(PixelView & pb, const int cx, const int cy, const size_t xradius, size_t yradius, const PixelRGBA& color)
     {
         //raster_ellipse(pb, cx, cy, xradius, yradius, color, Plot4EllipsePoints);
     }
@@ -284,7 +272,7 @@ namespace vdj
     // A rather simple ellipse drawing routine
     // not the most performant, but uses the 
     // already available polygon filling routine
-    INLINE void fillEllipse(PixelView& pmap, int centerx, int centery, int xRadius, int yRadius, const PixelRGBA &c)
+    INLINE void fillEllipse(PixelView & pmap, int centerx, int centery, int xRadius, int yRadius, const PixelRGBA &c)
     {
         static const int nverts = 72;
         int steps = nverts;
@@ -306,13 +294,13 @@ namespace vdj
     }
 
     // filling a circle with a fixed color
-    INLINE void fillCircle(PixelView& pmap, int centerX, int centerY, int radius, const PixelRGBA& c)
+    INLINE void fillCircle(PixelView & pmap, int centerX, int centerY, int radius, const PixelRGBA& c)
     {
         fillEllipse(pmap, centerX, centerY, radius, radius, c);
     }
 
 
-    INLINE void strokeCubicBezier(PixelView& pmap, const PixelBezier &bez, int segments, const PixelRGBA &c)
+    INLINE void strokeCubicBezier(PixelView & pmap, const PixelBezier &bez, int segments, const PixelRGBA &c)
     {
         // Get starting point
         auto lp = bez.eval(0);
@@ -347,7 +335,7 @@ namespace vdj
     // no scaling, no alpha blending
     // it will deal with clipping so we don't
     // crash when going off the edges
-    INLINE void blit(PixelView& pb, const int x, const int y, PixelView& src)
+    INLINE void blit(PixelView & pb, const int x, const int y, PixelView & src)
     {
         PixelRect bounds(0, 0, pb.width(), pb.height());
         PixelRect dstFrame(x, y, src.width(), src.height());
@@ -375,9 +363,163 @@ namespace vdj
             uint32_t* srcPtr = (uint32_t*)src.getPixelPointer(srcX, srcrow);
             memcpy(dstPtr, srcPtr, dstisect.w() * 4);
             rowCount++;
-            dstPtr = (uint32_t*)pb.getPixelPointer(dstisect.x(), dstisect.y() + rowCount);
+            dstPtr = (uint32_t*)pb.getPixelPointer(dstisect.left(), dstisect.top() + rowCount);
         }
     }
 
 
 }
+
+
+/*
+// anti-aliased line using Wu algorithm
+// https://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
+//
+
+    //
+    // wu line drawing
+    //
+    INLINE int iPart(float x)
+    {
+        return (int)std::floor(x);
+    }
+
+    INLINE float fPart(float x)
+    {
+        return x - std::floor(x);
+
+        //if (x > 0) return x - iPart(x);
+        //return x - (iPart(x) + 1);
+    }
+
+    INLINE float rfPart(float x)
+    {
+        return 1.0f - fPart(x);
+    }
+
+INLINE void aaline(View& pmap, ptrdiff_t x0, ptrdiff_t y0, ptrdiff_t x1, ptrdiff_t y1, const PixelRGBA& color, size_t width = 1)
+{
+    bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
+
+    if (steep) {
+        std::swap(x0, y0);
+        std::swap(x1, y1);
+    }
+
+    if (x0 > x1)
+    {
+        std::swap(x0, x1);
+        std::swap(y0, y1);
+    }
+
+    // compute the slope
+    float dx = x1 - x0;
+    float dy = y1 - y0;
+    float gradient = dy / dx;
+
+    if (dx == 0.0f)
+        gradient = 1.0f;
+
+    // handle first endpoint
+    auto xend = std::round(x0);
+    auto yend = y0 + gradient + (xend - x0);
+    auto xgap = rfPart(x0 + 0.5);
+
+    int xpxl1 = xend;
+    int ypxl1 = iPart(yend);
+
+    if (steep) {
+        auto c1 = color * rfPart(yend)*xgap;
+        auto c2 = color * fPart(yend) * xgap;
+        pmap.set(ypxl1, xpxl1,c1);
+        pmap.set(ypxl1 + 1, xpxl1, c2);
+    }
+    else {
+        auto c1 = color * rfPart(yend) * xgap;
+        auto c2 = color * fPart(yend) * xgap;
+        pmap.set(xpxl1, ypxl1, c1);
+        pmap.set(xpxl1, ypxl1 + 1, c2);
+    }
+    auto intery = yend + gradient;  // first y-intersection for main loop
+
+    // Handle second endpoint
+    xend = std::round(x1);
+    yend = y1 + gradient * (xend - x1);
+    xgap = fPart(x1 + 0.5);
+    auto xpxl2 = xend;
+    auto ypxl2 = iPart(yend);
+
+    if (steep) {
+        auto c1 = color * rfPart(yend) * xgap;
+        auto c2 = color * fPart(yend) * xgap;
+        pmap.set(ypxl2, xpxl2, c1);
+        pmap.set(ypxl2 + 1, xpxl2, c2);
+    }
+    else {
+        auto c1 = color * rfPart(yend) * xgap;
+        auto c2 = color * fPart(yend) * xgap;
+        pmap.At((ptrdiff_t)xpxl2, ypxl2) = c1;
+        pmap.set(xpxl2, ypxl2 + 1, c2);
+    }
+
+
+    // Main loop
+    if (steep) {
+        for (int x = xpxl1 + 1; x < xpxl2; x++)
+        {
+            auto c1 = color * rfPart(intery);
+            auto c2 = color * fPart(intery);
+            pmap.set(iPart(intery), x, c1);
+            pmap.set(iPart(intery) + 1, x, c2);
+            intery += gradient;
+        }
+    }
+    else {
+        for (int x = xpxl1 + 1; x < xpxl2; x++)
+        {
+            auto c1 = color * rfPart(intery);
+            auto c2 = color * fPart(intery);
+            pmap.set(x, iPart(intery), c1);
+            pmap.set(x, iPart(intery) + 1, c2);
+            intery += gradient;
+        }
+    }
+
+    int xpxl2 = x1;
+    float intersectY = y0;
+
+    if (steep) {
+        int x;
+        for (x = xpxl1; x <= xpxl2; x++)
+        {
+            auto rf = rfPart(intersectY);
+            PixelRGBA pc1 = color * rf;
+
+            pmap.set(iPart(intersectY), x, pc1);
+
+            auto fp = fPart(intersectY);
+            PixelRGBA pc2 = color * fp;
+            pmap.set(iPart(intersectY) - 1, x, pc2);
+
+            intersectY += gradient;
+        }
+    } else {
+        int x;
+        for (x = xpxl1; x <= xpxl2; x++)
+        {
+            auto rf = rfPart(intersectY);
+            auto pc1 = color * rf;
+            pc1.setA(rf * 255);
+            pmap.set(x, iPart(intersectY), pc1);
+
+            auto fp = fPart(intersectY);
+            PixelRGBA pc2 = color * fp;
+            pc2.setA(fp * 255);
+            pmap.set(x, iPart(intersectY) - 1, pc2);
+
+            intersectY += gradient;
+        }
+    }
+
+}
+*/

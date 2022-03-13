@@ -1,48 +1,56 @@
 #pragma once
 
-#include <cmath>
+
 #include "vec.h"
+#include "pixeltypes.hpp"
 
-using ColorRGBA = float4;
-using ColorRGB = float3;
+#include <cmath>
 
-/*
-//
-// Representation of color using
-// float values.  The intention is to do most
-// color handling in this format, then convert to
-// specific pixel layouts when needed.
-//
-// Component values range from [0..1] inclusive
-// The data structure should be 16 bytes in size
-struct ColorRGBA
-{
-    float fR;
-    float fG;
-    float fB;
-    float fA;
+namespace vdj {
+    //using ColorRGBA = float4;
+    //using ColorRGB = float3;
 
-    INLINE ColorRGBA() = default;
-    INLINE ColorRGBA(const ColorRGBA& other) = default;
-    INLINE ColorRGBA(float r, float g, float b) noexcept : fR(r), fG(g), fB(b), fA(1.0) {}
-    INLINE ColorRGBA(float r, float g, float b, float a) noexcept : fR(r), fG(g), fB(b), fA(a) {}
+    class NTSCGray
+    {
+        // Based on old NTSC
+        //static float redcoeff = 0.299f;
+        //static float greencoeff = 0.587f;
+        //static float bluecoeff = 0.114f;
 
-    // copy constructor
-    INLINE ColorRGBA& operator=(const ColorRGBA& other) noexcept = default;
+        // New CRT and HDTV phosphors
+        const float redcoeff = 0.2225f;
+        const float greencoeff = 0.7154f;
+        const float bluecoeff = 0.0721f;
 
-    // Getting and setting fields
-    INLINE constexpr float r() const noexcept { return fR; }
-    INLINE constexpr float g() const noexcept { return fG; }
-    INLINE constexpr float b() const noexcept { return fB; }
-    INLINE constexpr float a() const noexcept { return fA; }
+        // use lookup tables to save ourselves from multiplications later
+        std::array<uint8_t, 256> redfactor;
+        std::array<uint8_t, 256> greenfactor;
+        std::array<uint8_t, 256> bluefactor;
 
-    INLINE constexpr void setR(float r) noexcept { fR = r; }
-    INLINE constexpr void setG(float g) noexcept { fG = g; }
-    INLINE constexpr void setB(float b) noexcept { fB = b; }
-    INLINE constexpr void setA(float a) noexcept { fA = a; }
+    public:
+        NTSCGray() :NTSCGray(0.2225f, 0.7154f, 0.0721f) {}
 
-    //INLINE constexpr bool isOpaque() const noexcept { return value >= 0xff000000u; }
-    INLINE constexpr bool isTransparent() const noexcept { return (0.0f == fA); }
+        // Create an instance, initializing with the coefficients you desire
+        NTSCGray(float rcoeff, float gcoeff, float bcoeff)
+            :redcoeff(rcoeff), greencoeff(gcoeff), bluecoeff(bcoeff)
+        {
+            // construct lookup tables
+            for (int counter = 0; counter < 256; counter++)
+            {
+                redfactor[counter] = (uint8_t)maths::Min(56, (int)maths::Floor((counter * redcoeff) + 0.5f));
+                greenfactor[counter] = (uint8_t)maths::Min(181, (int)maths::Floor((counter * greencoeff) + 0.5f));
+                bluefactor[counter] = (uint8_t)maths::Min(18, (int)maths::Floor((counter * bluecoeff) + 0.5f));
+            }
+        }
 
-};
-*/
+        INLINE constexpr uint32_t toLuminance(uint8_t r, uint8_t g, uint8_t b) const
+        {
+            return redfactor[r] + greenfactor[g] + bluefactor[b];
+        }
+
+        INLINE constexpr uint32_t toLuminance(const PixelRGBA& p) const
+        {
+            return redfactor[p.red()] + greenfactor[p.green()] + bluefactor[p.blue()];
+        }
+    };
+} // namespace vdj

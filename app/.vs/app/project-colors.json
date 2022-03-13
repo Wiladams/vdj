@@ -15,7 +15,12 @@
       "ProjectGuid": "1244387e-765f-4205-afc3-5b2a605d9708",
       "DisplayName": "tranex",
       "ColorIndex": 1
+    },
+    "16cfc4e2-ca7f-4e09-af77-86370c7bee15": {
+      "ProjectGuid": "16cfc4e2-ca7f-4e09-af77-86370c7bee15",
+      "DisplayName": "testView",
+      "ColorIndex": 2
     }
   },
-  "NextColorIndex": 2
+  "NextColorIndex": 3
 }

@@ -135,7 +135,8 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\src;..\src\core</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -161,6 +162,8 @@
     <ClInclude Include="..\src\core\gui.h" />
     <ClInclude Include="..\src\core\imagecodec.hpp" />
     <ClInclude Include="..\src\core\maths.hpp" />
+    <ClInclude Include="..\src\core\memstream.hpp" />
+    <ClInclude Include="..\src\core\vdjmemory.h" />
     <ClInclude Include="..\src\core\vdjview.hpp" />
     <ClInclude Include="..\src\core\pixeltypes.hpp" />
     <ClInclude Include="..\src\core\sampledraw2d.hpp" />
@@ -180,6 +183,10 @@
     <ClInclude Include="..\src\effect_spin.h" />
     <ClInclude Include="..\src\effect_wiper.h" />
     <ClInclude Include="..\src\normalizedwindow.hpp" />
+    <ClInclude Include="..\src\Simd\SimdPixel.hpp" />
+    <ClInclude Include="..\src\simd\SimdPoint.hpp" />
+    <ClInclude Include="..\src\simd\SimdRectangle.hpp" />
+    <ClInclude Include="..\src\Simd\SimdView.hpp" />
     <ClInclude Include="..\src\windowcaptures.h" />
     <ClInclude Include="..\src\xmlparse.hpp" />
   </ItemGroup>

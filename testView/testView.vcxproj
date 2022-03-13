@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{1244387e-765f-4205-afc3-5b2a605d9708}</ProjectGuid>
-    <RootNamespace>tranex</RootNamespace>
+    <ProjectGuid>{16cfc4e2-ca7f-4e09-af77-86370c7bee15}</ProjectGuid>
+    <RootNamespace>testView</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -119,7 +119,7 @@
       <AdditionalIncludeDirectories>..\src;..\src\core</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -132,8 +132,6 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\src;..\src\core</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -145,27 +143,18 @@
   <ItemGroup>
     <ClCompile Include="..\src\core\appmain.cpp" />
     <ClCompile Include="..\src\core\gui.cpp" />
-    <ClCompile Include="tranex.cpp" />
+    <ClCompile Include="testView.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\checkerboard.hpp" />
-    <ClInclude Include="..\src\core\apidefs.h" />
     <ClInclude Include="..\src\core\apphost.h" />
-    <ClInclude Include="..\src\core\coloring.h" />
     <ClInclude Include="..\src\core\draw2d.hpp" />
     <ClInclude Include="..\src\core\geotypes.hpp" />
     <ClInclude Include="..\src\core\gui.h" />
-    <ClInclude Include="..\src\core\locklessqueue.hpp" />
-    <ClInclude Include="..\src\core\maths.hpp" />
     <ClInclude Include="..\src\core\pixeltypes.hpp" />
-    <ClInclude Include="..\src\core\sampler.hpp" />
-    <ClInclude Include="..\src\core\svgpathbuilder.hpp" />
-    <ClInclude Include="..\src\core\appthread.h" />
-    <ClInclude Include="..\src\core\timing.h" />
-    <ClInclude Include="..\src\core\vdjPoint.hpp" />
-    <ClInclude Include="..\src\normalizedwindow.hpp" />
-    <ClInclude Include="..\src\slider.hpp" />
-    <ClInclude Include="tranexwindow.hpp" />
+    <ClInclude Include="..\src\core\sampledraw2d.hpp" />
+    <ClInclude Include="..\src\core\screensnapshot.hpp" />
+    <ClInclude Include="..\src\core\User32PixelMap.h" />
+    <ClInclude Include="..\src\core\vdjview.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

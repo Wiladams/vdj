@@ -7,7 +7,7 @@
 #include "stopwatch.h"
 #include "sampledraw2d.hpp"
 #include "windowcaptures.h"
-#include "xmlparse.hpp"
+
 
 #include "effect_barndoor.h"
 #include "effect_crossfade.h"
@@ -256,23 +256,10 @@ void onFrame()
 
 std::vector<HWND> gWinHandles;
 
-void parseXml()
-{
-	Xml::Document<char> doc;
 
-	// string must be writable
-	char * aString = new char[] {"<?xml version='1.0'?><doc>content</doc>"};
-
-	doc.Parse<0>(aString);
-
-	auto child = doc.FirstNode();
-
-}
 
 void setup()
 {
-	//parseXml();
-
 	setCanvasSize(displayWidth/2, displayHeight/2);
 	setFrameRate(FRAMERATE);
 

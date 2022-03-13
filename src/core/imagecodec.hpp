@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vdjview.hpp"
+#include "pixeltypes.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,13 +38,13 @@ namespace vdj
 			{
 				for (size_t col = 0; col < pb.width(); col++)
 				{
-					pix = pb.get(col, row);
+					pix = pb.At<PixelRGBA>(col, row);
 
 					// Assign to array to ensure the order is
 					// correct within the file
-					pixdata[0] = pix.r();
-					pixdata[1] = pix.g();
-					pixdata[2] = pix.b();
+					pixdata[0] = pix.red();
+					pixdata[1] = pix.green();
+					pixdata[2] = pix.blue();
 
 					fwrite(pixdata, 3, 1, fp);
 				}

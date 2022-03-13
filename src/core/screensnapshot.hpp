@@ -22,47 +22,51 @@
 #include "User32PixelMap.h"
 #include "sampler.hpp"
 
-class ScreenSnapshot : public User32PixelMap
+namespace vdj
 {
-    HDC fSourceDC;  // Device Context for the screen
-
-    // which location on the screen are we capturing
-    int fOriginX;   
-    int fOriginY;
-
-public:
-    ScreenSnapshot(int x, int y, int awidth, int aheight, HDC sourceDC)
-        : User32PixelMap(awidth, aheight)
-        ,fSourceDC(sourceDC)
-        ,fOriginX(x)
-        ,fOriginY(y)
+    class ScreenSnapshot : public User32PixelMap
     {
-        next();
-    }
+        HDC fSourceDC;  // Device Context for the screen
+
+        // which location on the screen are we capturing
+        int fOriginX;
+        int fOriginY;
+
+    public:
+        ScreenSnapshot(int x, int y, int awidth, int aheight, HDC sourceDC)
+            : User32PixelMap(awidth, aheight)
+            , fSourceDC(sourceDC)
+            , fOriginX(x)
+            , fOriginY(y)
+        {
+            next();
+        }
 
 
-    // take a snapshot of current screen
-    bool next()
-    {
-        BitBlt(getDC(), 0, 0, width(), height(), fSourceDC, fOriginX, fOriginY, SRCCOPY | CAPTUREBLT);
+        // take a snapshot of current screen
+        bool next()
+        {
+            BitBlt(getDC(), 0, 0, width(), height(), fSourceDC, fOriginX, fOriginY, SRCCOPY | CAPTUREBLT);
 
-        return true;
-    }
+            return true;
+        }
 
-    // GetWindowDC()
-    static std::shared_ptr<ScreenSnapshot> createForDisplay(int x, int y, int w, int h)
-    {
-        auto sourceDC = GetDC(nullptr);
+        // GetWindowDC()
+        static std::shared_ptr<ScreenSnapshot> createForDisplay(int x, int y, int w, int h)
+        {
+            auto sourceDC = GetDC(nullptr);
 
-        return std::make_shared<ScreenSnapshot>(x, y, w, h, sourceDC);
-    }
+            return std::make_shared<ScreenSnapshot>(x, y, w, h, sourceDC);
+        }
 
-    static std::shared_ptr<ScreenSnapshot> createForWindow(int x, int y, int w, int h, HWND hWnd)
-    {
-        auto sourceDC = GetWindowDC(hWnd);
-        if (nullptr == sourceDC)
-            return nullptr;
+        static std::shared_ptr<ScreenSnapshot> createForWindow(int x, int y, int w, int h, HWND hWnd)
+        {
+            auto sourceDC = GetWindowDC(hWnd);
+            if (nullptr == sourceDC)
+                return nullptr;
 
-        return std::make_shared<ScreenSnapshot>(x, y, w, h, sourceDC);
-    }
-};
+            return std::make_shared<ScreenSnapshot>(x, y, w, h, sourceDC);
+        }
+    };
+
+}

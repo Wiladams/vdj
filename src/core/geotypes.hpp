@@ -250,7 +250,7 @@ namespace vdj {
                 maxy = maths::Max(pt.y(), maxy);
             }
 
-            return GeoRect<T>(minx, miny, maxx - minx, maxy - miny0);
+            return GeoRect<T>(minx, miny, maxx - minx, maxy - miny);
         }
 
         void addPoint(const Point<T>& pt)
@@ -299,7 +299,8 @@ namespace vdj {
 
     // Bezier Reference
     // https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/Bezier/bezier-construct.html
-    // 
+    // https://pomax.github.io/bezierinfo/#tracing
+    //
     // Quadratic Bezier, defined by 3 points
     template <typename T>
     struct GeoQuadraticBezier

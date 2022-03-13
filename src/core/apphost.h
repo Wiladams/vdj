@@ -39,16 +39,11 @@
 #include <stdio.h>
 #include <string>
 
-
-
-
 #include "pubsub.h"
 #include "NativeWindow.hpp"
 #include "User32PixelMap.h"
 #include "joystick.h"
 #include "uievent.h"
-
-
 
 /*
 	The interface the implementing application sees is 'C'.  This 
@@ -71,7 +66,7 @@ APP_EXPORT extern char **gargv;
 
 
 APP_EXPORT extern User32Window * gAppWindow;
-APP_EXPORT extern std::shared_ptr<User32PixelMap> gAppSurface;
+APP_EXPORT extern std::shared_ptr<vdj::User32PixelMap> gAppSurface;
 
 
 

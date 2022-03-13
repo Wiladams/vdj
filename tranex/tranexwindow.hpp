@@ -10,7 +10,7 @@
 using namespace vdj;
 
 //CheckerSampler checkers(64, PixelRGBA(0xff1f1f1f), PixelRGBA(0xffDDDDDD));
-CheckerSampler checkers(64, PixelRGBA(0xffDDDDDD), PixelRGBA(0xffDDDDDD));
+CheckerSampler checkers(64, PixelRGBA(0xDD, 0xFF), PixelRGBA(0xDD, 0xff));
 
 //===== Discreet Graphic Elements =====
 // Add a discrete line
@@ -153,8 +153,9 @@ void drawShapes()
 		strokePolygon(*gAppSurface, fig, vdj::PixelRGBA(0xffff0000), 1);
 	}
 
-
-
+	//aaline(*gAppSurface, 10,10, 300, 100, PixelRGBA(0xffff0000), 1);
+	//aaline(*gAppSurface, 300, 100, 300, 400, PixelRGBA(0xff00ff00), 1);
+	//aaline(*gAppSurface, 300, 400, 10, 10, PixelRGBA(0xff0000ff), 1);
 }
 
 void TranexWindow::draw(PixelView &ctx)

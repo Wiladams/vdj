@@ -6,6 +6,8 @@
     or swapping bytes in an integer.
 */
 
+#include "apidefs.h"
+
 #include <math.h>
 #include <cstdio>
 
@@ -211,7 +213,7 @@ namespace vdj
     // aligned chunks of memory based on a good integer size.
     // when bitsperpixel/8 == alignment, then things are very simple
     // otherwise, there's some padding.
-    INLINE int GetAlignedByteCount(const int width, const int bitsperpixel, const int alignment)
+    INLINE int GetAlignedByteCount(const size_t width, const size_t bitsperpixel, const int alignment)
     {
         return (((width * (bitsperpixel / 8)) + (alignment - 1)) & ~(alignment - 1));
     }

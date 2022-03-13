@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tranex.cpp">
+    <ClCompile Include="..\src\core\appmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\core\appmain.cpp">
+    <ClCompile Include="testView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\core\gui.cpp">
@@ -26,55 +26,28 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\core\geotypes.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\core\pixeltypes.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\core\sampler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\checkerboard.hpp">
+    <ClInclude Include="..\src\core\apphost.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\draw2d.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\vdjPoint.hpp">
+    <ClInclude Include="..\src\core\vdjview.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\slider.hpp">
+    <ClInclude Include="..\src\core\User32PixelMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\normalizedwindow.hpp">
+    <ClInclude Include="..\src\core\pixeltypes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tranexwindow.hpp">
+    <ClInclude Include="..\src\core\sampledraw2d.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\svgpathbuilder.hpp">
+    <ClInclude Include="..\src\core\screensnapshot.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\maths.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\core\appthread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\core\apphost.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\core\timing.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\core\locklessqueue.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\core\apidefs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\core\coloring.h">
+    <ClInclude Include="..\src\core\geotypes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\gui.h">

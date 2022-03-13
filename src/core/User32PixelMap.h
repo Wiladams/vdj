@@ -12,87 +12,88 @@
 */
 
 
-
+#include "bitbang.hpp"
+#include "pixeltypes.hpp"
 #include "vdjview.hpp"
 
 #include <windows.h>
 #include <cstdio>
 
-class User32PixelMap : public vdj::PixelView
-{
-    // for interacting with win32
-    BITMAPINFO fBMInfo{ {0} };
-    HBITMAP fDIBHandle = nullptr;
-    HGDIOBJ fOriginDIBHandle = nullptr;
-    HDC     fBitmapDC = nullptr;
+namespace vdj {
 
-    size_t fDataSize=0;       // How much data is allocated
-
-    // A couple of constants
-    static const int bitsPerPixel = 32;
-    static const int alignment = 4;
-
-public:
-
-    User32PixelMap(const long awidth, const long aheight)
-        : vdj::PixelView(awidth,aheight,awidth*4, vdj::PixelView::Format::Bgra32)
+    class User32PixelMap : public PixelView
     {
-        init(awidth, aheight);
-    }
+        // for interacting with win32
+        BITMAPINFO fBMInfo{ {0} };
+        HBITMAP fDIBHandle = nullptr;
+        HGDIOBJ fOriginDIBHandle = nullptr;
+        HDC     fBitmapDC = nullptr;
 
-    virtual ~User32PixelMap()
-    {
-        // BUGBUG
-        // unload the dib section
-        //::SelectObject(fBitmapDC, fOriginDIBHandle);
+        size_t fDataSize = 0;       // How much data is allocated
 
-        // and destroy it
-        ::DeleteObject(fDIBHandle);
-    }
+        // A couple of constants
+        static const int bitsPerPixel = 32;
+        static const int alignment = 4;
 
-    bool init(int awidth, int aheight)
-    {
-        fStride = vdj::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
+    public:
 
-        fBMInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-        fBMInfo.bmiHeader.biWidth = awidth;
-        fBMInfo.bmiHeader.biHeight = -(LONG)aheight;	// top-down DIB Section
-        fBMInfo.bmiHeader.biPlanes = 1;
-        fBMInfo.bmiHeader.biBitCount = bitsPerPixel;
-        fBMInfo.bmiHeader.biSizeImage = fStride * aheight;
-        fBMInfo.bmiHeader.biClrImportant = 0;
-        fBMInfo.bmiHeader.biClrUsed = 0;
-        fBMInfo.bmiHeader.biCompression = BI_RGB;
-        fDataSize = fBMInfo.bmiHeader.biSizeImage;
+        User32PixelMap(const size_t awidth, const size_t aheight)
+            : PixelView(awidth, aheight)
+        {
+            init(awidth, aheight);
+        }
 
-        // We'll create a DIBSection so we have an actual backing
-        // storage for the context to draw into
-        // BUGBUG - check for nullptr and fail if found
-        fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, (void **) & fData, nullptr, 0);
+        virtual ~User32PixelMap()
+        {
+            // BUGBUG
+            // unload the dib section
+            //::SelectObject(fBitmapDC, fOriginDIBHandle);
 
+            // and destroy it
+            //::DeleteObject(fDIBHandle);
+        }
 
-        // Create a GDI Device Context
-        fBitmapDC = ::CreateCompatibleDC(nullptr);
+        bool init(size_t awidth, size_t aheight)
+        {
+            fStride = vdj::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
 
-        // select the DIBSection into the memory context so we can 
-        // peform operations with it
-        fOriginDIBHandle = ::SelectObject(fBitmapDC, fDIBHandle);
+            fBMInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+            fBMInfo.bmiHeader.biWidth = (LONG)awidth;
+            fBMInfo.bmiHeader.biHeight = -(LONG)aheight;	// top-down DIB Section
+            fBMInfo.bmiHeader.biPlanes = 1;
+            fBMInfo.bmiHeader.biBitCount = bitsPerPixel;
+            fBMInfo.bmiHeader.biSizeImage = (DWORD)(fStride * aheight);
+            fBMInfo.bmiHeader.biClrImportant = 0;
+            fBMInfo.bmiHeader.biClrUsed = 0;
+            fBMInfo.bmiHeader.biCompression = BI_RGB;
+            fDataSize = fBMInfo.bmiHeader.biSizeImage;
 
-        // Do some setup to the DC to make it suitable
-        // for drawing with GDI if we choose to do that
-        ::SetBkMode(fBitmapDC, TRANSPARENT);
-        ::SetGraphicsMode(fBitmapDC, GM_ADVANCED);
+            // We'll create a DIBSection so we have an actual backing
+            // storage for the context to draw into
+            // BUGBUG - check for nullptr and fail if found
+            //uint8_t* data = nullptr;
+            fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, (void**)&fData, nullptr, 0);
 
-        return true;
-    }
+            //Recreate(awidth, aheight, Simd::View<Simd::Allocator>::Format::Bgra32, data, alignment);
 
-    // Make sure all GDI drawing, if any, has completed
-    void flush()
-    {
-        ::GdiFlush();
-    }
+            // Create a GDI Device Context
+            fBitmapDC = ::CreateCompatibleDC(nullptr);
 
-    INLINE BITMAPINFO getBitmapInfo() { return fBMInfo; }
-    INLINE HDC getDC() { return fBitmapDC; }                // Memory DC we can use for GDI
+            // select the DIBSection into the memory context so we can 
+            // peform operations with it
+            fOriginDIBHandle = ::SelectObject(fBitmapDC, fDIBHandle);
 
- };
+            // Do some setup to the DC to make it suitable
+            // for drawing with GDI if we choose to do that
+            ::SetBkMode(fBitmapDC, TRANSPARENT);
+            ::SetGraphicsMode(fBitmapDC, GM_ADVANCED);
+
+            return true;
+        }
+
+        INLINE BITMAPINFO getBitmapInfo() { return fBMInfo; }
+        INLINE HDC getDC() { return fBitmapDC; }                // Memory DC we can use for GDI
+
+    };
+
+} // namespace vdj

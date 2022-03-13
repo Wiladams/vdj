@@ -8,23 +8,25 @@ namespace vdj {
     // No clipping is performed
     // This is really a specialization of a one
     // line rectangle
-    inline void sampleSpan(PixelView& pmap, const int x, const int y, const int width, ISample1D<PixelRGBA>& s)
+    INLINE void sampleSpan(PixelView & pmap, const int x, const int y, const int width, ISample1D<PixelRGBA>& s)
     {
         for (int col = x; col < x + width; col++)
         {
             double u = maths::Map(col, x, (double)x + width - 1, 0, 1);
             PixelRGBA c = s.getValue(u);
-            pmap.set(col, y, c);
+            //pmap.set(col, y, c);
+            pmap.At<PixelRGBA>(col, y) = c;
         }
     }
 
-    inline void sampleHLine2D(PixelView& pb, const GeoSpan<int>& span,
+    INLINE void sampleHLine2D(PixelView & pb, const GeoSpan<int>& span,
         double v, ISample2D<PixelRGBA>& src)
     {
         for (int x = span.x(); x < span.rightMost(); x++)
         {
             double u = maths::Map(x, span.x(), span.rightMost(), 0.0, 1.0);
-            pb.set(x, span.y(), src.getValue(u, v));
+            //pb.set(x, span.y(), src.getValue(u, v));
+            pb.At<PixelRGBA>(x, span.y()) = src.getValue(u, v);
         }
     }
 
@@ -34,7 +36,7 @@ namespace vdj {
     // Here we assume clipping has already occured
     // and the srcExt is already calculated  to capture
     // the desired section of the sampler
-    inline void sampleRect(PixelView& pmap, const PixelRect& dstisect, const RectD& srcExt, ISample2D<PixelRGBA>& src)
+    INLINE void sampleRect(PixelView & pmap, const PixelRect& dstisect, const RectD& srcExt, ISample2D<PixelRGBA>& src)
     {
         // find the intersection between the source rectangle
         // and the frame
@@ -52,12 +54,12 @@ namespace vdj {
         double u = srcExt.left();
         double v = srcExt.top();
 
-        for (int row = dstisect.y(); row < dstisect.y() + dstisect.h() - 1; row++)
+        for (size_t row = dstisect.y(); row < dstisect.y() + dstisect.h() - 1; row++)
         {
-            for (int col = dstisect.x(); col < dstisect.x() + dstisect.w() - 1; col++)
+            for (size_t col = dstisect.left(); col < dstisect.left() + dstisect.w() - 1; col++)
             {
                 auto c = src.getValue(u, v);
-                pmap.set(col, row, c);
+                pmap.At<PixelRGBA>(col, row) = c;
                 u += uadv;
             }
             v += vadv;
@@ -65,9 +67,9 @@ namespace vdj {
         }
     }
 
-    // 
-    // Draw a bezier line using a single line sampler
-    INLINE void sampledBezier(PixelView& pmap, const PixelBezier& bez, const int segments, ISample1D<PixelRGBA>& c)
+
+
+    INLINE void sampledBezier(PixelView & pmap, const PixelBezier& bez, const int segments, ISample1D<PixelRGBA>& c)
     {
         // Get starting point
         auto lp = bez.eval(0);
@@ -88,7 +90,7 @@ namespace vdj {
         }
     }
 
-    INLINE void sampleTriangle(PixelView& pb, const int x1, const int y1,
+    INLINE void sampleTriangle(PixelView & pb, const ptrdiff_t x1, const ptrdiff_t y1,
         const int x2, const int y2,
         const int x3, const int y3,
         ISample2D<PixelRGBA>& src,
@@ -97,14 +99,10 @@ namespace vdj {
         // Create a triangle object
         PixelTriangle tri(x1, y1, x2, y2, x3, y3);
 
-        // find topmost vertex of the polygon
-        int nverts = 3;
-        int vmin = 0;
-
-        //sampleConvexPolygon(pb, tri.verts, nverts, vmin, src, clipRect);
+        // sample polygon
     }
 
-    INLINE void sampleCircle(PixelView& pmap, const int centerX, const int centerY, const int radius, ISample2D<PixelRGBA>& fillStyle)
+    INLINE void sampleCircle(PixelView & pmap, const ptrdiff_t centerX, const ptrdiff_t centerY, const ptrdiff_t radius, ISample2D<PixelRGBA>& fillStyle)
     {
         auto x1 = centerX - radius, y1 = centerY - radius;
         auto  x2 = centerX + radius, y2 = centerY + radius;
@@ -124,7 +122,7 @@ namespace vdj {
                     auto u = maths::Map(x, x1, x2, 0, 1);
                     auto v = maths::Map(y, y1, y2, 0, 1);
                     auto rgb = fillStyle.getValue(u, v);
-                    pmap.set(x, y, rgb);
+                    pmap.getPixel(x, y) = rgb;
                 }
             }
         }

@@ -46,6 +46,8 @@ namespace vdj
         virtual bool writeOctet(const uint8_t octet) noexcept = 0;
     };
 
+
+
     // 
     // BinStream
     // reads and writes to a chunk of memory
