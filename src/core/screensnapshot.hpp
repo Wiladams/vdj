@@ -22,9 +22,9 @@
 #include "User32PixelMap.h"
 #include "sampler.hpp"
 
-namespace vdj
+namespace alib
 {
-    class ScreenSnapshot : public User32PixelMap
+    class ScreenSnapshot : public User32PixelMap, public ISample2D<PixelRGBA>
     {
         HDC fSourceDC;  // Device Context for the screen
 
@@ -51,7 +51,15 @@ namespace vdj
             return true;
         }
 
-        // GetWindowDC()
+        PixelRGBA getValue(double u, double v) override
+        {
+            size_t px = size_t((u * ((double)width() - 1)) + 0.5);
+            size_t py = size_t((v * ((double)height() - 1)) + 0.5);
+
+            return At<PixelRGBA>(px, py);
+        }
+
+
         static std::shared_ptr<ScreenSnapshot> createForDisplay(int x, int y, int w, int h)
         {
             auto sourceDC = GetDC(nullptr);

@@ -1,12 +1,14 @@
 #include "gui.h"
 #include "stopwatch.h"
 
-//using namespace vdj;
+using namespace alib;
 
 static bool gIsFullscreen = false;
+// drawing context
+Draw2DContext gCtxt;
 
 static VOIDROUTINE gSetupHandler = nullptr;
-static VOIDROUTINE gDrawHandler = nullptr;
+static VOIDROUTINE gOnFrameHandler = nullptr;
 
 // Keyboard event handling
 static KeyEventHandler gKeyPressedHandler = nullptr;
@@ -28,7 +30,7 @@ uint64_t fDroppedFrames = 0;
 uint64_t frameCount;
 
 
-vdj::PixelRGBA* pixels = nullptr;
+PixelRGBA* pixels = nullptr;
 
 // Keyboard Globals
 int keyCode=0;
@@ -152,9 +154,9 @@ bool isFullscreen() noexcept
     return gIsFullscreen;
 }
 
-void background(const vdj::PixelRGBA &c) noexcept
+void background(const PixelRGBA &c) noexcept
 {
-    vdj::fillRectangle(*gAppSurface, 0, 0, canvasWidth, canvasHeight, c);
+    fillRectangle(*gAppSurface, 0, 0, canvasWidth, canvasHeight, c);
 }
 
 
@@ -174,7 +176,7 @@ void setFrameRate(const int rate)
 // We deal with frame timing here because it's the only place
 // we have absolute control of what happens in the user's app
 //
-// if we're just past the frame time, then call the 'draw()'
+// if we're just past the frame time, then call the 'onFrame()'
 // function if there is one.
 // Otherwise, just let the loop continue
 // 
@@ -190,8 +192,8 @@ void onLoop()
         //
 
         frameCount += 1;
-        if (gDrawHandler != nullptr) {
-            gDrawHandler();
+        if (gOnFrameHandler != nullptr) {
+            gOnFrameHandler();
         }
         
         // Since we're on the clock, we will refresh
@@ -208,6 +210,12 @@ void onLoop()
         }
     }
 
+}
+
+void setCanvasSize(ptrdiff_t w, ptrdiff_t h)
+{
+    setWindowSize(w, h);
+    gCtxt.setView(gAppSurface);
 }
 
 // Called by the app framework as the first thing
@@ -236,19 +244,22 @@ void onLoad()
 
 
     gSetupHandler = (VOIDROUTINE)GetProcAddress(hInst, "setup");
-    gDrawHandler = (VOIDROUTINE)GetProcAddress(hInst, "onFrame");
+    gOnFrameHandler = (VOIDROUTINE)GetProcAddress(hInst, "onFrame");
 
     subscribe(handleKeyboardEvent);
     subscribe(handleMouseEvent);
 
     // Start with a default background before setup
     // does something.
-    background(vdj::PixelRGBA(0xffffffff));
+    background(PixelRGBA(0xffffffff));
 
     // Call a setup routine if the user specified one
     if (gSetupHandler != nullptr) {
         gSetupHandler();
     }
+
+    // setup global drawing context
+    gCtxt.setView(gAppSurface);
 
     // If there was any drawing done during setup
     // display that at least once.

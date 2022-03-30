@@ -8,7 +8,7 @@
 
 struct MemoryStream
 {
-    const uint8_t*  fData;
+    uint8_t*  fData;
     size_t          fSize;
     size_t          fPosition;
 
@@ -47,7 +47,7 @@ public:
     }
 
     // Move the read head to the position indicated
-    //
+    // only go as far as space allocated
     INLINE bool seek(size_t pos)
     {
         if (pos <= fSize)
@@ -60,12 +60,20 @@ public:
     }
 
     INLINE size_t size() const { return fSize; }
-    INLINE const uint8_t* data() const { return fData; }
     INLINE size_t tell() const { return fPosition; }
 
-    // Current - return the character at the current position
-    //INLINE const uint8_t * current() const {return fData + fPosition;}
-    INLINE const uint8_t* peek() const { return fData + fPosition; }
+    INLINE uint8_t* data() { return fData; }
+    INLINE const uint8_t* data() const { return fData; }
+    
+    // Current - return pointer to the current position
+    INLINE const uint8_t * current() const {return fData + fPosition;}
+
+    // return character at current position without advancing cursor
+    INLINE uint8_t peek() { return ((uint8_t *)(fData))[fPosition]; }
+
+
+
+
 
     // eof - end of file, no more data left
     INLINE bool eof() const { return fPosition >= fSize; }

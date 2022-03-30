@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include <string.h>
 
-namespace vdj
+namespace alib
 {
 
     // Define this here instead of using MIN to
@@ -62,42 +62,42 @@ namespace vdj
 
     protected:
         BinStream()
-            : fdata(nullptr),
-            fbigend(false),
-            fcursor(0),
-            fsize(0)
+            : fdata(nullptr)
+            ,fsize(0)
+            ,fcursor(0)
+            ,fbigend(false)
         {}
 
     public:
 
         BinStream(void* data, const size_t size, size_t position = 0, bool littleendian = true)
-            : fbigend(!littleendian),
-            fcursor(position),
-            fdata((uint8_t*)data),
-            fsize(size)
+            : fdata((uint8_t*)data)
+            ,fsize(size)
+            ,fcursor(position)
+            ,fbigend(!littleendian)
         {}
 
-        inline constexpr bool isValid() const noexcept { return fdata != nullptr; }
+        INLINE constexpr bool isValid() const noexcept { return fdata != nullptr; }
 
         // report whether we've reached the end of the stream yet
-        inline bool isEOF() const noexcept { return (remaining() < 1); }
-        inline void setBigEndian(bool isBig) noexcept { fbigend = isBig; }
+        INLINE bool isEOF() const noexcept { return (remaining() < 1); }
+        INLINE void setBigEndian(bool isBig) noexcept { fbigend = isBig; }
 
-        inline void setData(uint8_t* data, size_t size) noexcept
+        INLINE void setData(uint8_t* data, size_t size) noexcept
         {
             fdata = data;
             fsize = size;
         }
 
-        inline constexpr uint8_t* data() noexcept { return fdata; }
-        inline constexpr size_t size() const noexcept { return fsize; }
+        INLINE constexpr uint8_t* data() noexcept { return fdata; }
+        INLINE constexpr size_t size() const noexcept { return fsize; }
 
         // report how many bytes remain to be read
         // from stream
-        inline constexpr size_t remaining() const noexcept { return fsize - fcursor; }
+        INLINE constexpr size_t remaining() const noexcept { return fsize - fcursor; }
 
         // Report the current cursor position.
-        inline constexpr size_t tell() noexcept { return fcursor; }
+        INLINE constexpr size_t tell() noexcept { return fcursor; }
 
 
 
@@ -109,7 +109,7 @@ namespace vdj
         // ensuring the data remains valid outside the context of the 
         // original stream.  but, since the data pointer was passed in 
         // from the beginning, that guarantee is already absent.
-        BinStream range(size_t pos, size_t size) noexcept
+        INLINE BinStream range(size_t pos, size_t size) noexcept
         {
             if (pos < 0 || (fsize < 0)) {
                 return BinStream();
@@ -129,14 +129,14 @@ namespace vdj
         }
 
         // A convenience to return a range from our current position
-        BinStream range(size_t size) noexcept { return range(fcursor, size); }
+        INLINE BinStream range(size_t size) noexcept { return range(fcursor, size); }
 
 
         // move the position cursor to an absolute offset
         // from the beginning of the data
         // if desired position is out of range, do not
         // reposition, and return false
-        bool seek(const size_t pos) noexcept
+        INLINE bool seek(const size_t pos) noexcept
         {
             // if position specified outside of range
             // just set it past end of stream
@@ -158,36 +158,36 @@ namespace vdj
         // move the cursor ahead by the amount
         // specified in the offset
         // seek, relative to current position
-        bool skip(int64_t offset) noexcept { return seek(fcursor + offset); }
+        INLINE bool skip(int64_t offset) noexcept { return seek(fcursor + offset); }
 
         // Seek forwad to a boundary of the specified
         // number of bytes.
-        bool alignTo(size_t num) noexcept { return skip(fcursor % num); }
+        INLINE bool alignTo(size_t num) noexcept { return skip(fcursor % num); }
 
         // Skip to the next even numbered offset
-        bool skipToEven() noexcept { return alignTo(2); }
+        INLINE bool skipToEven() noexcept { return alignTo(2); }
 
         // Return a pointer to the current position
-        constexpr void* getPositionPointer() noexcept { return fdata + fcursor; }
+        INLINE constexpr uint8_t * getPositionPointer() noexcept { return fdata + fcursor; }
 
 
         // operators to treat stream as array
         // accessing beyond bounds is undefined, but should
         // not crash
-        uint8_t operator[](const size_t offset) const noexcept
+        INLINE uint8_t operator[](const size_t offset) const noexcept
         {
             return offset < fsize ? fdata[offset] : 0;
         }
 
         // setting a value
         // BUGBUG - does not do bounds checking
-        uint8_t& operator[](const size_t offset) noexcept
+        INLINE uint8_t& operator[](const size_t offset) noexcept
         {
             return fdata[offset];
         }
 
         // get next 8-bit byte, but don't advance the cursor
-        int peekOctet(int offset = 0) noexcept
+        INLINE int peekOctet(int offset = 0) noexcept
         {
             if (fcursor + offset >= fsize) {
                 return -1;
@@ -198,7 +198,7 @@ namespace vdj
 
 
         // get 8 bits, and advance the cursor
-        uint8_t readOctet() noexcept
+        INLINE uint8_t readOctet() noexcept
         {
             //print("self.cursor: ", self.cursor, self.size)
             if (fcursor >= fsize) {
@@ -218,7 +218,7 @@ namespace vdj
         // buffer.  The number of bytes read is the smaller of
         // the number desired 'n' and the number actually remaining
         // in the data buffer.
-        size_t readBytes(uint8_t* buff, const size_t n) noexcept
+        INLINE size_t readBytes(uint8_t* buff, const size_t n) noexcept
         {
             // asking for fewer than one bytes
             // returns 0
@@ -246,7 +246,7 @@ namespace vdj
         // read in a null terminated string
         // n - tells us the size of the buffer we're reading into
         // 
-        size_t readStringZ(const size_t n, char* buff) noexcept
+        INLINE size_t readStringZ(const size_t n, char* buff) noexcept
         {
             // determine maximum number of bytes we can read
             // we leave one space for the null terminator
@@ -277,7 +277,7 @@ namespace vdj
         // In either case, the line ending will not be included in the buffer
         //
         // The buffer is null terminated
-        size_t readLine(char* buff, const size_t bufflen) noexcept
+        INLINE size_t readLine(char* buff, const size_t bufflen) noexcept
         {
             static const int CR = '\r';
             static const int LF = '\n';
@@ -327,7 +327,7 @@ namespace vdj
         // The parameter 'n' determines how many bytes to read.
         // 'n' can be up to 8 
         // The routine will deal with big or little endian
-        uint64_t readInt(int n) noexcept
+        INLINE uint64_t readInt(int n) noexcept
         {
             uint64_t v = 0;
             int i = 0;
@@ -354,36 +354,36 @@ namespace vdj
         }
 
         // Read 8-bit signed integer
-        int8_t readInt8() noexcept { return (int8_t)readInt(1); }
+        INLINE int8_t readInt8() noexcept { return (int8_t)readInt(1); }
 
         // Read 8-bit unsigned integer
-        uint8_t readUInt8() noexcept { return (uint8_t)readInt(1); }
+        INLINE uint8_t readUInt8() noexcept { return (uint8_t)readInt(1); }
 
         // Read 16-bit signed integer
-        int16_t readInt16() noexcept { return (int16_t)readInt(2); }
+        INLINE int16_t readInt16() noexcept { return (int16_t)readInt(2); }
 
         // Read 16-bit unsigned integer
-        uint16_t readUInt16() noexcept { return (uint16_t)readInt(2); }
+        INLINE uint16_t readUInt16() noexcept { return (uint16_t)readInt(2); }
 
         // Read Signed 32-bit integer
-        int32_t readInt32() noexcept { return (int32_t)readInt(4); }
+        INLINE int32_t readInt32() noexcept { return (int32_t)readInt(4); }
 
         // Read unsigned 32-bit integer
-        uint32_t readUInt32() noexcept { return (uint32_t)readInt(4); }
+        INLINE uint32_t readUInt32() noexcept { return (uint32_t)readInt(4); }
 
         // Read signed 64-bit integer
-        int64_t readInt64() noexcept { return (int64_t)readInt(8); }
+        INLINE int64_t readInt64() noexcept { return (int64_t)readInt(8); }
 
-        uint64_t readUInt64() noexcept { return (uint64_t)readInt(8); }
+        INLINE uint64_t readUInt64() noexcept { return (uint64_t)readInt(8); }
 
-        float readFloat() noexcept
+        INLINE float readFloat() noexcept
         {
             U32float f1;
             f1.u32 = readUInt32();
             return f1.f;
         }
 
-        double readDouble() noexcept
+        INLINE double readDouble() noexcept
         {
             U64double d1;
             d1.u64 = readUInt64();
@@ -394,7 +394,7 @@ namespace vdj
             Writing to a binary stream
         */
         // Write a single octet to the stream
-        inline bool writeOctet(const uint8_t octet) noexcept
+        INLINE  bool writeOctet(const uint8_t octet) noexcept
         {
             fdata[fcursor] = octet;
             fcursor = fcursor + 1;
@@ -403,7 +403,7 @@ namespace vdj
         }
 
         // Write the specified number of bytes
-        bool writeBytes(const void* bytes, const size_t n) noexcept
+        INLINE bool writeBytes(const void* bytes, const size_t n) noexcept
         {
             if (bytes == nullptr) {
                 return false;
@@ -422,7 +422,7 @@ namespace vdj
         }
 
         // Write a null terminated string
-        bool writeStringZ(const char* str) noexcept
+        INLINE bool writeStringZ(const char* str) noexcept
         {
             if (str == nullptr) {
                 return 0;
@@ -437,7 +437,7 @@ namespace vdj
             return success;
         }
 
-        int writeInt(const uint64_t value, const size_t n) noexcept
+        INLINE int writeInt(const uint64_t value, const size_t n) noexcept
         {
             if (remaining() < n) {
                 // BUGBUG - throw exception
@@ -463,26 +463,26 @@ namespace vdj
             return n;
         }
 
-        size_t writeInt8(const int8_t n) noexcept { return writeInt(n, 1); }
-        size_t writeUInt8(const uint8_t n) noexcept { return writeInt(n, 1); }
+        INLINE size_t writeInt8(const int8_t n) noexcept { return writeInt(n, 1); }
+        INLINE size_t writeUInt8(const uint8_t n) noexcept { return writeInt(n, 1); }
 
-        size_t writeInt16(int16_t n) noexcept { return writeInt(n, 2); }
-        size_t writeUInt16(uint16_t n) noexcept { return writeInt(n, 2); }
+        INLINE size_t writeInt16(int16_t n) noexcept { return writeInt(n, 2); }
+        INLINE size_t writeUInt16(uint16_t n) noexcept { return writeInt(n, 2); }
 
-        size_t writeInt32(int32_t n) noexcept { return writeInt(n, 4); }
-        size_t writeUInt32(uint32_t n) noexcept { return writeInt(n, 4); }
+        INLINE size_t writeInt32(int32_t n) noexcept { return writeInt(n, 4); }
+        INLINE size_t writeUInt32(uint32_t n) noexcept { return writeInt(n, 4); }
 
-        size_t writeInt64(int64_t n) noexcept { return writeInt(n, 8); }
-        size_t writeUInt64(uint64_t n) noexcept { return writeInt(n, 8); }
+        INLINE size_t writeInt64(int64_t n) noexcept { return writeInt(n, 8); }
+        INLINE size_t writeUInt64(uint64_t n) noexcept { return writeInt(n, 8); }
 
-        void writeFloat(const float value) noexcept
+        INLINE void writeFloat(const float value) noexcept
         {
             U32float f1;
             f1.f = value;
             writeUInt32(f1.u32);
         }
 
-        void writeFloat(const double value) noexcept
+        INLINE void writeFloat(const double value) noexcept
         {
             U64double d1;
             d1.d = value;
@@ -492,14 +492,14 @@ namespace vdj
         // various useful fixed formats
         // fixed 2_14 numbers
         // 16-bit
-        float readF2Dot14() noexcept
+        INLINE float readF2Dot14() noexcept
         {
             return (float)readUInt16() / 0x4000;
         }
 
         // fixed 16_16 numbers
         // 32-bit
-        float readFixed() noexcept
+        INLINE float readFixed() noexcept
         {
             uint16_t decimal = readInt16();
             uint16_t fraction = readUInt16();
@@ -509,22 +509,18 @@ namespace vdj
 
         // fixed 2_30 numbers
         // 32-bit
-        float readF2Dot30() noexcept
+        INLINE float readF2Dot30() noexcept
         {
             return (float)readUInt32() / 0x4000000;
         }
 
         // Convenient names used in various documentation
-        uint8_t readBYTE()  noexcept { return readOctet(); }
-        uint16_t readWORD()  noexcept { return readUInt16(); }
-        uint32_t readDWORD()  noexcept { return  readUInt32(); }
-        int32_t readLONG()  noexcept { return readInt32(); }
+        INLINE uint8_t readBYTE()  noexcept { return readOctet(); }
+        INLINE uint16_t readWORD()  noexcept { return readUInt16(); }
+        INLINE uint32_t readDWORD()  noexcept { return  readUInt32(); }
+        INLINE int32_t readLONG()  noexcept { return readInt32(); }
 
-
-
-
-
-        /*
+/*
         readFWord = readInt16;
         readUFWord = readUInt16;
         readOffset16 = readUInt16;

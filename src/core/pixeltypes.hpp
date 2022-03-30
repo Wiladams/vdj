@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace vdj {
+namespace alib {
     using RectD = GeoRect<double>;
 
     using PixelBezier = GeoCubicBezier<ptrdiff_t>;

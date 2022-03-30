@@ -19,36 +19,36 @@ namespace vdj
 	// it maps the range of [0..1] to span the wrapped
 	// range.  This is good for sprite sheets for example.
 	//
-	struct SamplerWrapper : public ISample2D<PixelRGBA>
+	struct SamplerWrapper : public alib::ISample2D<alib::PixelRGBA>
 	{
 	protected:
 		double uFactor = 1;
 		double vFactor = 1;
 
 	public:
-		std::shared_ptr< ISample2D<PixelRGBA> > fBackground;	// The thing we're sub-sampling from
-		RectD fMovingFrame;
-		RectD fStickyBounds;
+		std::shared_ptr< alib::ISample2D<alib::PixelRGBA> > fBackground;	// The thing we're sub-sampling from
+		alib::RectD fMovingFrame;
+		alib::RectD fStickyBounds;
 
 	public:
 		SamplerWrapper()
 			: fBackground(nullptr)
-			, fMovingFrame(RectD(0, 0, 1, 1))
-			, fStickyBounds(RectD(0, 0, 1, 1))
+			, fMovingFrame(alib::RectD(0, 0, 1, 1))
+			, fStickyBounds(alib::RectD(0, 0, 1, 1))
 		{
 			onFrameChanged();
 		}
 
-		SamplerWrapper(std::shared_ptr< ISample2D<PixelRGBA> > wrapped, const RectD& bounds)
+		SamplerWrapper(std::shared_ptr< alib::ISample2D<alib::PixelRGBA> > wrapped, const alib::RectD& bounds)
 			:fBackground(wrapped)
-			, fMovingFrame(RectD(0, 0, 1, 1))
+			, fMovingFrame(alib::RectD(0, 0, 1, 1))
 			, fStickyBounds(bounds)
 		{
 			onFrameChanged();
 		}
 
-		SamplerWrapper(std::shared_ptr< ISample2D<PixelRGBA> > wrapped,
-			const RectD& bounds, const RectD& frame)
+		SamplerWrapper(std::shared_ptr< alib::ISample2D<alib::PixelRGBA> > wrapped,
+			const alib::RectD& bounds, const alib::RectD& frame)
 			:fBackground(wrapped)
 			, fMovingFrame(frame)
 			, fStickyBounds(bounds)
@@ -58,15 +58,15 @@ namespace vdj
 
 		virtual ~SamplerWrapper() = default;
 
-		RectD bounds() const { return fStickyBounds; }
-		void setBounds(const RectD& bounds)
+		alib::RectD bounds() const { return fStickyBounds; }
+		void setBounds(const alib::RectD& bounds)
 		{
 			fStickyBounds = bounds;
 			onFrameChanged();
 		}
 
-		RectD frame() const { return fMovingFrame; }
-		void setFrame(const RectD& frame)
+		alib::RectD frame() const { return fMovingFrame; }
+		void setFrame(const alib::RectD& frame)
 		{
 			fMovingFrame = frame;
 			onFrameChanged();
@@ -83,7 +83,7 @@ namespace vdj
 			return fMovingFrame.contains(u, v);
 		}
 
-		PixelRGBA getValue(double u, double v) override
+		alib::PixelRGBA getValue(double u, double v) override
 		{
 			if (nullptr != fBackground)
 			{
@@ -94,17 +94,17 @@ namespace vdj
 			}
 
 			// return transparent if we're not wrapping anything
-			return PixelRGBA(0x0);
+			return alib::PixelRGBA(0x0);
 		}
 
-		static std::shared_ptr< SamplerWrapper> create(std::shared_ptr< ISample2D<PixelRGBA> > wrapped)
+		static std::shared_ptr< SamplerWrapper> create(std::shared_ptr< ISample2D<alib::PixelRGBA> > wrapped)
 		{
-			return std::make_shared<SamplerWrapper>(wrapped, RectD(0, 0, 1, 1), RectD(0, 0, 1, 1));
+			return std::make_shared<SamplerWrapper>(wrapped, alib::RectD(0, 0, 1, 1), alib::RectD(0, 0, 1, 1));
 		}
 
-		static std::shared_ptr< SamplerWrapper> create(std::shared_ptr< ISample2D<PixelRGBA> > wrapped, const RectD& bounds)
+		static std::shared_ptr< SamplerWrapper> create(std::shared_ptr< ISample2D<alib::PixelRGBA> > wrapped, const alib::RectD& bounds)
 		{
-			return std::make_shared<SamplerWrapper>(wrapped, bounds, RectD(0, 0, 1, 1));
+			return std::make_shared<SamplerWrapper>(wrapped, bounds, alib::RectD(0, 0, 1, 1));
 		}
 	};
 
@@ -131,13 +131,13 @@ namespace vdj
 			onFrameChanged();
 		}
 
-		SampledWindow(std::shared_ptr<ISample2D<PixelRGBA> > background)
-			:SamplerWrapper(background, RectD(0, 0, 1, 1))
+		SampledWindow(std::shared_ptr<ISample2D<alib::PixelRGBA> > background)
+			:SamplerWrapper(background, alib::RectD(0, 0, 1, 1))
 		{
 			onFrameChanged();
 		}
 
-		SampledWindow(std::shared_ptr<ISample2D<PixelRGBA> > background, const RectD& bounds)
+		SampledWindow(std::shared_ptr<ISample2D<alib::PixelRGBA> > background, const alib::RectD& bounds)
 			:SamplerWrapper(background, bounds)
 		{
 			onFrameChanged();
@@ -172,7 +172,7 @@ namespace vdj
 
 		// Reference: http://www.guyrutenberg.com/2007/11/19/c-goes-to-operator/
 		// useful for while loops
-		PixelRGBA getValue(double parentu, double parentv) override
+		alib::PixelRGBA getValue(double parentu, double parentv) override
 		{
 			// find which most visible child the uv coordinates hit
 			// ask that child for a value.
@@ -189,7 +189,7 @@ namespace vdj
 			if (nullptr != fBackground)
 				return fBackground->getValue(myu, myv);
 
-			return PixelRGBA(0x0);
+			return alib::PixelRGBA(0x0);
 		}
 
 	};

@@ -13,6 +13,7 @@
 //
 #include "apphost.h"
 #include "sampledraw2d.hpp"
+#include "draw2dcontext.hpp"
 
 #pragma comment (lib, "Synchronization.lib")
 
@@ -25,7 +26,7 @@ extern "C" {
 	APP_EXPORT void onFrame();
 
 	APP_EXPORT void fullscreen() noexcept;
-	APP_EXPORT void background(const vdj::PixelRGBA &c) noexcept;
+	APP_EXPORT void background(const alib::PixelRGBA &c) noexcept;
 
 	// keyboard event processing
 	typedef void (*KeyEventHandler)(const KeyboardEvent& e);
@@ -46,6 +47,9 @@ extern "C" {
 	APP_EXPORT void mouseHWheel(const MouseEvent& e);
 
 	APP_EXPORT void setFrameRate(const int);
+
+	APP_EXPORT void setCanvasSize(ptrdiff_t w, ptrdiff_t h);
+
 #ifdef __cplusplus
 }
 #endif
@@ -53,6 +57,9 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
+	// drawing context
+	APP_EXPORT extern alib::Draw2DContext gCtxt;
+
 	// Size of the application area, set through
 	// createCanvas()
 	APP_EXPORT extern int width;
@@ -61,7 +68,7 @@ extern "C" {
 	APP_EXPORT extern size_t frameCount;
 	APP_EXPORT extern size_t droppedFrames;
 
-	APP_EXPORT extern vdj::PixelRGBA* pixels;
+	APP_EXPORT extern alib::PixelRGBA* pixels;
 
 	// Keyboard Globals
 	APP_EXPORT extern int keyCode;

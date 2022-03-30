@@ -6,12 +6,13 @@
 
 
 #define blend_pixel(bg, fg) PixelRGBA(				\
-	lerp255(bg.r(), fg.r(), fg.a()), \
-	lerp255(bg.g(), fg.g(), fg.a()), \
-	lerp255(bg.b(), fg.b(), fg.a()), fg.a())
+	alib::lerp255(bg.r(), fg.r(), fg.a()), \
+	alib::lerp255(bg.g(), fg.g(), fg.a()), \
+	alib::lerp255(bg.b(), fg.b(), fg.a()), \
+    fg.a())
 
 
-namespace vdj
+namespace alib
 {
 
 
@@ -39,43 +40,44 @@ namespace vdj
 
     struct PixelView 
     {
-/*
+        typedef std::allocator<uint8_t> Allocator;
+
         // Different pixel formats
         enum class Format {
             None = 0,
             Gray8,
-            Uv16,
+            //Uv16,
             Bgr24,
             Bgra32,
-            Int16,
-            Int32,
-            Int64,
-            Float,
-            Double,
-            BayerGrbg,
-            BayerGbrg,
-            BayerRggb,
-            BayerBggr,
-            Hsv24,          // Hue Saturation Value
-            Hsl24,          // Hue Saturation Lightness
+            //Int16,
+            //Int32,
+            //Int64,
+            //Float,
+            //Double,
+            //BayerGrbg,
+            //BayerGbrg,
+            //BayerRggb,
+            //BayerBggr,
+            //Hsv24,          // Hue Saturation Value
+            //Hsl24,          // Hue Saturation Lightness
             Rgb24,          // (3 8-bit channels) RGB, Red Green Blue
             Rgba32,         // (4 8-bit channels) RGBA, Red Green Blue Alpha
-            Uyvy16,         // (2 8-bit channels) UYVY422 
+            //Uyvy16,         // (2 8-bit channels) UYVY422 
 
         };
-        */
+        
     protected:
         size_t      fWidth;     // Pixels wide
         size_t      fHeight;    // Pixels high
         ptrdiff_t   fStride;    // Bytes per row
-        //const Format fFormat;    // The format of the pixels
+        const Format fFormat;    // The format of the pixels
         uint8_t* fData = nullptr;       // A pointer to the data
         bool        fOwner;     // Did we allocate the data
 
     public:
         PixelView();                     // Default constructor
         PixelView(const PixelView & view);  // copy constructor
-        PixelView(const size_t w, const size_t h);
+        PixelView(const size_t w, const size_t h, Format f=Format::None);
 
 
         // virtual destructor so base classes setup properly
@@ -84,22 +86,22 @@ namespace vdj
         // Useful attributes
         PixelView& ref();
 
-        template <class T> const T* row(size_t row) const;
-        template <class T> T* row(size_t r);
+        template <class T> INLINE const T* row(size_t row) const;
+        template <class T> INLINE T* row(size_t r);
 
         //INLINE T* getData() { return (T*)fData; }
-        //template <class T> 
-        INLINE PixelRGBA * getPixelPointer(size_t x, size_t y) { return &((PixelRGBA*)fData)[(y * width()) + x]; }
+
+        template <class T> INLINE T* getPixelPointer(size_t x, size_t y); 
 
         // regular things
-        INLINE constexpr size_t width() const noexcept { return fWidth; }
-        INLINE constexpr size_t height() const noexcept { return fHeight; }
-        INLINE constexpr size_t rowStride() const noexcept { return fStride; }
+        INLINE constexpr size_t width() const noexcept;
+        INLINE constexpr size_t height() const noexcept;
+        INLINE constexpr size_t rowStride() const noexcept;
 
         // Calculate whether a point is whithin our bounds
-        INLINE bool contains(double x, double y) const { return getBounds().contains((int)x, (int)y); }
-        INLINE PixelRect getBounds() const { return PixelRect(0, 0, width(), height()); }
-        INLINE PixelRect frame() const { return getBounds(); }
+        INLINE bool contains(double x, double y) const; //{ return getBounds().contains((int)x, (int)y); }
+        INLINE PixelRect getBounds() const; //{ return PixelRect(0, 0, width(), height()); }
+        INLINE PixelRect frame() const; //{ return getBounds(); }
 
         INLINE PixelRGBA& getPixel(size_t x, size_t y);
 
@@ -115,17 +117,6 @@ namespace vdj
         // Get reference to pixel
         template <class T> T& At(const Point<ptrdiff_t>& pt);
 
-        /*
-        // Set a pixel without checking constraints
-        template <class T>
-        INLINE void setPixel(const size_t x, const size_t y, const T& c)
-        {
-            if (c.isOpaque())
-                At(x, y) = c;
-            else
-                At(x, y) = blend_pixel(At(x, y), c);
-        }
-        */
 
         // set consecutive pixels in a row 
     // Assume the range has already been clipped
@@ -135,24 +126,6 @@ namespace vdj
         // we can use this fast intrinsic to fill
         // the whole area
         INLINE void setAllPixels(const PixelRGBA& c);
-
-        //
-        // set(), and get() are the general purpose ways to get and set
-        // pixel values.  They will do bounds checking.  If you want 
-        // to avoid bounds checking,then use the getPixel(), and setPixel() forms
-        // which MUST be implemented by a sub-class
-        //virtual void set(const int x, const int y, const T& c) {
-        //    if (!contains(x, y))
-        //        return;
-        //    
-        //    if (c.isTransparent())
-       //         return;
-
-        //    setPixel(x, y, c);
-        //}
-
-
-
 
     };
 
@@ -164,7 +137,7 @@ namespace vdj
         : fWidth(0)
         , fHeight(0)
         , fStride(0)
-        //, fFormat(None)
+        , fFormat(Format::None)
         , fData(nullptr)
         , fOwner(false)
     {
@@ -175,29 +148,38 @@ namespace vdj
         : fWidth(view.fWidth)
         , fHeight(view.fHeight)
         , fStride(view.fStride)
-        //, fFormat(view.fFormat)
+        , fFormat(view.fFormat)
         , fData(view.fData)
         , fOwner(false)
     {
     }
 
 
-    INLINE PixelView::PixelView(const size_t w, const size_t h)
+    INLINE PixelView::PixelView(const size_t w, const size_t h, Format f)
         : fWidth(w)
         , fHeight(h)
         , fStride(0)
-        //, fFormat(f)
+        , fFormat(f)
         , fData(nullptr)
         , fOwner(false)
     {
         //if (fData == nullptr && fHeight && fWidth && fStride && (fFormat != None))
         //{
         //    *(void**)&fData = Allocator::Allocate(fHeight * fStride, Allocator::Alignment());
-        //    _owner = true;
+        //    fOwner = true;
         //}
     }
 
     // Useful Properties 
+    INLINE constexpr size_t PixelView::width() const noexcept { return fWidth; }
+    INLINE constexpr size_t PixelView::height() const noexcept { return fHeight; }
+    INLINE constexpr size_t PixelView::rowStride() const noexcept { return fStride; }
+
+    INLINE bool PixelView::contains(double x, double y) const { return getBounds().contains((int)x, (int)y); }
+    INLINE PixelRect PixelView::getBounds() const { return PixelRect(0, 0, width(), height()); }
+    INLINE PixelRect PixelView::frame() const { return getBounds(); }
+
+
     INLINE PixelView& PixelView::ref() { return *this; }
 
     // Getting and setting pixel values
@@ -252,10 +234,12 @@ namespace vdj
         return ((T*)(fData + r * fStride));
     }
 
+    template<class T> INLINE T * PixelView::getPixelPointer(size_t x, size_t y) { return &((T *)fData)[(y * width()) + x]; }
+
     // Set all pixels to a given value
     INLINE void PixelView::setAllPixels(const PixelRGBA& c)
     {
-        uint32_t* pixelPtr = (uint32_t*)getPixelPointer(0, 0);
+        uint32_t* pixelPtr = getPixelPointer<uint32_t>(0, 0);
         size_t nPixels = width() * height();
 
         for (int i = 0; i < nPixels; i++)
@@ -266,7 +250,7 @@ namespace vdj
     {
         // Do an assert check
         // BUGBUG - should do line clipping
-        PixelRGBA* pixelPtr = (PixelRGBA*)getPixelPointer(x, y);
+        PixelRGBA* pixelPtr = getPixelPointer<PixelRGBA>(x, y);
 
         // do the opaqueness check only once instead
         // of inside the loop
@@ -291,7 +275,7 @@ namespace vdj
         {}
 
         // ISample2D<PixelRGBA>
-// specify location in normalized space [0..1]
+        // specify location in normalized space [0..1]
         PixelRGBA getValue(double u, double v) override
         {
             size_t px = size_t((u * ((double)fWrapped.width() - 1)) + 0.5);
@@ -300,19 +284,6 @@ namespace vdj
             return fWrapped.At<PixelRGBA>(px, py);
         }
 
-        /*
-        // when checking bounds, return totally transparent
-        // when outside bounds
-        // specify coordinates in pixel space [0..width,height]
-        T get(const int x, const int y) const
-        {
-            // reject pixel if out of boundary
-            if (!contains(x, y))
-                return T();
-
-            return At(x, y);
-        }
-        */
     };
     
 }

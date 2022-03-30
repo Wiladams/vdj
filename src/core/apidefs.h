@@ -1,5 +1,4 @@
-#ifndef __apidefs_h__
-#define __apidefs_h__
+#pragma once
 
 #include <cstdint>
 #include <cstddef>
@@ -32,9 +31,12 @@
 #define APP_EXTERN  extern
 
 
-
-
+#ifdef __BIG_ENDIAN__
+#define APP_BIG_ENDIAN	1
+#else
+#define APP_LITTLE_ENDIAN 1
 #endif
+
 
 // Random programming reference
 // 

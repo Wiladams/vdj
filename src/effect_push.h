@@ -16,16 +16,16 @@ struct Push : public vdj::AnimationWindow
 	// Quick and dirty left to right horizontal push
 	//
 	Push(double duration, 
-		vdj::SourceSampler s1,
-		vdj::SourceSampler s2)
+		alib::SourceSampler s1,
+		alib::SourceSampler s2)
 		:AnimationWindow(duration)
 	{
-		auto pusher = std::make_shared<SamplerWrapper>(s2, vdj::RectD(0, 0, 1, 1));
-		auto pushee = std::make_shared<SamplerWrapper>(s1, vdj::RectD(0, 0, 1, 1));
+		auto pusher = std::make_shared<SamplerWrapper>(s2, alib::RectD(0, 0, 1, 1));
+		auto pushee = std::make_shared<SamplerWrapper>(s1, alib::RectD(0, 0, 1, 1));
 
 
-		addMotion(vdj::SamplerPositionAnimation::create(pusher, vdj::RectD(-1, 0, 1, 1), vdj::RectD(0, 0, 1, 1)));
-		addMotion(vdj::SamplerPositionAnimation::create(pushee, vdj::RectD(0, 0, 1, 1), vdj::RectD(1, 0, 1, 1)));
+		addMotion(vdj::SamplerPositionAnimation::create(pusher, alib::RectD(-1, 0, 1, 1), alib::RectD(0, 0, 1, 1)));
+		addMotion(vdj::SamplerPositionAnimation::create(pushee, alib::RectD(0, 0, 1, 1), alib::RectD(1, 0, 1, 1)));
 		
 		addChild(pusher);
 		addChild(pushee);
@@ -36,8 +36,8 @@ struct Push : public vdj::AnimationWindow
 	// but, you can implement any kind of push by specifying
 	// all these parameters
 	Push(double duration,
-		vdj::SourceSampler s1, const vdj::RectD&s1bounds, const vdj::RectD&s1starting, const vdj::RectD&s1ending,
-		vdj::SourceSampler s2, const vdj::RectD&s2bounds, const vdj::RectD&s2starting, const vdj::RectD&s2ending)
+		alib::SourceSampler s1, const alib::RectD&s1bounds, const alib::RectD&s1starting, const alib::RectD&s1ending,
+		alib::SourceSampler s2, const alib::RectD&s2bounds, const alib::RectD&s2starting, const alib::RectD&s2ending)
 		:AnimationWindow(duration)
 	{
 		auto pusher = std::make_shared<SamplerWrapperWindow>(s2, s2bounds);

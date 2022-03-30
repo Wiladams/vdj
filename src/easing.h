@@ -128,7 +128,7 @@ namespace easing
 	// Elastic
 	INLINE double elasticIn(double x)
 	{
-		const double c4 = (2 * maths::Pi) / 3;
+		const double c4 = (2 * alib::Pi) / 3;
 
 		if (x == 0)
 			return 0;

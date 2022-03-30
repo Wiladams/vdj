@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-namespace vdj {
+namespace alib {
     //using ColorRGBA = float4;
     //using ColorRGB = float3;
 
@@ -37,9 +37,9 @@ namespace vdj {
             // construct lookup tables
             for (int counter = 0; counter < 256; counter++)
             {
-                redfactor[counter] = (uint8_t)maths::Min(56, (int)maths::Floor((counter * redcoeff) + 0.5f));
-                greenfactor[counter] = (uint8_t)maths::Min(181, (int)maths::Floor((counter * greencoeff) + 0.5f));
-                bluefactor[counter] = (uint8_t)maths::Min(18, (int)maths::Floor((counter * bluecoeff) + 0.5f));
+                redfactor[counter] = (uint8_t)alib::Min(56, (int)alib::Floor((counter * redcoeff) + 0.5f));
+                greenfactor[counter] = (uint8_t)alib::Min(181, (int)alib::Floor((counter * greencoeff) + 0.5f));
+                bluefactor[counter] = (uint8_t)alib::Min(18, (int)alib::Floor((counter * bluecoeff) + 0.5f));
             }
         }
 

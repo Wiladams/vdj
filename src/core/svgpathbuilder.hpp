@@ -12,7 +12,7 @@
 // Working in conjuction with some context, you can build
 // figures, with stroke and fill commands
 //
-namespace vdj
+namespace alib
 {
     //
      // A path should have commands and vertices
@@ -163,8 +163,7 @@ namespace vdj
 
         // SVG - Q
         // Quadratic Bezier curve
-        void quadTo(const T& c1x, const T& c1y,
-            const T& p2x, const T& p2y)
+        void quadTo(const T& c1x, const T& c1y, const T& p2x, const T& p2y)
         {
             addCommand(ContourCommand::QuadraticBezierTo);
             addNumber(c1x);
@@ -219,9 +218,9 @@ namespace vdj
 
 
 
-        INLINE std::vector<GeoPolygon<T> > getFigures()
+        INLINE std::vector<GeoPolygon<T> > getPaths()
         {
-            typedef Point<ptrdiff_t> Point;
+            typedef Point<T> Point;
 
             size_t ptidx = 0;
             Point lastPos;
@@ -306,7 +305,7 @@ namespace vdj
                     fig.addPoint(lastPos);
                     for (size_t i = 1; i <= maxSegments; i++)
                     {
-                        double u = maths::Map(i, 0, maxSegments, 0.0, 1.0);
+                        double u = alib::Map(i, 0, maxSegments, 0.0, 1.0);
                         auto pt = bez.eval(u);
                         fig.addPoint(pt);
                     }
@@ -329,7 +328,7 @@ namespace vdj
                     fig.addPoint(lastPos);
                     for (size_t i = 1; i <= maxSegments; i++)
                     {
-                        double u = maths::Map(i, 0, maxSegments, 0.0 , 1.0);
+                        double u = alib::Map(i, 0, maxSegments, 0.0 , 1.0);
                         auto pt = bez.eval(u);
                         fig.addPoint(pt);
                     }

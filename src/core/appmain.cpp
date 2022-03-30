@@ -63,7 +63,7 @@ char **gargv;
 
 
 User32Window * gAppWindow = nullptr;
-std::shared_ptr<vdj::User32PixelMap>  gAppSurface = nullptr;
+std::shared_ptr<alib::User32PixelMap>  gAppSurface = nullptr;
 
 bool gIsLayered = false;
 
@@ -837,7 +837,7 @@ void setWindowPosition(int x, int y)
     gAppWindow->moveTo(x, y);
 }
 
-bool setCanvasSize(long aWidth, long aHeight)
+bool setWindowSize(ptrdiff_t aWidth, ptrdiff_t aHeight)
 {
     // Create new drawing surface
     if (gAppSurface != nullptr) {
@@ -847,7 +847,7 @@ bool setCanvasSize(long aWidth, long aHeight)
     }
 
 
-    gAppSurface = std::make_shared<vdj::User32PixelMap>(aWidth, aHeight);
+    gAppSurface = std::make_shared<alib::User32PixelMap>(aWidth, aHeight);
     canvasWidth = aWidth;
     canvasHeight = aHeight;
     
@@ -910,8 +910,6 @@ LRESULT CALLBACK MsgHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     //    HandlePointerMessage(hWnd, msg, wParam, lParam);
     //}
     else if (msg == WM_ERASEBKGND) {
-        //loopCount = loopCount + 1;
-        //printf("WM_ERASEBKGND: %d\n", loopCount);
         if (gPaintHandler != nullptr) {
             gPaintHandler(hWnd, msg, wParam, lParam);
         }
@@ -920,9 +918,15 @@ LRESULT CALLBACK MsgHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         res = 1;
     }
     else if (msg == WM_PAINT) {
-        if (gPaintHandler != nullptr) 
+        if (gPaintHandler != nullptr)
         {
-                gPaintHandler(hWnd, msg, wParam, lParam);
+            gPaintHandler(hWnd, msg, wParam, lParam);
+        }
+
+        RECT rect;
+        if (GetUpdateRect(hWnd, &rect, FALSE)) 
+        {
+            ValidateRect(hWnd, NULL);
         }
     }
     else if (msg == WM_WINDOWPOSCHANGING) {
@@ -1071,7 +1075,7 @@ bool prolog()
 
     // set the canvas a default size to start
     // but don't show it
-    setCanvasSize(640, 480);
+    setWindowSize(640, 480);
 
     gAppWindow = gAppWindowKind.createWindow("Application Window", 640, 480);
 

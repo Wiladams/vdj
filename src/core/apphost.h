@@ -66,7 +66,7 @@ APP_EXPORT extern char **gargv;
 
 
 APP_EXPORT extern User32Window * gAppWindow;
-APP_EXPORT extern std::shared_ptr<vdj::User32PixelMap> gAppSurface;
+APP_EXPORT extern std::shared_ptr<alib::User32PixelMap> gAppSurface;
 
 
 
@@ -132,7 +132,7 @@ APP_EXPORT void hide();
 
 
 APP_EXPORT void setWindowPosition( int x, int y);
-APP_EXPORT bool setCanvasSize(long aWidth, long aHeight);
+APP_EXPORT bool setWindowSize(ptrdiff_t aWidth, ptrdiff_t aHeight);
 
 
 #ifdef __cplusplus

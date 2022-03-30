@@ -21,61 +21,76 @@
 
 class mmap
 {
+    uint8_t* fData;
+    size_t fSize;
+
     HANDLE fFileHandle;
     HANDLE fMapHandle;
-    size_t fSize;
-    void * fData;
 
     bool fIsValid;
 
-
-
+    // don't allow copy constructor
+    // or assignment operator
+    mmap(const mmap& other) = delete;
+    mmap& operator=(const mmap& other) = delete;
 
 public:
     mmap(HANDLE filehandle, HANDLE maphandle, void* data, size_t length)
-        :fFileHandle(filehandle),
-        fMapHandle(maphandle),
-        fData(data),
-        fSize(length)
+        :fData((uint8_t*)data)
+        ,fSize(length)
+        ,fFileHandle(filehandle)
+        ,fMapHandle(maphandle)
     {
         fIsValid = true;
     }
 
-
     mmap()
-        : fFileHandle(nullptr),
-        fMapHandle(nullptr),
-        fIsValid(false),
-        fSize(0),
-        fData(nullptr)
+        : fData(nullptr)
+        ,fSize(0)
+        ,fFileHandle(nullptr)
+        ,fMapHandle(nullptr)
+        ,fIsValid(false)
     {}
 
     virtual ~mmap() {close();}
 
     bool isValid() {return fIsValid;}
-    void * data() {return fData;}
+    uint8_t * data() {return fData;}
     size_t size() {return fSize;}
     
     bool close()
 	{
         if (fData != nullptr) {
-		    UnmapViewOfFile(fData);
+		    ::UnmapViewOfFile(fData);
 		    fData = nullptr;
         }
 
 	    if (fMapHandle != INVALID_HANDLE_VALUE) {
-		    CloseHandle(fMapHandle);
+		    ::CloseHandle(fMapHandle);
 		    fMapHandle = INVALID_HANDLE_VALUE;
         }
 
 	    if (fFileHandle != INVALID_HANDLE_VALUE) {
-		    CloseHandle(fFileHandle);
+		    ::CloseHandle(fFileHandle);
 		    fFileHandle = INVALID_HANDLE_VALUE;
         }
 
         return true;
     }
 
+    // get byte at specified position
+    // access without range checking
+    uint8_t operator[](size_t offset) const
+    {
+        return fData[offset];
+    }
+
+    // access with range checking
+    uint8_t at(size_t offset) const
+    {
+        //assert(offset < size());
+        return fData[offset];
+    }
 
     // factory method
     // desiredAccess - GENERIC_READ, GENERIC_WRITE, GENERIC_EXECUTE
@@ -109,30 +124,29 @@ public:
         // if we're opening for writing, then we don't want to 
         // limit the size in CreateFileMappingA
         LARGE_INTEGER psize;
-        BOOL bResult = GetFileSizeEx(filehandle, &psize);
-        int64_t size = psize.QuadPart;
+        BOOL bResult = ::GetFileSizeEx(filehandle, &psize);
+        int64_t size = static_cast<uint64_t>(psize.QuadPart);
 
 	    // Open mapping
-        HANDLE maphandle = CreateFileMappingA(filehandle, nullptr, PAGE_READONLY, psize.HighPart, psize.LowPart, nullptr);
+        HANDLE maphandle = ::CreateFileMappingA(filehandle, nullptr, PAGE_READONLY, psize.HighPart, psize.LowPart, nullptr);
         //printf("CREATE File Mapping: ", maphandle)
 	    
         if (maphandle == INVALID_HANDLE_VALUE) 
         {
 		    //error("Could not create file map: "..tostring(ffi.C.GetLastError()))
             // close file handle and set it to invalid
-            CloseHandle(filehandle);
+            ::CloseHandle(filehandle);
             filehandle = INVALID_HANDLE_VALUE;
 
             return {} ;
         }
 	
 	    // Open view
-	    void * data = MapViewOfFile(maphandle, FILE_MAP_READ, 0, 0, 0);
-	    //print("MAP VIEW: ", m.map)
+	    void * data = ::MapViewOfFile(maphandle, FILE_MAP_READ, 0, 0, 0);
 	    
         if (data == nullptr) {
-            CloseHandle(maphandle);
-            CloseHandle(filehandle);
+            ::CloseHandle(maphandle);
+            ::CloseHandle(filehandle);
             maphandle = INVALID_HANDLE_VALUE;
             filehandle = INVALID_HANDLE_VALUE;
 

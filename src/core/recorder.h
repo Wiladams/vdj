@@ -12,7 +12,7 @@
 
 #include <string>
 
-namespace vdj
+namespace alib
 {
     class Recorder
     {

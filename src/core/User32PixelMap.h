@@ -19,9 +19,9 @@
 #include <windows.h>
 #include <cstdio>
 
-namespace vdj {
+namespace alib {
 
-    class User32PixelMap : public PixelView
+    class User32PixelMap : public alib::PixelView
     {
         // for interacting with win32
         BITMAPINFO fBMInfo{ {0} };
@@ -47,15 +47,15 @@ namespace vdj {
         {
             // BUGBUG
             // unload the dib section
-            //::SelectObject(fBitmapDC, fOriginDIBHandle);
+            ::SelectObject(fBitmapDC, fOriginDIBHandle);
 
             // and destroy it
-            //::DeleteObject(fDIBHandle);
+            ::DeleteObject(fDIBHandle);
         }
 
         bool init(size_t awidth, size_t aheight)
         {
-            fStride = vdj::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
+            fStride = alib::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
 
             fBMInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
             fBMInfo.bmiHeader.biWidth = (LONG)awidth;

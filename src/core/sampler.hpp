@@ -5,7 +5,7 @@
 
 #include <array>
 
-namespace vdj {
+namespace alib {
     // The ISample interface is meant to support a generic interface
 // for generating color values based on parameters.
 // Doing this makes it easy to create color values for different
@@ -124,7 +124,7 @@ namespace vdj {
     // an RGB color value
     // 380 <= wl <= 780 nanometers
     // gamma typically 1.0
-    static inline vdj::PixelRGBA  ColorRGBAFromWavelength(double wl, double gamma = 1.0)
+    static inline alib::PixelRGBA  ColorRGBAFromWavelength(double wl, double gamma = 1.0)
     {
 
         double red = 0;

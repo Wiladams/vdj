@@ -3,7 +3,7 @@
 
 #include "draw2d.hpp"
 
-namespace vdj {
+namespace alib {
     // Use a sampler to fill in a span
     // No clipping is performed
     // This is really a specialization of a one
@@ -12,7 +12,7 @@ namespace vdj {
     {
         for (int col = x; col < x + width; col++)
         {
-            double u = maths::Map(col, x, (double)x + width - 1, 0, 1);
+            double u = alib::Map(col, x, (double)x + width - 1, 0, 1);
             PixelRGBA c = s.getValue(u);
             //pmap.set(col, y, c);
             pmap.At<PixelRGBA>(col, y) = c;
@@ -24,7 +24,7 @@ namespace vdj {
     {
         for (int x = span.x(); x < span.rightMost(); x++)
         {
-            double u = maths::Map(x, span.x(), span.rightMost(), 0.0, 1.0);
+            double u = alib::Map(x, span.x(), span.rightMost(), 0.0, 1.0);
             //pb.set(x, span.y(), src.getValue(u, v));
             pb.At<PixelRGBA>(x, span.y()) = src.getValue(u, v);
         }
@@ -54,9 +54,9 @@ namespace vdj {
         double u = srcExt.left();
         double v = srcExt.top();
 
-        for (size_t row = dstisect.y(); row < dstisect.y() + dstisect.h() - 1; row++)
+        for (ptrdiff_t row = dstisect.y(); row < dstisect.y() + dstisect.h() - 1; row++)
         {
-            for (size_t col = dstisect.left(); col < dstisect.left() + dstisect.w() - 1; col++)
+            for (ptrdiff_t col = dstisect.left(); col < dstisect.left() + dstisect.w() - 1; col++)
             {
                 auto c = src.getValue(u, v);
                 pmap.At<PixelRGBA>(col, row) = c;
@@ -119,8 +119,8 @@ namespace vdj {
                 auto distX = (x - centerX + 0.5), distY = (y - centerY + 0.5);
                 auto distance = sqrt(distX * distX + distY * distY);
                 if (distance <= radius) {
-                    auto u = maths::Map(x, x1, x2, 0, 1);
-                    auto v = maths::Map(y, y1, y2, 0, 1);
+                    auto u = alib::Map(x, x1, x2, 0.0, 1.0);
+                    auto v = alib::Map(y, y1, y2, 0.0, 1.0);
                     auto rgb = fillStyle.getValue(u, v);
                     pmap.getPixel(x, y) = rgb;
                 }
@@ -129,7 +129,7 @@ namespace vdj {
     }
 
 }
-// namespace vdj
+// namespace alib
 
 
 #endif

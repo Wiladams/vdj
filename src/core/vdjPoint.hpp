@@ -3,7 +3,7 @@
 #include "apidefs.h"
 #include "maths.hpp"
 
-namespace vdj {
+namespace alib {
 
     template <typename T>
     struct Point
@@ -67,13 +67,13 @@ namespace vdj {
     template<>
     INLINE ptrdiff_t Convert<ptrdiff_t, double>(double src)
     {
-        return (ptrdiff_t)maths::Round(src);
+        return (ptrdiff_t)alib::Round(src);
     }
 
     template<>
     INLINE ptrdiff_t Convert<ptrdiff_t, float>(float src)
     {
-        return (ptrdiff_t)maths::Round(src);
+        return (ptrdiff_t)alib::Round(src);
     }
 
     template <typename T>

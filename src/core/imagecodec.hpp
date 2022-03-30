@@ -8,7 +8,7 @@
 
 
 
-namespace vdj
+namespace alib
 {
 	class ImageCodec
 	{
@@ -31,14 +31,14 @@ namespace vdj
 			fprintf(fp, "P6\n%d %d\n255\n", (int)pb.width(), (int)pb.height());
 
 			// write the individual pixel values in binary form
-			PixelRGBA pix;
+			alib::PixelRGBA pix;
 			uint8_t pixdata[3];
 
 			for (size_t row = 0; row < pb.height(); row++)
 			{
 				for (size_t col = 0; col < pb.width(); col++)
 				{
-					pix = pb.At<PixelRGBA>(col, row);
+					pix = pb.At<alib::PixelRGBA>(col, row);
 
 					// Assign to array to ensure the order is
 					// correct within the file

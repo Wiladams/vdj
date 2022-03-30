@@ -122,9 +122,6 @@
     <ClInclude Include="..\src\xmlparse.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\core\memstream.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\core\vdjmemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -138,6 +135,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Simd\SimdView.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\locklessqueue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\draw2dcontext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

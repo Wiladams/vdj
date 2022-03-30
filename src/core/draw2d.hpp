@@ -29,10 +29,9 @@
 #include <memory>
 #include <algorithm>
 
-using namespace maths;
 
 
-namespace vdj 
+namespace alib 
 {
 
     INLINE void setSpan(PixelView &pmap, const size_t x, const size_t y, const size_t w, const PixelRGBA& c)
@@ -179,7 +178,7 @@ namespace vdj
         }
     }
 
-    INLINE void line(PixelView & pmap, const vdj::Point<ptrdiff_t> &p1, const vdj::Point<ptrdiff_t>& p2, const PixelRGBA& c, size_t width = 1)
+    INLINE void line(PixelView & pmap, const alib::Point<ptrdiff_t> &p1, const alib::Point<ptrdiff_t>& p2, const PixelRGBA& c, size_t width = 1)
     {
         line(pmap, p1.x(), p1.y(), p2.x(), p2.y(), c, width);
     }
@@ -190,13 +189,12 @@ namespace vdj
     //
     INLINE void strokePolygon(PixelView & pb, const GeoPolygon<ptrdiff_t>& poly, const PixelRGBA& c, size_t width=1)
     {
-        typedef vdj::Point<ptrdiff_t> Point;
+        typedef alib::Point<ptrdiff_t> Point;
 
         for (size_t i = 0; i < poly.fVertices.size(); ++i)
         {
             const Point& p1 = (i ? poly.fVertices[i - 1] : poly.fVertices.back()), p2 = poly.fVertices[i];
             line(pb, p1.x(), p1.y(), p2.x(), p2.y(), c, width);
-            //aaline(pb, p1.x(), p1.y(), p2.x(), p2.y(), c, width);
         }
     }
 
@@ -207,7 +205,7 @@ namespace vdj
             std::vector<ptrdiff_t> intersections;
             for (size_t i = 0; i < poly.fVertices.size(); ++i)
             {
-                const vdj::Point<ptrdiff_t>& p0 = (i ? poly.fVertices[i - 1] : poly.fVertices.back()), p1 = poly.fVertices[i];
+                const alib::Point<ptrdiff_t>& p0 = (i ? poly.fVertices[i - 1] : poly.fVertices.back()), p1 = poly.fVertices[i];
                 if ((y >= p0.y() && y < p1.y()) || (y >= p1.y() && y < p0.y()))
                     intersections.push_back(p0.x() + (y - p0.y()) * (p1.x() - p0.x()) / (p1.y() - p0.y()));
             }
@@ -236,12 +234,16 @@ namespace vdj
         line(pmap, x + w - 1, y, x + w - 1, y + h - 1, c);
     }
 
+    INLINE void strokeRectangle(PixelView& pmap, const PixelRect& r, const PixelRGBA& c)
+    {
+        strokeRectangle(pmap, r.x(), r.y(), r.w(), r.h(), c);
+    }
+
     // fill the inside of a rectangle
     INLINE void fillRectangle(PixelView & pmap, const int x, const int y, const int w, const int h, const PixelRGBA &c)
     {
         // We calculate clip area up front
         // so we don't have to do clipLine for every single line
-        //auto psize = pmap.Size();
         PixelRect pmapRect(0, 0, pmap.width() - 1, pmap.height() - 1);
         PixelRect dstRect = pmapRect.intersection(PixelRect{ x,y,w,h });
 
@@ -251,11 +253,16 @@ namespace vdj
             return;
 
         // Do a line by line draw
-        for (int row = dstRect.top(); row < dstRect.top() + dstRect.h(); row++)
+        for (ptrdiff_t row = dstRect.top(); row < dstRect.bottom(); ++row)
         {
-            //setSpan(pmap, dstRect.left(), row, dstRect.w(), c);
-            pmap.setSpan(dstRect.x(), row, dstRect.w(), c);
+            auto* dst = &pmap.At<PixelRGBA>(0, row);
+            for (ptrdiff_t col = dstRect.left(); col < dstRect.right(); ++col)
+                dst[col] = c;
         }
+        //for (int row = dstRect.top(); row < dstRect.top() + dstRect.h(); row++)
+        //{
+        //    pmap.setSpan(dstRect.x(), row, dstRect.w(), c);
+        //}
     }
 
     INLINE void fillRectangle(PixelView & pmap, const PixelRect& r, const PixelRGBA& c)
@@ -283,10 +290,10 @@ namespace vdj
 
         for (int i = 0; i < steps; i++) {
             auto u = (double)i / steps;
-            auto angle = u * (2 * maths::Pi);
+            auto angle = u * (2 * alib::Pi);
 
-            int x = (int)Floor((awidth / 2.0) * cos(angle));
-            int y = (int)Floor((aheight / 2.0) * sin(angle));
+            int x = (int)alib::Floor((awidth / 2.0) * cos(angle));
+            int y = (int)alib::Floor((aheight / 2.0) * sin(angle));
             poly.addPoint(Point<ptrdiff_t>(x + centerx, y + centery));
         }
         poly.findTopmost();
@@ -355,15 +362,15 @@ namespace vdj
         // we're trying to avoid knowing the internal details of the
         // pixel maps, so we use getPixelPointer() to get a pointer
         // realistically, the blit should be implemented in PixelMap
-        uint32_t* dstPtr = (uint32_t*)pb.getPixelPointer(dstX, dstY);
+        uint32_t* dstPtr = pb.getPixelPointer<uint32_t>(dstX, dstY);
 
         int rowCount = 0;
         for (int srcrow = srcY; srcrow < srcY + dstisect.h(); srcrow++)
         {
-            uint32_t* srcPtr = (uint32_t*)src.getPixelPointer(srcX, srcrow);
+            uint32_t* srcPtr = src.getPixelPointer<uint32_t>(srcX, srcrow);
             memcpy(dstPtr, srcPtr, dstisect.w() * 4);
             rowCount++;
-            dstPtr = (uint32_t*)pb.getPixelPointer(dstisect.left(), dstisect.top() + rowCount);
+            dstPtr = pb.getPixelPointer<uint32_t>(dstisect.left(), dstisect.top() + rowCount);
         }
     }
 

@@ -38,16 +38,19 @@ namespace vdj
 		double fEndProgress = 1.0;
 
 	public:
+		// Constructors
 		IAnimateField() = default;
 
 		IAnimateField(double startTime, double endTime)
 			:fStartProgress(startTime),
 			fEndProgress(endTime)
-		{
+		{}
 
-		}
-
+		// Destructor
 		virtual ~IAnimateField() {}
+
+		virtual void onUpdate(double u) = 0;
+
 
 		void setProgressEnvelope(double startTime, double endTime)
 		{
@@ -69,12 +72,10 @@ namespace vdj
 
 
 			double u1 = (u - fStartProgress) / (fEndProgress - fStartProgress);
-			u1 = maths::Clamp(u1, 0, 1);
+			u1 = alib::Clamp(u1, 0, 1);
 
 			onUpdate(u1);
 		}
-
-		virtual void onUpdate(double u) = 0;
 
 		void setEasing(PFunc1Double ease)
 		{
@@ -90,12 +91,12 @@ namespace vdj
 	struct SamplerPositionAnimation : public IAnimateField
 	{
 		SharedSamplerWrapper fSampler;
-		RectD fBeginPos;
-		RectD fEndPos;
+		alib::RectD fBeginPos;
+		alib::RectD fEndPos;
 
 		SamplerPositionAnimation(SharedSamplerWrapper wrapped,
-			const RectD& beginPos,
-			const RectD& endPos)
+			const alib::RectD& beginPos,
+			const alib::RectD& endPos)
 			: fSampler(wrapped)
 			, fBeginPos(beginPos)
 			, fEndPos(endPos)
@@ -105,14 +106,14 @@ namespace vdj
 		void onUpdate(double u) override
 		{
 			double u1 = fEasing(u);
-			auto newValue = maths::Lerp(u1, fBeginPos, fEndPos);
+			auto newValue = alib::Lerp(u1, fBeginPos, fEndPos);
 
 			fSampler->setFrame(newValue);
 		}
 
 		static std::shared_ptr< SamplerPositionAnimation> create(SharedSamplerWrapper wrapped,
-			const RectD& beginPos,
-			const RectD& endPos)
+			const alib::RectD& beginPos,
+			const alib::RectD& endPos)
 		{
 			return std::make_shared< SamplerPositionAnimation>(wrapped, beginPos, endPos);
 		}
@@ -200,7 +201,7 @@ namespace vdj
 	// a timeline and want to control exactly how far along the effect is
 		void setProgress(double u)
 		{
-			fProgress = maths::Clamp(u, 0.0, 1.0);
+			fProgress = alib::Clamp(u, 0.0, 1.0);
 			onProgress(fProgress);
 		}
 
@@ -212,11 +213,11 @@ namespace vdj
 			if (!isRunning())
 				return;
 
-			auto u = maths::Map(fTimer.seconds(), fStartTime, fEndTime, 0.0, 1.0);
+			auto u = alib::Map(fTimer.seconds(), fStartTime, fEndTime, 0.0, 1.0);
 			if (fDirection < 0)
 				u = 1.0 - u;
 
-			fProgress = maths::Clamp(u, 0.0, 1.0);
+			fProgress = alib::Clamp(u, 0.0, 1.0);
 
 			onProgress(fProgress);
 

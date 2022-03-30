@@ -5,7 +5,8 @@
 
 #include <vector>
 
-namespace vdj {
+namespace alib 
+{
     // Axis aligned bounding box
     template <typename T>
     struct AABB
@@ -212,7 +213,7 @@ namespace vdj {
         ptrdiff_t fTop = 65535;
         ptrdiff_t fBottom = 0;
         bool fIsClosed = true;
-        std::vector<vdj::Point<T> > fVertices;
+        std::vector<alib::Point<T> > fVertices;
 
         GeoPolygon(bool closed = false)
             :fTop(65535)
@@ -244,10 +245,10 @@ namespace vdj {
 
             for (auto& pt : fVertices)
             {
-                minx = maths::Min(pt.x(), minx);
-                maxx = maths::Max(pt.x(), maxx);
-                miny = maths::Min(pt.y(), miny);
-                maxy = maths::Max(pt.y(), maxy);
+                minx = alib::Min(pt.x(), minx);
+                maxx = alib::Max(pt.x(), maxx);
+                miny = alib::Min(pt.y(), miny);
+                maxy = alib::Max(pt.y(), maxy);
             }
 
             return GeoRect<T>(minx, miny, maxx - minx, maxy - miny);
@@ -265,8 +266,10 @@ namespace vdj {
 
             for (size_t i = 0; i < fVertices.size(); ++i)
             {
-                fTop = std::min(fTop, fVertices[i].y());
-                fBottom = std::max(fBottom, fVertices[i].y());
+                fTop = fTop < fVertices[i].y() ? fTop : fVertices[i].y();
+                fBottom = fBottom > fVertices[i].y() ? fBottom : fVertices[i].y();
+                //fTop = std::min(fTop, fVertices[i].y());
+                //fBottom = std::max(fBottom, fVertices[i].y());
             }
             fTop = std::max<ptrdiff_t>(0, fTop);
             fBottom = std::min<ptrdiff_t>(fBottom, 65535);    
@@ -367,4 +370,4 @@ namespace vdj {
 
 
 }
-// vdj namespace
+// alib namespace

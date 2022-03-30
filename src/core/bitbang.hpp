@@ -11,12 +11,13 @@
 #include <math.h>
 #include <cstdio>
 
-namespace vdj 
+namespace alib 
 {
 #define U64x(hi, lo)	(((uint64_t)0x##hi << 32) + (uint64_t)0x##lo)
 
     // Determine at runtime if the CPU is little-endian (intel standard)
-    INLINE bool isLE() {
+    INLINE bool isLE() 
+    {
         int i = 1;
         return (int)*((unsigned char*)&i) == 1;
     }
@@ -39,15 +40,7 @@ namespace vdj
             return false;
         }
 
-        while (1 < n)
-        {
-            if ((n % 2) == 1) {
-                return false;
-            }
-            n = n / 2;
-        }
-
-        return true;
+        return (n & (n - 1)) == 0;
     }
     INLINE int i4_max(int i1, int i2) { return i2 < i1 ? i1 : i2; }
     INLINE int i4_min(int i1, int i2) { return i2 > i1 ? i1 : i2; }
