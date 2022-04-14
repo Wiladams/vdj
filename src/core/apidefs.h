@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <cstddef>
-
+#include <cmath>
 
 
 #ifdef _MSC_VER

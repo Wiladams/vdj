@@ -159,6 +159,7 @@
     <ClInclude Include="..\src\core\bitbang.hpp" />
     <ClInclude Include="..\src\core\draw2d.hpp" />
     <ClInclude Include="..\src\core\draw2dcontext.hpp" />
+    <ClInclude Include="..\src\core\fixed.h" />
     <ClInclude Include="..\src\core\geotypes.hpp" />
     <ClInclude Include="..\src\core\gui.h" />
     <ClInclude Include="..\src\core\imagecodec.hpp" />

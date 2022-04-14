@@ -6,6 +6,12 @@
 #include <memory>
 #include <algorithm>
 
+//#define blendPixel(bg, fg) PixelRGBA(				\
+//	alib::lerp255(bg.r(), fg.r(), fg.a()), \
+//	alib::lerp255(bg.g(), fg.g(), fg.a()), \
+//	alib::lerp255(bg.b(), fg.b(), fg.a()), \
+//    fg.a())
+
 namespace alib {
     using Real = float;
 
@@ -42,8 +48,11 @@ namespace alib {
         // clear() - set all pixels to a specified value
         void clear(const PixelRGBA& c);
 
-        void setSpan(const Real x, const Real y, const Real w, const PixelRGBA& c);
-        void setSpan(const GeoSpan<Real>& s, const PixelRGBA& c);
+        void hLine(const Real x, const Real y, const Real l, const PixelRGBA& c);
+        void hLine(const GeoSpan<Real>& s, const PixelRGBA& c);
+
+        void vLine(const Real x, const Real y, const Real l, const PixelRGBA& c);
+        void vLine(const GeoSpan<Real>& s, const PixelRGBA& c);
 
         void line(Real x1, Real y1, Real x2, Real y2, const PixelRGBA& color, Real swidth = 1);
         void line(const Point<Real>& p1, const Point<Real>& p2, const PixelRGBA& c, Real swidth = 1);
@@ -76,20 +85,42 @@ namespace alib {
     // Drawing
     INLINE void Draw2DContext::clear(const PixelRGBA& c)
     {
-        fView->setAllPixels(c);
+        PixelRGBA* pixelPtr = fView->row<PixelRGBA>(0);
+        //size_t nPixels = fView->width() * fView->height();
+        for (size_t row = 0; row < fView->height(); row++)
+        {
+            for (size_t col = 0; col < fView->width(); col++)
+                fView->At<PixelRGBA>(col,row) = c;
+        }
     }
 
-    INLINE void Draw2DContext::setSpan(const Real x, const Real y, const Real w, const PixelRGBA& c)
+    INLINE void Draw2DContext::hLine(const Real x, const Real y, const Real w, const PixelRGBA& c)
     {
         // do the loop
         fView->setSpan(x, y, w, c);
     }
 
-    INLINE void Draw2DContext::setSpan(const GeoSpan<Real>& s, const PixelRGBA& c)
+    INLINE void Draw2DContext::hLine(const GeoSpan<Real>& s, const PixelRGBA& c)
     {
-        setSpan(s.x(), s.y(), s.w(), c);
+        hLine(s.x(), s.y(), s.w(), c);
     }
 
+    INLINE void Draw2DContext::vLine(const Real x, const Real y, const Real l, const PixelRGBA& c)
+    {
+        auto rowStart = fView->row<PixelRGBA>((ptrdiff_t)y);
+        rowStart += (ptrdiff_t)x;
+        for (size_t i = 1; i <= l; i++)
+        {
+            //*rowStart = c;
+            //(uint8_t *)rowStart += fView->rowStride();
+        }
+
+    }
+
+    INLINE void Draw2DContext::vLine(const GeoSpan<Real>& s, const PixelRGBA& c)
+    {
+        //setSpan(s.x(), s.y(), s.w(), c);
+    }
 
     INLINE void Draw2DContext::line(Real sx1, Real sy1, Real sx2, Real sy2, const PixelRGBA& color, Real swidth)
     {
@@ -188,7 +219,7 @@ namespace alib {
 
         double error = dx / 2.0f;
         const ptrdiff_t ystep = (y1 < y2) ? 1 : -1;
-        ptrdiff_t y0 = y1 - swidth / 2;
+        ptrdiff_t y0 = y1 - swidth / 2.0;
 
         for (ptrdiff_t x = x1; x <= x2; x++)
         {
@@ -254,7 +285,7 @@ namespace alib {
                 Real left = std::max<Real>(0, intersections[i + 0]);
                 Real right = std::min<Real>(fView->width(), intersections[i + 1]);
 
-                setSpan(left, y, right - left, c);
+                hLine(left, y, right - left, c);
             }
         }
 

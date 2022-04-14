@@ -71,8 +71,8 @@ int loopCount = 0;
 
 // Some globals friendly to the p5 environment
 // Display Globals
-int canvasWidth = 0;
-int canvasHeight = 0;
+ptrdiff_t canvasWidth = 0;
+ptrdiff_t canvasHeight = 0;
 
 int displayWidth = 0;
 int displayHeight= 0;
@@ -837,7 +837,7 @@ void setWindowPosition(int x, int y)
     gAppWindow->moveTo(x, y);
 }
 
-bool setWindowSize(ptrdiff_t aWidth, ptrdiff_t aHeight)
+bool setWindowSize(size_t aWidth, size_t aHeight)
 {
     // Create new drawing surface
     if (gAppSurface != nullptr) {

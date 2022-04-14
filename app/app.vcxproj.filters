@@ -143,5 +143,8 @@
     <ClInclude Include="..\src\core\draw2dcontext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\core\fixed.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

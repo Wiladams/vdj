@@ -53,6 +53,9 @@ namespace alib
 
         PixelRGBA getValue(double u, double v) override
         {
+            u = alib::Clamp(u, 0, 1);
+            v = alib::Clamp(v, 0, 1);
+
             size_t px = size_t((u * ((double)width() - 1)) + 0.5);
             size_t py = size_t((v * ((double)height() - 1)) + 0.5);
 

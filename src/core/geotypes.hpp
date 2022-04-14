@@ -341,6 +341,9 @@ namespace alib
         Point<T> p4;
 
     public:
+        std::vector<T> tvals;
+
+    public:
         GeoCubicBezier(const Point<T>& pp1, const Point<T>& pp2, const Point<T>& pp3, const Point<T>& pp4)
             :p1(pp1), p2(pp2), p3(pp3), p4(pp4)
         {}
@@ -353,6 +356,54 @@ namespace alib
 
         {}
 
+        // generate a list of 't' values that will give 
+        // equal distance
+        INLINE double findUForX(ptrdiff_t x) const
+        {
+            double highEnd = 1.0;
+            double lowEnd = 0.0;
+
+            // Binary search to find the solution
+            while (true)
+            {
+                double u = highEnd - ((highEnd - lowEnd) / 2.0);
+
+                ptrdiff_t evalX = eval(u).fX;
+
+                if (evalX == x)
+                    return u;
+
+                if (evalX > x)
+                {
+                    highEnd = u;
+                }
+                else if (evalX < x)
+                {
+                    lowEnd = u;
+                }
+            }
+        }
+
+        INLINE void calcSpeeds()
+        {
+            // Figure out lowest value for t==0
+            // Figure out highest value for t == 1.0
+
+            auto p1 = eval(0);
+            auto p2 = eval(1.0);
+
+            tvals.empty();
+
+            // do the loop searching for best fits
+            for (size_t x = p1.x(); x <= p2.x(); x++)
+            {
+                auto u = findUForX(x);
+
+                tvals.push_back(u);
+            }
+        }
+
+        
         // Value of curve at parametric position 'u'
         // control points are P0, P1, P2, P3
         INLINE Point<T> eval(const double u) const

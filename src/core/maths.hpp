@@ -24,7 +24,10 @@
 #include <cmath>
 #include <limits>
 
-
+// dealing with alpha properly
+// use pre-multiplied
+//https://developer.nvidia.com/content/alpha-blending-pre-or-not-pre
+// 
 // turn a division by 255 into something 
 // much cheaper to calculate
 // for values between 0 and 65534
@@ -36,6 +39,9 @@
 //#define lerp255(bg, fg, a) ((uint8_t)div255((fg*a+bg*(255-a))))
 
 namespace alib {
+
+
+
     typedef double Float;
 
     INLINE int div255(int num) {return ((num + (num >> 8)) >> 8);}

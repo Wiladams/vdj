@@ -145,7 +145,8 @@ namespace alib
         uint64_t value = 0;
 
         if (bigendian) {
-            for (int i = bitcount; i >= 0; i--) {
+            size_t i = bitcount;
+            while  (i --> 0) {
                 size_t byteoffset = 0;
                 size_t bitoffset = 0;
                 getbitbyteoffset(startbit + i, byteoffset, bitoffset);

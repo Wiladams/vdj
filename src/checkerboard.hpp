@@ -114,3 +114,17 @@ namespace alib {
         }
     };
 }
+
+
+/*
+int uv_pattern_at(checkers, float u, float v)
+    float u2 = std::floor(u * checkers.width)
+    float v2 = std::floor(v * checkers.height)
+
+    if (u2 + v2) mod 2 == 0 then
+        return 0;
+    else
+        return 1;
+ end if
+}
+*/

@@ -115,8 +115,8 @@ struct PointerEvent {
 
 // File drop interactions
 struct FileDropEvent {
-    int x;
-    int y;
+    int x{};
+    int y{};
     std::vector<std::string> filenames;
 };
 

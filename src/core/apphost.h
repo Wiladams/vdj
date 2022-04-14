@@ -76,8 +76,8 @@ APP_EXPORT extern int displayHeight;
 APP_EXPORT extern unsigned int systemDpi;
 APP_EXPORT extern unsigned int systemPpi;
 
-APP_EXPORT extern int canvasWidth;
-APP_EXPORT extern int canvasHeight;
+APP_EXPORT extern ptrdiff_t canvasWidth;
+APP_EXPORT extern ptrdiff_t canvasHeight;
 
 
 
@@ -132,7 +132,7 @@ APP_EXPORT void hide();
 
 
 APP_EXPORT void setWindowPosition( int x, int y);
-APP_EXPORT bool setWindowSize(ptrdiff_t aWidth, ptrdiff_t aHeight);
+APP_EXPORT bool setWindowSize(size_t aWidth, size_t aHeight);
 
 
 #ifdef __cplusplus

@@ -5,7 +5,7 @@
 
 
 
-#define blend_pixel(bg, fg) PixelRGBA(				\
+#define blendPixel(bg, fg) PixelRGBA(				\
 	alib::lerp255(bg.r(), fg.r(), fg.a()), \
 	alib::lerp255(bg.g(), fg.g(), fg.a()), \
 	alib::lerp255(bg.b(), fg.b(), fg.a()), \
@@ -88,8 +88,6 @@ namespace alib
 
         template <class T> INLINE const T* row(size_t row) const;
         template <class T> INLINE T* row(size_t r);
-
-        //INLINE T* getData() { return (T*)fData; }
 
         template <class T> INLINE T* getPixelPointer(size_t x, size_t y); 
 
@@ -261,7 +259,7 @@ namespace alib
         }
         else {
             for (int i = 0; i < w; i++)
-                pixelPtr[i] = blend_pixel(pixelPtr[i], c);
+                pixelPtr[i] = blendPixel(pixelPtr[i], c);
         }
     }
     

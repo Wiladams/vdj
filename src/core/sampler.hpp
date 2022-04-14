@@ -5,6 +5,10 @@
 
 #include <array>
 
+// Reference:
+// http://raytracerchallenge.com/bonus/texture-mapping.html
+//
+
 namespace alib {
     // The ISample interface is meant to support a generic interface
 // for generating color values based on parameters.

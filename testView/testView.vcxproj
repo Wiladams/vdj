@@ -148,8 +148,10 @@
   <ItemGroup>
     <ClInclude Include="..\src\core\apphost.h" />
     <ClInclude Include="..\src\core\draw2d.hpp" />
+    <ClInclude Include="..\src\core\draw2dcontext.hpp" />
     <ClInclude Include="..\src\core\geotypes.hpp" />
     <ClInclude Include="..\src\core\gui.h" />
+    <ClInclude Include="..\src\core\pixelcache.hpp" />
     <ClInclude Include="..\src\core\pixeltypes.hpp" />
     <ClInclude Include="..\src\core\sampledraw2d.hpp" />
     <ClInclude Include="..\src\core\screensnapshot.hpp" />

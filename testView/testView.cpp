@@ -6,63 +6,24 @@
 using namespace vdj;
 using namespace alib;
 
-constexpr size_t CAPTURE_WIDTH = 600;
-constexpr size_t CAPTURE_HEIGHT = 600;
 
 constexpr size_t CANVAS_WIDTH = 1920;
 constexpr size_t CANVAS_HEIGHT = 1200;
 
+constexpr size_t CAPTURE_WIDTH = 600;
+constexpr size_t CAPTURE_HEIGHT = 1200;
 
 // Source Samplers
 std::shared_ptr<ScreenSnapshot> screenCapture = nullptr;
 std::shared_ptr< SamplerWrapper> screenCap1 = nullptr;
 std::shared_ptr< SamplerWrapper> screenCap2 = nullptr;
 
-// generate a list of 't' values that will give 
-// equal distance
-template <typename T>
-double findUForX(const GeoCubicBezier<T>& bez, ptrdiff_t x)
-{
-	double highEnd = 1.0;
-	double lowEnd = 0.0;
+//GeoCubicBezier<float> c1(1, 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2.0), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2.0), CANVAS_WIDTH - 1, 1);
+//GeoCubicBezier<float> c2(1, CANVAS_HEIGHT - 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2.0), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2.0), CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1);
 
-	// Binary search to find the solution
-	while (true)
-	{
-		double u = highEnd - ((highEnd - lowEnd) / 2.0);
+GeoCubicBezier<float> c1(1, 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT *0.25), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT * 0.25), CANVAS_WIDTH - 1, 1);
+GeoCubicBezier<float> c2(1, CANVAS_HEIGHT - 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT * 0.75), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT * 0.75), CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1);
 
-		ptrdiff_t evalX = bez.eval(u).fX;
-
-		if (evalX == x)
-			return u;
-
-		if (evalX > x)
-		{
-			highEnd = u;
-		} else if (evalX < x)
-		{
-			lowEnd = u;
-		}
-	}
-}
-
-template <typename T>
-void evalBezSpeed(const GeoCubicBezier<T>& bez, std::vector<T> &tvals)
-{
-	// Figure out lowest value for t==0
-	// Figure out highest value for t == 1.0
-
-	auto p1 = bez.eval(0);
-	auto p2 = bez.eval(1.0);
-
-	// do the loop searching for best fits
-	for (size_t x = p1.x(); x <= p2.x(); x++)
-	{
-		auto u = findUForX(bez, x);
-
-		tvals.push_back(u);
-	}
-}
 
 
 // 
@@ -72,12 +33,9 @@ void sampledBezierLoft(PixelView& pmap, const GeoCubicBezier<T>& c1, const ptrdi
 {
 	auto p1 = c1.eval(0);
 
-	std::vector<T> tvals;
-	evalBezSpeed(c1, tvals);
-
-	for (size_t i = 0; i < tvals.size(); i++)
+	for (size_t i = 0; i < c1.tvals.size(); i++)
 	{
-		auto u = tvals[i];
+		auto u = c1.tvals[i];
 		p1 = c1.eval(u);
 
 		ptrdiff_t y2 = p1.y() + loft;
@@ -89,10 +47,14 @@ void sampledBezierLoft(PixelView& pmap, const GeoCubicBezier<T>& c1, const ptrdi
 			pmap.getPixel(p1.x(), y) = c.getValue(u, v);
 		}
 	}
-
-
 }
 
+// draw a texture between two curves
+// The curves should be linear in the x direction
+// c1 should be on top and c2 on bottom
+// but this is not strictly required
+// This is a very specialized drawing routine
+// so it should not be a part of the drawingcontext
 template <typename T>
 void sampledBezierSurface(PixelView& pmap, const GeoCubicBezier<T>& c1, const GeoCubicBezier<T>& c2, ISample2D<PixelRGBA>& c)
 {
@@ -102,15 +64,9 @@ void sampledBezierSurface(PixelView& pmap, const GeoCubicBezier<T>& c1, const Ge
 	auto endp1 = c1.eval(1.0);
 	auto endp2 = c2.eval(1.0);
 
-	std::vector<T> tvals1;
-	evalBezSpeed(c1, tvals1);
-
-	std::vector<T> tvals2;
-	evalBezSpeed(c1, tvals2);
-
-	for (size_t i = 0; i < tvals1.size(); i++)
+	for (size_t i = 0; i < c1.tvals.size(); i++)
 	{
-		auto u1 = tvals1[i];
+		auto u1 = c1.tvals[i];
 		p1 = c1.eval(u1);
 		p2 = c2.eval(u1);
 
@@ -123,6 +79,7 @@ void sampledBezierSurface(PixelView& pmap, const GeoCubicBezier<T>& c1, const Ge
 	}
 }
 
+// Draw some random lines
 void drawLines()
 {
 	for (size_t i = 0; i < canvasWidth; i+=10)
@@ -139,34 +96,26 @@ void drawLines()
 
 void onFrame()
 {
-	drawLines();
+	//drawLines();
 
 	screenCapture->next();
 
-	GeoCubicBezier<float> c1(1, 1, (canvasWidth*0.25), (canvasHeight/2.0), canvasWidth-(canvasWidth*0.25), (canvasHeight/2.0), canvasWidth-1, 1);
-	GeoCubicBezier<float> c2(1, canvasHeight-1, (canvasWidth * 0.25), (canvasHeight / 2.0), canvasWidth - (canvasWidth * 0.25), (canvasHeight / 2.0), canvasWidth-1, canvasHeight-1);
-
-
-	//PixelBezier c1(10, 300, 300, 0, 600, 250, 800, 150);
-	//PixelBezier c2(10, 500, 300, 600, 600, 450, 800, 750);
-
-	//PixelBezier c1(10, 100, 300,   0, 600,  50, 800, 150);
-	//PixelBezier c2(10, 700, 300, 600, 600, 450, 800, 750);
-	//sampledBezierSurface(*gAppSurface, c1, c2, *screenCapture);
-	//sampledBezierLoft(*gAppSurface, c1, CAPTURE_HEIGHT, vs);
+	sampledBezierSurface(*gAppSurface, c1, c2, *screenCapture);
+	//sampledBezierLoft(*gAppSurface, c1, CAPTURE_HEIGHT, *screenCapture);
 
 	gCtxt.strokeCubicBezier(c1, 60, PixelRGBA(0));
 	gCtxt.strokeCubicBezier(c2, 60, PixelRGBA(0));
-
 }
 
 void setup()
 {
+	c1.calcSpeeds();
+	c2.calcSpeeds();
+
 	setCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
 	// Setup screen captures
 	screenCapture = ScreenSnapshot::createForDisplay(0, 0, displayWidth/2, displayHeight/2);
-	//ViewSampler vs(*screenCapture);
 
 	//screenCap1 = std::make_shared<vdj::SamplerWrapper>(screenCapture, alib::RectD(0, 0, 0.5, 1.0));
 	//screenCap2 = std::make_shared<vdj::SamplerWrapper>(screenCapture, alib::RectD(0.50, 0, 0.5, 1.0));
