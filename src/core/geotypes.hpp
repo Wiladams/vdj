@@ -21,7 +21,6 @@ namespace alib
     struct Geometry
     {
         virtual bool contains(const T& x, const T& y) const { return false; }
-        //virtual GeoRect<T> getBoundingBox() const
     };
 
     // A starting of a line and a length
@@ -175,35 +174,6 @@ namespace alib
         GeoRect<T> res(*this);
         return res += rhs;
     }
-
-    // GeoEllipse Definition
-    template <typename T>
-    struct GeoEllipse : public Geometry<T>
-    {
-        T cx, cy;   // center of ellipse
-        T rx;       // radius in x axis
-        T ry;       // radius in y axis
-    };
-
-    template <typename T>
-    struct GeoCircle : public Geometry<T>
-    {
-        T fX, fY;
-        T fR;
-
-        GeoRect<T> getBoundingBox() override
-        {
-            auto x1 = fX - fR, y1 = fY - fR;
-            auto w = fR * 2;
-
-            return GeoRect<T>(x1, y1, w, w);
-        }
-
-        T cx() { return fX; }
-        T cy() { return fY; }
-        T r() { return fR; }
-    };
-
     
 
 
@@ -277,10 +247,10 @@ namespace alib
     };
 
     /*
-      GeoTriangle
+   GeoTriangle
 
-      A triangle is a specialization of a polygon
-    */
+   A triangle is a specialization of a polygon
+ */
     template <typename T>
     struct GeoTriangle : public GeoPolygon<T>
     {
@@ -299,6 +269,70 @@ namespace alib
             GeoPolygon<T>::findTopmost();
         }
     };
+
+    // GeoEllipse Definition
+    template <typename T>
+    struct GeoEllipse : public GeoPolygon<T>
+    {
+        static constexpr size_t nverts = 72;   // should specialize for size
+
+        size_t steps = nverts;
+        T cx, cy;   // center of ellipse
+        T rx;       // radius in x axis
+        T ry;       // radius in y axis
+
+        GeoEllipse(T cx_, T cy_, T rx_, T ry_)
+            :GeoPolygon<T>(true)
+            ,cx(cx_)
+            , cy(cy_)
+            , rx(rx_)
+            , ry(ry_)
+        {
+            init(cx_, cy_, rx_, ry_);
+        }
+
+        bool init(T cx_, T cy_, T xRadius, T yRadius)
+        {
+            T awidth = xRadius * 2;
+            T aheight = yRadius * 2;
+
+            for (size_t i = 0; i < steps; i++)
+            {
+                auto u = (double)i / steps;
+                auto angle = u * (2 * alib::Pi);
+
+                T x = (T)floor((awidth / 2.0) * cos(angle));
+                T y = (T)alib::Floor((aheight / 2.0) * sin(angle));
+                addPoint(Point<T>(x + cx_, y + cy_));
+            }
+            
+            // prepare for drawing
+            this->findTopmost();
+        }
+    };
+
+
+    template <typename T>
+    struct GeoCircle : public Geometry<T>
+    {
+        T fX, fY;
+        T fR;
+
+        GeoRect<T> getBoundingBox() override
+        {
+            auto x1 = fX - fR, y1 = fY - fR;
+            auto w = fR * 2;
+
+            return GeoRect<T>(x1, y1, w, w);
+        }
+
+        T cx() { return fX; }
+        T cy() { return fY; }
+        T r() { return fR; }
+    };
+
+
+ 
 
     // Bezier Reference
     // https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/Bezier/bezier-construct.html

@@ -73,7 +73,7 @@ namespace alib {
         PixelRGBA fColor;
 
     public:
-        SolidColorSampler(uint32_t c) :fColor(c) {}
+        //SolidColorSampler(uint32_t c) :fColor(c) {}
         SolidColorSampler(const PixelRGBA& c) :fColor(c) {}
 
         virtual PixelRGBA getValue(double u) override { return fColor; }
@@ -111,7 +111,7 @@ namespace alib {
             uint8_t g = fLuminance.toLuminance(c);
 
             // return it
-            return PixelRGBA(g, g, g, c.alpha());
+            return PixelRGBA(g, g, g, c.opacity()*255);
         }
 
         static std::shared_ptr< LumaWrapper> create(SourceSampler wrapped)

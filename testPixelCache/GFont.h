@@ -4,6 +4,7 @@
 #include "agg_basics.h"
 
 #include <map>
+#include <memory>
 
 // Data structure that holds the curve vertices
 // for a specific glyph
@@ -204,7 +205,7 @@ void GFont::measureText(double& w, double& h, const CharT* str)
 
 	while (*str)
 	{
-		GGlyph& gl = font.getGlyph(*str++);
+		GGlyph& gl = getGlyph(*str++);
 		w += gl.inc_x();
 	}
 }
@@ -344,7 +345,7 @@ return true;
 
 struct GFontFace
 {
-	HFONT fFontHandle;
+	HFONT	fFontHandle;
 	HDC		fDC;
 
 	GFontFace();
@@ -356,6 +357,9 @@ struct GFontFace
 	bool isValid();
 	bool getFont(GFont& font, bool filpY = true);
 	bool initFromName(const TCHAR* typeface, int fontHeight, bool bold, bool italic);
+
+	static std::map<const TCHAR*, std::shared_ptr<std::map<int, std::shared_ptr<GFontFace> > > > fFaces;
+	static std::shared_ptr<GFontFace> getFontFace(const TCHAR* typeface, int fontHeight, bool bold, bool italic);
 };
 
 GFontFace::GFontFace() :fFontHandle(nullptr), fDC(nullptr) {}
@@ -395,6 +399,23 @@ bool GFontFace::initFromName(const TCHAR* typeface, int fontHeight, bool bold, b
 	// Font parameters
 	int fontWidth = 0;
 	int iAngle = 0;
+	/*
+	LOGFONT fontInfo{0};
+	fontInfo.lfHeight = fontHeight;
+	fontInfo.lfWidth = fontWidth;
+	fontInfo.lfEscapement = iAngle;
+	fontInfo.lfOrientation = iAngle;
+	fontInfo.lfWeight = bold ? 700 : 400;
+	fontInfo.lfItalic = italic;
+	fontInfo.lfUnderline = FALSE;
+	fontInfo.lfStrikeOut = FALSE;
+	fontInfo.lfCharSet = ANSI_CHARSET;
+	fontInfo.lfOutPrecision = OUT_DEFAULT_PRECIS;
+	fontInfo.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+	fontInfo.lfQuality = ANTIALIASED_QUALITY;
+	fontInfo.lfPitchAndFamily = FF_DONTCARE;
+	//strcpy(fontInfo.lfFaceName, typeface);
+	*/
 
 	fFontHandle = ::CreateFont(fontHeight,
 		fontWidth,
@@ -420,8 +441,34 @@ bool GFontFace::initFromName(const TCHAR* typeface, int fontHeight, bool bold, b
 	return true;
 }
 
-// Create an instance of a Font based on typeface and height
-//GFontFace GFontFace::create(const TCHAR* typeface, int fontHeight, bool bold, bool italic)
-//{
-//	return GFontFace(typeface, fontHeight, bold, italic);
-//}
+std::shared_ptr<GFontFace> GFontFace::getFontFace(const TCHAR* tfacename, int fontHeight, bool bold, bool italic)
+{
+	/*
+	// First look to see if the typeface name exists
+	if (fFaces.contains(tfacename))
+	{
+		auto& facemap = fFaces[tfacename];
+
+		// Now look for a entry in the table of the given size
+		if (facemap->contains(fontHeight))
+		{
+			auto& fontface = facemap->at(fontHeight);
+			return fontface;
+		}
+		else {
+			// doesn't already exist for the font height
+			// so create a new entry and add it
+			//facemap->insert(fontHeight, std::make_shared<GFontFace>(tfacename, fontHeight, bold, italic));
+		}
+
+	}
+	else {
+		// facename does not exist, so create the mapping that will hold
+		// that name
+		fFaces[tfacename] = std::make_shared<std::map<int, std::shared_ptr<GFontFace> > >();
+		//auto tnamemap = 
+	}
+	*/
+	return nullptr;
+}
+

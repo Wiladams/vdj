@@ -5,7 +5,7 @@
 
 
 
-#define blendPixel(bg, fg) PixelRGBA(				\
+#define BLENDPIXEL(bg, fg) PixelRGBA(				\
 	alib::lerp255(bg.r(), fg.r(), fg.a()), \
 	alib::lerp255(bg.g(), fg.g(), fg.a()), \
 	alib::lerp255(bg.b(), fg.b(), fg.a()), \
@@ -118,7 +118,7 @@ namespace alib
 
         // set consecutive pixels in a row 
     // Assume the range has already been clipped
-        INLINE void setSpan(size_t x, size_t y, size_t w, const PixelRGBA& c);
+        //INLINE void setSpan(size_t x, size_t y, size_t w, const PixelRGBA& c);
 
         // Set every pixel to a specified value
         // we can use this fast intrinsic to fill
@@ -240,29 +240,10 @@ namespace alib
         uint32_t* pixelPtr = getPixelPointer<uint32_t>(0, 0);
         size_t nPixels = width() * height();
 
-        for (int i = 0; i < nPixels; i++)
-            pixelPtr[i] = c.value;
+        //for (int i = 0; i < nPixels; i++)
+        //    pixelPtr[i] = c.value;
     }
 
-    INLINE void PixelView::setSpan(size_t x, size_t y, size_t w, const PixelRGBA& c)
-    {
-        // Do an assert check
-        // BUGBUG - should do line clipping
-        PixelRGBA* pixelPtr = getPixelPointer<PixelRGBA>(x, y);
-
-        // do the opaqueness check only once instead
-        // of inside the loop
-        // this should be more easily optimized
-        if (c.isOpaque()) {
-            for (int i = 0; i < w; i++)
-                pixelPtr[i] = c;
-        }
-        else {
-            for (int i = 0; i < w; i++)
-                pixelPtr[i] = blendPixel(pixelPtr[i], c);
-        }
-    }
-    
 
     struct ViewSampler : public ISample2D<PixelRGBA>
     {

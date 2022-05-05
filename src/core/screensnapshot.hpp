@@ -24,21 +24,22 @@
 
 namespace alib
 {
-    class ScreenSnapshot : public User32PixelMap, public ISample2D<PixelRGBA>
+    class ScreenSnapshot : public U32DIBSection
     {
-        HDC fSourceDC;  // Device Context for the screen
+        HDC fSourceDC = nullptr;  // Device Context we're going to snapshot
 
-        // which location on the screen are we capturing
-        int fOriginX;
-        int fOriginY;
+        // which location winthin the sourceDC are we capturing
+        ptrdiff_t fOriginX=0;
+        ptrdiff_t fOriginY=0;
 
     public:
-        ScreenSnapshot(int x, int y, int awidth, int aheight, HDC sourceDC)
-            : User32PixelMap(awidth, aheight)
+        ScreenSnapshot(ptrdiff_t originX, ptrdiff_t originY, size_t awidth, size_t aheight, HDC sourceDC)
+            : U32DIBSection(awidth, aheight)
             , fSourceDC(sourceDC)
-            , fOriginX(x)
-            , fOriginY(y)
+            , fOriginX(originX)
+            , fOriginY(originY)
         {
+            // Take a snapshot to start
             next();
         }
 
@@ -49,17 +50,6 @@ namespace alib
             BitBlt(getDC(), 0, 0, width(), height(), fSourceDC, fOriginX, fOriginY, SRCCOPY | CAPTUREBLT);
 
             return true;
-        }
-
-        PixelRGBA getValue(double u, double v) override
-        {
-            u = alib::Clamp(u, 0, 1);
-            v = alib::Clamp(v, 0, 1);
-
-            size_t px = size_t((u * ((double)width() - 1)) + 0.5);
-            size_t py = size_t((v * ((double)height() - 1)) + 0.5);
-
-            return At<PixelRGBA>(px, py);
         }
 
 

@@ -37,8 +37,3 @@
 #define APP_LITTLE_ENDIAN 1
 #endif
 
-
-// Random programming reference
-// 
-// Reference: http://www.guyrutenberg.com/2007/11/19/c-goes-to-operator/
-// useful for while loops

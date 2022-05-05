@@ -94,7 +94,7 @@ namespace vdj
 			}
 
 			// return transparent if we're not wrapping anything
-			return alib::PixelRGBA(0x0);
+			return alib::PixelRGBA(0x0,0,0,0);
 		}
 
 		static std::shared_ptr< SamplerWrapper> create(std::shared_ptr< ISample2D<alib::PixelRGBA> > wrapped)

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "gui.h"
-#include "draw2dcontext.hpp"
+//#include "draw2dcontext.hpp"
 #include "normalizedwindow.hpp"
 #include "checkerboard.hpp"
 #include "svgpathbuilder.hpp"
-#include "sampledraw2d.hpp"
+//#include "sampledraw2d.hpp"
 
 #include "animator.hpp"
 
@@ -93,26 +93,30 @@ TranexWindow::TranexWindow(ptrdiff_t w, ptrdiff_t h)
 }
 */
 
+
+
 void drawShapes(alib::Draw2DContext& ctxt)
 {
 	// Create some shapes to draw
 	alib::SVGPathBuilder<alib::Real> sb;
 	
+
+	// Random concave polygon
+	sb.moveTo(10,10);
+	sb.lineTo(20, 10);
+	sb.lineTo(20, 20);
+	sb.lineTo(10, 20);
+	sb.close();
+
+
+//*
 	// Some rectangles
 	pathdraw::rect<alib::Real>(sb, 8, 8, 64, 1080);
 	pathdraw::rect<alib::Real>(sb, 80, 8, 1920/2, 1080/2);
 	pathdraw::rect<alib::Real>(sb, 64, 1092, 1920, 24);
 	pathdraw::rect<alib::Real>(sb, 992 - 120, 1116 + 8, 240, 48);
 	
-	/*
-	// Random concave polygon
-	sb.moveTo(10,10);
-	sb.lineTo(600, 30);
-	sb.lineTo(400, 300);
-	sb.lineTo(600, 400);
-	sb.lineTo(10, 400);
-	sb.close();
-	*/
+
 
 	// Rectangle
 	pathdraw::rect<alib::Real>(sb, 60, 100, 200, 200);
@@ -148,6 +152,7 @@ void drawShapes(alib::Draw2DContext& ctxt)
 	sb.lineTo(300, 480);
 	sb.lineTo(10, 480);
 	sb.close();
+		//*/
 
 	auto figs = sb.getPaths();
 
@@ -155,13 +160,8 @@ void drawShapes(alib::Draw2DContext& ctxt)
 	{
 		// fill and stroke a polygon
 		ctxt.fillPolygon(pth, alib::PixelRGBA(0xffffff00));
-		//strokePolygon(*gAppSurface, fig, alib::PixelRGBA(0xff00ff00), 1);
-		ctxt.strokePolygon(pth, alib::PixelRGBA(0xffff0000), 1);
+		//ctxt.strokePolygon(pth, alib::PixelRGBA(0xffff0000), 1);
 	}
-
-	//aaline(*gAppSurface, 10,10, 300, 100, PixelRGBA(0xffff0000), 1);
-	//aaline(*gAppSurface, 300, 100, 300, 400, PixelRGBA(0xff00ff00), 1);
-	//aaline(*gAppSurface, 300, 400, 10, 10, PixelRGBA(0xff0000ff), 1);
 }
 
 void TranexWindow::draw(alib::Draw2DContext & ctxt)

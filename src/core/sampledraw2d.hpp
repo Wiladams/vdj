@@ -1,20 +1,19 @@
 #ifndef __sampledraw2d_hpp__
 #define __sampledraw2d_hpp__
 
-#include "draw2d.hpp"
+#include "draw2dcontext.hpp"
 
 namespace alib {
     // Use a sampler to fill in a span
     // No clipping is performed
     // This is really a specialization of a one
     // line rectangle
-    INLINE void sampleSpan(PixelView & pmap, const int x, const int y, const int width, ISample1D<PixelRGBA>& s)
+    INLINE void sampleSpan(PixelView & pmap, const int x, const int y, const int len, ISample1D<PixelRGBA>& s)
     {
-        for (int col = x; col < x + width; col++)
+        for (int col = x; col < x + len; col++)
         {
-            double u = alib::Map(col, x, (double)x + width - 1, 0, 1);
+            double u = alib::Map(col, x, (double)x + len - 1, 0, 1);
             PixelRGBA c = s.getValue(u);
-            //pmap.set(col, y, c);
             pmap.At<PixelRGBA>(col, y) = c;
         }
     }
@@ -30,65 +29,6 @@ namespace alib {
         }
     }
 
-    //
-    // fill in a rectangle using the specified 
-    // 2D sampler.  
-    // Here we assume clipping has already occured
-    // and the srcExt is already calculated  to capture
-    // the desired section of the sampler
-    INLINE void sampleRect(PixelView & pmap, const PixelRect& dstisect, const RectD& srcExt, ISample2D<PixelRGBA>& src)
-    {
-        // find the intersection between the source rectangle
-        // and the frame
-        //PixelRect dstisect = pmap.frame().intersection(dstFrame);
-
-        // if the intersection is empty, we have
-        // nothing to draw, so return
-        if (dstisect.isEmpty())
-            return;
-
-        double uadv = (srcExt.w()) / (dstisect.w());
-        double vadv = (srcExt.h()) / (dstisect.h());
-
-        // Initial u and v values
-        double u = srcExt.left();
-        double v = srcExt.top();
-
-        for (ptrdiff_t row = dstisect.y(); row < dstisect.y() + dstisect.h() - 1; row++)
-        {
-            for (ptrdiff_t col = dstisect.left(); col < dstisect.left() + dstisect.w() - 1; col++)
-            {
-                auto c = src.getValue(u, v);
-                pmap.At<PixelRGBA>(col, row) = c;
-                u += uadv;
-            }
-            v += vadv;
-            u = srcExt.left();
-        }
-    }
-
-
-
-    INLINE void sampledBezier(PixelView & pmap, const PixelBezier& bez, const int segments, ISample1D<PixelRGBA>& c)
-    {
-        // Get starting point
-        auto lp = bez.eval(0);
-
-        int i = 1;
-        while (i <= segments) {
-            double u = (double)i / segments;
-
-            auto p = bez.eval(u);
-
-            // draw line segment from last point to current point
-            line(pmap, lp.x(), lp.y(), p.x(), p.y(), c.getValue(u));
-
-            // Assign current to last
-            lp = p;
-
-            i = i + 1;
-        }
-    }
 
     INLINE void sampleTriangle(PixelView & pb, const ptrdiff_t x1, const ptrdiff_t y1,
         const int x2, const int y2,

@@ -28,18 +28,18 @@ SharedSamplerWrapper screenCap2 = nullptr;
 //constexpr ptrdiff_t WINDOWWIDTH = 1024;
 //constexpr ptrdiff_t WINDOWHEIGHT = 768;
 
-constexpr ptrdiff_t WINDOWWIDTH = 1988;
-constexpr ptrdiff_t WINDOWHEIGHT = 1200;
+constexpr ptrdiff_t WINDOWWIDTH = 1024;
+constexpr ptrdiff_t WINDOWHEIGHT = 768;
 
 
 TranexWindow mainWindow(WINDOWWIDTH, WINDOWHEIGHT);
 
-static PixelRect randomRect(size_t dw, size_t dh)
+static PixelRect randomRect(size_t dw, size_t dh, const PixelRect& bounds)
 {
-	size_t w = alib::random_int(4, dw);
-	size_t h = alib::random_int(4, dh);
-	ptrdiff_t x = alib::random_int(0, canvasWidth - w - 1);
-	ptrdiff_t y = alib::random_int(0, canvasHeight - h - 1);
+	size_t w = alib::random_int(2, dw);
+	size_t h = alib::random_int(2, dh);
+	ptrdiff_t x = alib::random_int(bounds.fX, bounds.fX+bounds.fWidth - 1);
+	ptrdiff_t y = alib::random_int(bounds.fY, bounds.fY + bounds.fHeight - 1);
 
 	return PixelRect(x, y, w, h);
 }
@@ -49,36 +49,47 @@ static PixelRGBA randomPixel()
 	return PixelRGBA(alib::random_int(0, 255), alib::random_int(0, 255), alib::random_int(0, 255), 255);
 }
 
-void drawRects()
+void drawRects(size_t w, size_t h, const PixelRect &bounds, size_t count=5000)
 {
+	screenCapture->next();
 
+	for (size_t i = 1; i <= count; i++) {
+		PixelRect r = randomRect(w, h, bounds);
+		auto c = r.center();
+		double u = (double)c.fX / (canvasWidth-1);
+		double v = (double)c.fY / (canvasHeight-1);
 
-	for (size_t i = 1; i <= 1000; i++) {
-		auto r = randomRect(60, 60);
 		auto c1 = randomPixel();
-		auto c2 = randomPixel();
+		//auto c2 = randomPixel();
+		
+		PixelRGBA sc = screenCap1->getValue(u, v);
 
-		fillRectangle(*gAppSurface, r, c1);
-		//strokeRectangle(*gAppSurface, r, c2);
+		gCtxt.fillRectangle(r.left(), r.top(), r.fWidth, r.fHeight, sc);
+
+		//strokeRectangle(*gAppSurface, r, sc);
 	}
+}
+
+void drawRectAffect()
+{
+	drawRects(64, 64, PixelRect(0, 0, canvasWidth, canvasHeight), 1000);
+	gCtxt.fillRectangle(200, 200, canvasWidth - 400, canvasHeight - 400, PixelRGBA(0));
+	drawRects(4, 4, PixelRect(200, 200, canvasWidth - 400, canvasHeight - 400), 30000);
 }
 
 void onFrame()
 {
-	background(PixelRGBA(0xff00ff00));
-	gCtxt.clear(PixelRGBA(0xff00ff00));
+	gCtxt.clear(PixelRGBA(0xffdddddd));
 
 	mainWindow.draw(gCtxt);
-
-	drawRects();
+	//drawRectAffect();
 }
 
 void setup()
 {
-	setFrameRate(30);
-	setCanvasSize(WINDOWWIDTH, WINDOWHEIGHT);
+	setFrameRate(15);
+	setCanvasSize(1920, 1080);
 	//layered();
-	gCtxt.setView(gAppSurface);
 
 	// Setup screen captures
 	screenCapture = ScreenSnapshot::createForDisplay(0, 0, displayWidth, 1080);

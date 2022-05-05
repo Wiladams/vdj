@@ -40,8 +40,8 @@ void draw_black_frame(Ren& ren)
 
 void drawUsingPixelFormat()
 {
-	rendering_buffer rbuf(gAppSurface->row<uint8_t>(0), canvasWidth, canvasHeight, canvasWidth * 4);
-	rbuf.clear(255);
+	rendering_buffer rbuf(gAppSurface->row_ptr(0), canvasWidth, canvasHeight, canvasWidth * 4);
+	//rbuf.clear(255);
 
 	// Draw outer black frame
 	pixfmt_bgra32 pixf(rbuf);
@@ -50,7 +50,7 @@ void drawUsingPixelFormat()
 	draw_black_frame(pixf);
 
 	// Create a sub-region of the larger buffer
-	rbuf.attach(gAppSurface->row<uint8_t>(0) + (canvasWidth * 4 * 20) +
+	rbuf.attach(gAppSurface->row_ptr(0) + (canvasWidth * 4 * 20) +
 		4 * 20,				// x-offset
 		canvasWidth - 40,
 		canvasHeight - 40,
@@ -69,8 +69,8 @@ void drawUsingPixelFormat()
 
 void drawSpectrum()
 {
-	rendering_buffer rbuf(gAppSurface->row<uint8_t>(0), canvasWidth, canvasHeight, canvasWidth * 4);
-	rbuf.clear(255);
+	rendering_buffer rbuf(gAppSurface->row_ptr(0), canvasWidth, canvasHeight, canvasWidth * 4);
+	//rbuf.clear(255);
 	pixfmt_bgra32 pixf(rbuf);
 
 	rgba8 span[CANVAS_WIDTH];
@@ -109,7 +109,7 @@ struct color_interpolator_rgba8
 
 	rgba8 color() const
 	{
-		return rgba8(m_r.y(), m_g.y(), m_b.y(), m_a.y());
+		return PixelRGBA(m_r.y(), m_g.y(), m_b.y(), m_a.y());
 	}
 };
 
@@ -138,11 +138,11 @@ void color_square_rgba8(Renderer& r, int x, int y, int size,
 
 void drawInterpolator()
 {
-	rendering_buffer rbuf(gAppSurface->row<uint8_t>(0), canvasWidth, canvasHeight, -canvasWidth * 4);
+	rendering_buffer rbuf(gAppSurface->row_ptr(0), canvasWidth, canvasHeight, -canvasWidth * 4);
 
 	pixfmt_bgra32 pf(rbuf);
 	agg::renderer_base<pixfmt_bgra32> rbase(pf);
-
+	
 	color_square_rgba8(rbase, 0, 0, square_size,
 		rgba8(0xc6, 0, 0),
 		rgba8(0xc6, 0, 0xff),
@@ -154,9 +154,10 @@ void drawInterpolator()
 
 
 template<class Rasterizer, class Renderer, class Scanline, class CharT>
-void render_text(double x, double y, Rasterizer& ras, Renderer& ren, Scanline& sl,
-	GFont& font, const CharT* str,
-	bool hinted = true)
+void render_text(double x, double y, const CharT* str, 
+	Rasterizer& ras, Renderer& ren, Scanline& sl,
+	GFont& font, 
+	bool hinted = false)
 {
 	while (*str)
 	{
@@ -179,8 +180,8 @@ constexpr bool bold = false;
 constexpr bool italic = false;
 
 GFontFace timesnewroman(L"Times New Roman", fontHeight, bold, italic);
-GFontFace segoe(L"Segoe UI", fontHeight, bold, italic);
-GFontFace stencil(L"Stencil", fontHeight, bold, italic);
+GFontFace segoeface(L"Segoe UI", fontHeight, bold, italic);
+GFontFace stencilface(L"Stencil", fontHeight, bold, italic);
 
 void drawText()
 {
@@ -192,37 +193,47 @@ void drawText()
 	rasterizer_scanline_aa<> ras;
 	scanline_p8 sl;
 
-	rbase.clear(rgba8(255, 255, 255));
 
-	if (!stencil.isValid())
+
+	if (!stencilface.isValid())
 		return;
 
 	ren.color(rgba8(0, 0, 0));
 
-	GFont font{};
-	stencil.getFont(font, true);
+	GFont stencilfont{};
+	stencilface.getFont(stencilfont, true);
 
 	//double w = 0.0;
 	//double h = font.height();
 	//measure_text(&w, &h, font, "Application Window", false);
 
-	render_text(10, 100, ras, ren, sl, font, "Application Window");
-	render_text(10, 200, ras, ren, sl, font, "Good Morning Sunshine!");
+	render_text(10, 100, "Application Window",ras, ren, sl, stencilfont);
+	render_text(10, 200, "Good Morning Sunshine!", ras, ren, sl, stencilfont);
 
 	GFont segoeFont{};
-	segoe.getFont(segoeFont, true);
-	render_text(10, 300, ras, ren, sl, segoeFont, "institutions");
-	render_text(10, 400, ras, ren, sl, segoeFont, "iiiiiiiiiiii");
+	segoeface.getFont(segoeFont, true);
+	render_text(10, 300, "institutions",ras, ren, sl, segoeFont);
+	render_text(10, 400, "iiiiiiiiiiii", ras, ren, sl, segoeFont);
+}
 
+void onFrame()
+{
+	rendering_buffer rbuf(gAppSurface->row<uint8_t>(0), canvasWidth, canvasHeight, canvasWidth * 4);
+	rbuf.clear(0);
+
+	pixfmt_bgra32 pixf(rbuf);
+	renderer_base<pixfmt_bgra32> rbase(pixf);
+
+	drawSpectrum();
+	//drawUsingPixelFormat();
+
+	//drawInterpolator();
+
+	drawText();
 }
 
 void setup()
 {
 	setCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-	//drawUsingPixelFormat();
-	//drawSpectrum();
-	//drawInterpolator();
-
-	drawText();
 }

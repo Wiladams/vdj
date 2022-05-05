@@ -2,6 +2,7 @@
 #include "gui.h"
 #include "screensnapshot.hpp"
 #include "normalizedwindow.hpp"
+#include "maths.hpp"
 
 using namespace vdj;
 using namespace alib;
@@ -56,7 +57,7 @@ void sampledBezierLoft(PixelView& pmap, const GeoCubicBezier<T>& c1, const ptrdi
 // This is a very specialized drawing routine
 // so it should not be a part of the drawingcontext
 template <typename T>
-void sampledBezierSurface(PixelView& pmap, const GeoCubicBezier<T>& c1, const GeoCubicBezier<T>& c2, ISample2D<PixelRGBA>& c)
+void sampledBezierSurface(agg::row_accessor<uint8_t>& pmap, const GeoCubicBezier<T>& c1, const GeoCubicBezier<T>& c2, ISample2D<PixelRGBA>& c)
 {
 	auto p1 = c1.eval(0);
 	auto p2 = c2.eval(0);
@@ -74,7 +75,7 @@ void sampledBezierSurface(PixelView& pmap, const GeoCubicBezier<T>& c1, const Ge
 		for (ptrdiff_t y = p1.y(); y <= p2.y(); y++)
 		{
 			auto v = alib::Map(y, p1.y(), p2.y(), 0.0, 1.0);
-			pmap.getPixel(p1.x(), y) = c.getValue(u1, v);
+			((PixelRGBA *)pmap.row_ptr(y))[(ptrdiff_t)p1.x()] = c.getValue(u1, v);
 		}
 	}
 }
@@ -82,29 +83,48 @@ void sampledBezierSurface(PixelView& pmap, const GeoCubicBezier<T>& c1, const Ge
 // Draw some random lines
 void drawLines()
 {
-	for (size_t i = 0; i < canvasWidth; i+=10)
-	{
-		ptrdiff_t x1 = i;
-		ptrdiff_t y1 = 0;
-		ptrdiff_t x2 = canvasWidth;
-		ptrdiff_t y2 = i;
+	static double u = 0.0;
+	static double v = 0.0;
 
-		gCtxt.line(x1, y1, x2, y2, PixelRGBA(0xff000000), 1);
+	double dx = 1.0 / (frameRate);
+
+	for (size_t ctr = 1; ctr <= 10; ctr++)
+	{
+		static size_t i = 0;
+		ptrdiff_t x1 = alib::Map(u, 0, 1, 0, canvasWidth);
+		ptrdiff_t y1 = 0;
+		ptrdiff_t x2 = alib::Map(u, 0, 1, canvasWidth, 0);
+		ptrdiff_t y2 = canvasHeight;
+
+		gCtxt.line(x1, y1, x2, y2, PixelRGBA(0xff,0x00,0x00), 1);
+
+		u += dx;
+		if (u > 1.0)
+			u = 0.0;
 	}
 
+
+}
+
+void drawShapes()
+{
+	drawLines();
 }
 
 void onFrame()
 {
-	//drawLines();
 
 	screenCapture->next();
+
+	gCtxt.clear(PixelRGBA(0,0,0));
+
+	drawShapes();
 
 	sampledBezierSurface(*gAppSurface, c1, c2, *screenCapture);
 	//sampledBezierLoft(*gAppSurface, c1, CAPTURE_HEIGHT, *screenCapture);
 
-	gCtxt.strokeCubicBezier(c1, 60, PixelRGBA(0));
-	gCtxt.strokeCubicBezier(c2, 60, PixelRGBA(0));
+	gCtxt.strokeCubicBezier(c1, 60, PixelRGBA(0,0,0));
+	gCtxt.strokeCubicBezier(c2, 60, PixelRGBA(0,0,0));
 }
 
 void setup()
@@ -113,6 +133,7 @@ void setup()
 	c2.calcSpeeds();
 
 	setCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
+	setFrameRate(10);
 
 	// Setup screen captures
 	screenCapture = ScreenSnapshot::createForDisplay(0, 0, displayWidth/2, displayHeight/2);
@@ -120,5 +141,9 @@ void setup()
 	//screenCap1 = std::make_shared<vdj::SamplerWrapper>(screenCapture, alib::RectD(0, 0, 0.5, 1.0));
 	//screenCap2 = std::make_shared<vdj::SamplerWrapper>(screenCapture, alib::RectD(0.50, 0, 0.5, 1.0));
 
-	gCtxt.clear(PixelRGBA(0xffff00ff));
+	//gCtxt.clear(PixelRGBA(0xffff00ff));
+	gCtxt.clear(PixelRGBA(0,0,0,0));
+
+	windowOpacity(0.5f);
+	//layered();
 }

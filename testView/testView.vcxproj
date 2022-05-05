@@ -146,6 +146,7 @@
     <ClCompile Include="testView.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\core\apidefs.h" />
     <ClInclude Include="..\src\core\apphost.h" />
     <ClInclude Include="..\src\core\draw2d.hpp" />
     <ClInclude Include="..\src\core\draw2dcontext.hpp" />

@@ -23,11 +23,14 @@ static MouseEventHandler gMouseWheelHandler = nullptr;
 static MouseEventHandler gMouseHWheelHandler = nullptr;
 static MouseEventHandler gMouseDraggedHandler = nullptr;
 
-uint64_t fFrameRate = 15;
+uint64_t frameRate = 15;
+uint64_t frameCount;
+
 uint64_t fInterval = 1000;
 double fNextMillis = 0;
 uint64_t fDroppedFrames = 0;
-uint64_t frameCount;
+bool gLooping = true;
+
 
 
 PixelRGBA* pixels = nullptr;
@@ -156,17 +159,26 @@ bool isFullscreen() noexcept
 
 void background(const PixelRGBA &c) noexcept
 {
-    fillRectangle(*gAppSurface, 0, 0, canvasWidth, canvasHeight, c);
+    gCtxt.fillRectangle(0, 0, canvasWidth, canvasHeight, c);
 }
-
-
 
 void setFrameRate(const int rate)
 {
-    fFrameRate = rate;
+    frameRate = rate;
     fInterval = 1000/rate;
     fNextMillis = fsw.millis() + fInterval;
 }
+
+void loop()
+{
+    gLooping = true;
+}
+
+void noLoop()
+{
+    gLooping = false;
+}
+
 
 // Called by the app framework
 // This will be called every time through the main app loop, 
@@ -183,6 +195,9 @@ void setFrameRate(const int rate)
 
 void onLoop()
 {
+    if (!gLooping)
+        return;
+
     // We'll wait here until it's time to 
     // signal the frame
     if (fsw.millis() > fNextMillis)
@@ -215,7 +230,7 @@ void onLoop()
 void setCanvasSize(ptrdiff_t w, ptrdiff_t h)
 {
     setWindowSize(w, h);
-    gCtxt.setView(gAppSurface);
+    gCtxt.attach(gAppSurface->buf(), gAppSurface->width(), gAppSurface->height(),gAppSurface->stride() );
 }
 
 // Called by the app framework as the first thing
@@ -249,20 +264,22 @@ void onLoad()
     subscribe(handleKeyboardEvent);
     subscribe(handleMouseEvent);
 
+    // setup global drawing context
+    gCtxt.attach(gAppSurface->buf(), gAppSurface->width(), gAppSurface->height(), gAppSurface->stride());
+
     // Start with a default background before setup
     // does something.
-    background(PixelRGBA(0xffffffff));
+    background(PixelRGBA(0xff, 0xff, 0xff, 0xff));
+
 
     // Call a setup routine if the user specified one
     if (gSetupHandler != nullptr) {
         gSetupHandler();
     }
 
-    // setup global drawing context
-    gCtxt.setView(gAppSurface);
-
     // If there was any drawing done during setup
     // display that at least once.
     refreshScreen();
+    showAppWindow();
 }
 

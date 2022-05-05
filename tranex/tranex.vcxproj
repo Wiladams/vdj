@@ -117,6 +117,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\src;..\src\core</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,6 +155,7 @@
     <ClInclude Include="..\src\core\apphost.h" />
     <ClInclude Include="..\src\core\coloring.h" />
     <ClInclude Include="..\src\core\draw2d.hpp" />
+    <ClInclude Include="..\src\core\draw2dcontext.hpp" />
     <ClInclude Include="..\src\core\geotypes.hpp" />
     <ClInclude Include="..\src\core\gui.h" />
     <ClInclude Include="..\src\core\locklessqueue.hpp" />

@@ -50,7 +50,7 @@ namespace alib {
 
         INLINE constexpr uint32_t toLuminance(const PixelRGBA& p) const
         {
-            return redfactor[p.red()] + greenfactor[p.green()] + bluefactor[p.blue()];
+            return redfactor[p.r] + greenfactor[p.g] + bluefactor[p.b];
         }
     };
 } // namespace vdj

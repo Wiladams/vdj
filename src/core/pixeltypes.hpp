@@ -4,7 +4,7 @@
 
 #include "maths.hpp"
 #include "geotypes.hpp"
-
+#include "agg/agg_color_rgba.h"
 
 #include <cassert>
 #include <array>
@@ -34,7 +34,8 @@ namespace alib {
 
     0xAARRGGBB
     */
-    
+    using PixelRGBA = agg::rgba8;
+    /*
     struct PixelRGBA
     {
         uint32_t value;
@@ -90,7 +91,7 @@ namespace alib {
         PixelRGBA res(*this);
         return res *= n;
     }
-    
+    */
 
 }
 // namespace vdj

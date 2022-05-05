@@ -17,6 +17,7 @@
 #pragma comment(lib, "user32.lib")
 
 #include <windows.h>
+#include <shellapi.h>   // for drag-drop support
 
 #include <stdio.h>
 #include <cstring>
@@ -99,7 +100,7 @@ public:
         BOOL bResult = GetWindowRect(fHandle, &wRect);
 
         // Set the new size of the window based on the client area
-        RECT cRect = {0,0,awidth,aheight};
+        RECT cRect = {0,0,awidth-1,aheight-1};
         bResult = AdjustWindowRect(&cRect, WS_OVERLAPPEDWINDOW, 1);
 
         HWND hWndInsertAfter = NULL;
@@ -131,15 +132,68 @@ public:
 
 
     // Set a specific extended window style
-    LONG setExtendedStyle(int xstyle)
+    LONG addExtendedStyle(LONG xstyle)
     {
         return SetWindowLongA(fHandle, GWL_EXSTYLE, GetWindowLongA(fHandle, GWL_EXSTYLE) | xstyle);
     }
 
-    // clear a specific extended window style
-    LONG clearExtendedStyle(int xstyle)
+    // overwrite window extended style
+    LONG setExtendedStyle(LONG xstyle)
     {
-        return SetWindowLongA(fHandle, GWL_EXSTYLE, (~(LONG)xstyle)&GetWindowLongA(fHandle, GWL_EXSTYLE));
+        return SetWindowLongA(fHandle, GWL_EXSTYLE, xstyle);
+    }
+
+    // clear a specific extended window style
+    LONG removeExtendedStyle(LONG xstyle)
+    {
+        return SetWindowLongA(fHandle, GWL_EXSTYLE, GetWindowLongA(fHandle, GWL_EXSTYLE)& (~(LONG)xstyle));
+    }
+
+    int setOpacity(float opacity)
+    {
+        LONG style = GetWindowLong(fHandle, GWL_EXSTYLE);
+
+        if (opacity == 1.0f)
+        {
+            // if full opacity is desired
+            // just mark as unlayered
+            if (style & WS_EX_LAYERED)
+                removeExtendedStyle(WS_EX_LAYERED);
+        }
+        else {
+            const BYTE alpha = (BYTE)((int)(opacity * 255.0f));
+            // mark window as layered if necessary
+            addExtendedStyle(WS_EX_LAYERED);
+
+            ::SetLayeredWindowAttributes(fHandle, 0, alpha, LWA_ALPHA);
+        }
+
+        return 0;
+    }
+
+    bool acceptDroppedFiles()
+    {
+        ::DragAcceptFiles(getHandle(), TRUE);
+        return true;
+    }
+
+    bool ignoreDroppedFiles()
+    {
+        ::DragAcceptFiles(getHandle(), FALSE);
+        return true;
+    }
+
+    // Register window to receive touch messages
+    bool addTouch(int flags= (TWF_FINETOUCH | TWF_WANTPALM))
+    {
+        BOOL bResult = ::RegisterTouchWindow(getHandle(), flags);
+        return (bResult != 0);
+    }
+
+    bool removeTouch()
+    {
+        BOOL bResult = ::UnregisterTouchWindow(getHandle());
+        return (bResult != 0);
     }
 
 };
@@ -209,7 +263,7 @@ public:
         fWndClass.hbrBackground = nullptr;
         fWndClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
         fWndClass.lpszMenuName = nullptr;
-        fWndClass.hIcon = nullptr;          // LoadIcon(nullptr, IDI_APPLICATION);
+        fWndClass.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
         fWndClass.hIconSm = nullptr;
 
         // Try to register the window class

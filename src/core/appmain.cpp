@@ -63,7 +63,7 @@ char **gargv;
 
 
 User32Window * gAppWindow = nullptr;
-std::shared_ptr<alib::User32PixelMap>  gAppSurface = nullptr;
+std::shared_ptr<alib::U32DIBSection>  gAppSurface = nullptr;
 
 bool gIsLayered = false;
 
@@ -105,17 +105,21 @@ void refreshScreen ()
 
         // if we're not layered, then we'll use RedrawWindow
         // to get a WM_PAINT called synchronously.
+        // 
         // We want to do it this way rather than relying on 
         // WM_ERASEBKGND because then regular WM_PAINT messages
-        // can also be responded to, without extra effort
-        // We do NOT use InvalidateRect(), because then we have
-        // no idea when the system gets around to actually issuing
-        // a WM_PAINT
+        // can also be responded to, without extra effort.
+        // 
+        // We do NOT use InvalidateRect(), RedrawWindow() is
+        // supposed to make the call immediately, without
+        // actually posting a message.  If we wait for a system
+        // posted message, we don't know when it will actually
+        // occur.
         // This does cause concern for threading though, so that must
-        // be thought about.  The painting should occur from the same
+        // be thought about.  
+        // The painting should occur from the same
         // thread that created the window in the first place
-        //InvalidateRect(gAppWindow->getHandle(), NULL, 1);
-        //printf("refreshScreen\n");
+
         //BOOL res = RedrawWindow(gAppWindow->getHandle(), nullptr, nullptr, RDW_ERASE| RDW_INVALIDATE| RDW_ERASENOW);
         
         // This one uses the WM_PAINT message
@@ -666,7 +670,7 @@ LRESULT HandlePaintMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         DestWidth,DestHeight,
         xSrc,ySrc,
         SrcWidth, SrcHeight,
-        gAppSurface->row<uint8_t *>(0),
+        gAppSurface->row_ptr(0),
         &info,
         DIB_RGB_COLORS,
         SRCCOPY);
@@ -794,16 +798,18 @@ bool isTouch()
 }
 
 // Turning drop file support on and off
-bool dropFiles()
+// enableFileDrops()
+// Allow files to be dropped on the window
+bool enableFileDrops()
 {
-    ::DragAcceptFiles(gAppWindow->getHandle(),TRUE);
-    return true;
+    return gAppWindow->acceptDroppedFiles();
 }
 
-bool noDropFiles()
+// disableFileDrops()
+// unregister receiving file drops on the application window
+bool disableFileDrops()
 {
-    ::DragAcceptFiles(gAppWindow->getHandle(), FALSE);
-    return true;
+    return gAppWindow->ignoreDroppedFiles();
 }
 
 //
@@ -813,15 +819,20 @@ static LONG gLastWindowStyle=0;
 
 void layered()
 {
-    gAppWindow->setExtendedStyle(WS_EX_LAYERED|WS_EX_NOREDIRECTIONBITMAP);
-    gLastWindowStyle = gAppWindow->setWindowStyle(WS_POPUP);
+    gAppWindow->addExtendedStyle(WS_EX_LAYERED|WS_EX_NOREDIRECTIONBITMAP);
+    //gLastWindowStyle = gAppWindow->setWindowStyle(WS_POPUP);
 
     gIsLayered = true;
 }
 
+void popup()
+{
+    gLastWindowStyle = gAppWindow->setWindowStyle(WS_POPUP);
+}
+
 void noLayered()
 {
-    gAppWindow->clearExtendedStyle(WS_EX_LAYERED|WS_EX_NOREDIRECTIONBITMAP);
+    gAppWindow->removeExtendedStyle(WS_EX_LAYERED|WS_EX_NOREDIRECTIONBITMAP);
     gAppWindow->setWindowStyle(gLastWindowStyle);
 
     gIsLayered = false;
@@ -830,6 +841,11 @@ void noLayered()
 bool isLayered()
 {
     return gIsLayered;
+}
+
+void windowOpacity(float o)
+{
+    gAppWindow->setOpacity(o);
 }
 
 void setWindowPosition(int x, int y)
@@ -847,7 +863,7 @@ bool setWindowSize(size_t aWidth, size_t aHeight)
     }
 
 
-    gAppSurface = std::make_shared<alib::User32PixelMap>(aWidth, aHeight);
+    gAppSurface = std::make_shared<alib::U32DIBSection>(aWidth, aHeight);
     canvasWidth = aWidth;
     canvasHeight = aHeight;
     
@@ -909,10 +925,11 @@ LRESULT CALLBACK MsgHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     //else if ((msg >= WM_NCPOINTERUPDATE) && (msg <= WM_POINTERROUTEDRELEASED)) {
     //    HandlePointerMessage(hWnd, msg, wParam, lParam);
     //}
-    else if (msg == WM_ERASEBKGND) {
-        if (gPaintHandler != nullptr) {
-            gPaintHandler(hWnd, msg, wParam, lParam);
-        }
+    else if (msg == WM_ERASEBKGND) 
+    {
+        //if (gPaintHandler != nullptr) {
+        //    gPaintHandler(hWnd, msg, wParam, lParam);
+        //}
 
         // return non-zero indicating we dealt with erasing the background
         res = 1;
@@ -995,7 +1012,7 @@ void run()
     MSG msg;
     LRESULT res;
 
-    showAppWindow();
+    //showAppWindow();
 
     while (true) {
         // we use peekmessage, so we don't stall on a GetMessage

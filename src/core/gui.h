@@ -12,7 +12,7 @@
 // the functions that you use, include gui.h in your application.
 //
 #include "apphost.h"
-#include "sampledraw2d.hpp"
+
 #include "draw2dcontext.hpp"
 
 #pragma comment (lib, "Synchronization.lib")
@@ -23,6 +23,8 @@ extern "C" {
 #endif
 
 	APP_EXPORT void setup();
+
+
 	APP_EXPORT void onFrame();
 
 	APP_EXPORT void fullscreen() noexcept;
@@ -60,11 +62,14 @@ extern "C" {
 	// drawing context
 	APP_EXPORT extern alib::Draw2DContext gCtxt;
 
+	APP_EXPORT extern bool gLooping;
+
 	// Size of the application area, set through
 	// createCanvas()
 	APP_EXPORT extern int width;
 	APP_EXPORT extern int height;
 
+	APP_EXPORT extern uint64_t frameRate;
 	APP_EXPORT extern size_t frameCount;
 	APP_EXPORT extern size_t droppedFrames;
 
