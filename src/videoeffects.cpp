@@ -5,7 +5,7 @@
 #include "screensnapshot.hpp"
 #include "recorder.h"
 #include "stopwatch.h"
-#include "sampledraw2d.hpp"
+//#include "sampledraw2d.hpp"
 
 
 
@@ -72,7 +72,7 @@ std::shared_ptr<AnimationWindow> wiper3 = nullptr;
 
 std::shared_ptr<AnimationWindow> currentEffect = nullptr;
 
-std::shared_ptr<Recorder> reco = nullptr;
+//std::shared_ptr<Recorder> reco = nullptr;
 
 
 constexpr int FRAMERATE = 10;
@@ -234,7 +234,7 @@ void onFrame()
 	screenCapture->next();
 
 	// start with blank slate
-	background(PixelRGBA(0));
+	background(PixelRGBA(0,0,0,0));
 
 	// Either call update(), or setProgress()
 	// update will be based on the clock within the effect
@@ -242,9 +242,9 @@ void onFrame()
 	currentEffect->update();
 
 	//sampleRectangle(*gAppSurface, PixelRect(0, 0, canvasWidth, canvasHeight), *currentEffect);
-	sampleRect(*gAppSurface, PixelRect(0, 0, canvasWidth, canvasHeight), RectD(0, 0, 1, 1), *currentEffect);
-
-	reco->saveFrame();
+	//sampleRect(*gAppSurface, PixelRect(0, 0, canvasWidth, canvasHeight), RectD(0, 0, 1, 1), *currentEffect);
+	gCtxt.sampleRect(PixelRect(0, 0, canvasWidth, canvasHeight), RectD(0, 0, 1, 1), *currentEffect);
+	//reco->saveFrame();
 }
 
 //std::vector<HWND> gWinHandles;
@@ -324,6 +324,6 @@ void setup()
 	currentEffect = fadeFromBlack;
 
 	// setup the recorder
-	reco = std::make_shared<Recorder>(&(*gAppSurface), "frame-", 0);
+	//reco = std::make_shared<Recorder>(&(*gAppSurface), "frame-", 0);
 
 }

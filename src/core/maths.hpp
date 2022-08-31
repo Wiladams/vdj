@@ -171,6 +171,12 @@ namespace alib {
         return false;
     }
 
+    // having to do with perlin noise
+    INLINE double Fade(double t)
+    {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+
     // Lerp
     // This implementation of LERP is the most accurate
     // and guarantees you get v1 at 0.0 and v2 at 1.0

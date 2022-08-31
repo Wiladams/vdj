@@ -62,5 +62,8 @@
     <ClInclude Include="..\src\core\apidefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\core\codec_pnm.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

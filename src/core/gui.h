@@ -24,6 +24,8 @@ extern "C" {
 
 	APP_EXPORT void setup();
 
+	APP_EXPORT void loop();
+	APP_EXPORT void noLoop();
 
 	APP_EXPORT void onFrame();
 

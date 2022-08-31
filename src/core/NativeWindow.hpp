@@ -6,7 +6,8 @@
     class.  It allows for the creation of Native windows without
     much fuss.
 
-
+    Some interesting features
+        
 
     Notes:
     https://devblogs.microsoft.com/oldnewthing/20031013-00/?p=42193

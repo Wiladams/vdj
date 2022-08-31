@@ -47,7 +47,7 @@ struct MouseEvent {
     int y;
     int delta;
 
-    // derived attributed
+    // derived attributes
     bool control;
     bool shift;
     bool lbutton;
@@ -84,7 +84,7 @@ enum {
 
 struct TouchEvent {
     int id;
-    int activity;
+    int activity;   // TOUCH_DOWN, TOUCH_UP, TOUCH_MOVE
 
     bool isMoving;
     bool isUp;

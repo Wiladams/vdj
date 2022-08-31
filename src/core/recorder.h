@@ -9,6 +9,8 @@
 
 #include "imagecodec.hpp"
 #include "vdjview.hpp"
+#include "sampler.hpp"
+#include "codec_pnm.hpp"
 
 #include <string>
 
@@ -51,7 +53,7 @@ namespace alib
 
             char frameName[256];
             sprintf_s(frameName, 255, "%s%06d.ppm", fBasename.c_str(), fCurrentFrame);
-            fCodec.write(frameName, *fSurface);
+            //fCodec.write(frameName, *fSurface);
 
             fCurrentFrame = fCurrentFrame + 1;
         }

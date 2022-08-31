@@ -146,5 +146,11 @@
     <ClInclude Include="..\src\core\fixed.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\core\NativeWindow.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\codec_pnm.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -10,7 +10,7 @@
 #include "agg_dda_line.h"
 #include "agg_conv_curve.h"
 #include "agg_scanline_p.h"
-#include "GFont.h"
+
 
 using namespace vdj;
 using namespace alib;
@@ -18,7 +18,7 @@ using namespace agg;
 
 constexpr size_t CANVAS_WIDTH = 800;
 constexpr size_t CANVAS_HEIGHT = 600;
-constexpr size_t square_size = 600;
+constexpr size_t square_size = 200;
 
 template <class Ren>
 void draw_black_frame(Ren& ren)
@@ -78,8 +78,7 @@ void drawSpectrum()
 	size_t i;
 	for (i = 0; i < CANVAS_WIDTH; i++)
 	{
-		agg::rgba c(380.0 + 400.0 * i / CANVAS_WIDTH, 0.8);
-		span[i] = agg::rgba8(c);
+		span[i] = agg::rgba8(agg::rgba(380.0 + 400.0 * i / CANVAS_WIDTH, 0.8));
 	}
 
 	for (i = 0; i < CANVAS_HEIGHT; i++)
@@ -138,12 +137,7 @@ void color_square_rgba8(Renderer& r, int x, int y, int size,
 
 void drawInterpolator()
 {
-	rendering_buffer rbuf(gAppSurface->row_ptr(0), canvasWidth, canvasHeight, -canvasWidth * 4);
-
-	pixfmt_bgra32 pf(rbuf);
-	agg::renderer_base<pixfmt_bgra32> rbase(pf);
-	
-	color_square_rgba8(rbase, 0, 0, square_size,
+	color_square_rgba8(gCtxt.fRendererBase, 0, 0, square_size,
 		rgba8(0xc6, 0, 0),
 		rgba8(0xc6, 0, 0xff),
 		rgba8(0xc6, 0xff, 0xff),
@@ -153,26 +147,6 @@ void drawInterpolator()
 
 
 
-template<class Rasterizer, class Renderer, class Scanline, class CharT>
-void render_text(double x, double y, const CharT* str, 
-	Rasterizer& ras, Renderer& ren, Scanline& sl,
-	GFont& font, 
-	bool hinted = false)
-{
-	while (*str)
-	{
-		//font.initGlyph(gl, *str++, hinted);
-		GGlyph &gl = font.getGlyph(*str++);
-		gl.start_point(x, y);
-
-		conv_curve<GGlyph> curve(gl);
-
-		ras.add_path(curve);
-		agg::render_scanlines(ras, sl, ren);
-		x += gl.inc_x();
-		y += gl.inc_y();
-	}
-}
 
 // Font parameters
 constexpr int fontHeight = 24;
@@ -185,20 +159,20 @@ GFontFace stencilface(L"Stencil", fontHeight, bold, italic);
 
 void drawText()
 {
-	rendering_buffer rbuf(gAppSurface->row<uint8_t>(0), canvasWidth, canvasHeight, canvasWidth * 4);
+	//rendering_buffer rbuf(gAppSurface->row_ptr(0), canvasWidth, canvasHeight, canvasWidth * 4);
 
-	pixfmt_bgra32 pixf(rbuf);
-	renderer_base<pixfmt_bgra32> rbase(pixf);
-	renderer_scanline_aa_solid<renderer_base<pixfmt_bgra32> > ren(rbase);
-	rasterizer_scanline_aa<> ras;
-	scanline_p8 sl;
+	//pixfmt_bgra32 pixf(rbuf);
+	//renderer_base<pixfmt_bgra32> rbase(pixf);
+	//renderer_scanline_aa_solid<renderer_base<pixfmt_bgra32> > ren(rbase);
+	//rasterizer_scanline_aa<> ras;
+	//scanline_p8 sl;
 
 
 
 	if (!stencilface.isValid())
 		return;
 
-	ren.color(rgba8(0, 0, 0));
+	//ren.color(rgba8(0, 0, 0));
 
 	GFont stencilfont{};
 	stencilface.getFont(stencilfont, true);
@@ -207,29 +181,27 @@ void drawText()
 	//double h = font.height();
 	//measure_text(&w, &h, font, "Application Window", false);
 
-	render_text(10, 100, "Application Window",ras, ren, sl, stencilfont);
-	render_text(10, 200, "Good Morning Sunshine!", ras, ren, sl, stencilfont);
+	gCtxt.render_text(10, 100, L"Application Window", stencilfont);
+	gCtxt.render_text(10, 200, L"Good Morning Sunshine!", stencilfont);
 
 	GFont segoeFont{};
 	segoeface.getFont(segoeFont, true);
-	render_text(10, 300, "institutions",ras, ren, sl, segoeFont);
-	render_text(10, 400, "iiiiiiiiiiii", ras, ren, sl, segoeFont);
+	gCtxt.render_text(10, 300, L"institutions", segoeFont);
+	gCtxt.render_text(10, 400, L"iiiiiiiiiiii", segoeFont);
 }
 
 void onFrame()
 {
-	rendering_buffer rbuf(gAppSurface->row<uint8_t>(0), canvasWidth, canvasHeight, canvasWidth * 4);
-	rbuf.clear(0);
-
-	pixfmt_bgra32 pixf(rbuf);
-	renderer_base<pixfmt_bgra32> rbase(pixf);
+	gCtxt.clear(PixelRGBA(0, 0, 0));
 
 	drawSpectrum();
 	//drawUsingPixelFormat();
 
-	//drawInterpolator();
+	drawInterpolator();
 
 	drawText();
+
+	noLoop();
 }
 
 void setup()

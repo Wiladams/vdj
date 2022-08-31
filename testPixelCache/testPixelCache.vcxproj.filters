@@ -44,9 +44,6 @@
     <ClInclude Include="..\src\core\maths.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GFont.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\agg\agg_array.h">
       <Filter>Header Files\agg</Filter>
     </ClInclude>
@@ -128,5 +125,11 @@
     <ClInclude Include="..\src\agg\agg_scanline_p.h">
       <Filter>Header Files\agg</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\core\gui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

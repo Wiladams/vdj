@@ -159,7 +159,7 @@ bool isFullscreen() noexcept
 
 void background(const PixelRGBA &c) noexcept
 {
-    gCtxt.fillRectangle(0, 0, canvasWidth, canvasHeight, c);
+    gCtxt.clear(c);
 }
 
 void setFrameRate(const int rate)

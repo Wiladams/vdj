@@ -1,7 +1,7 @@
 #pragma once
 
 #include "apphost.h"
-#include "agg_basics.h"
+#include "agg/agg_basics.h"
 
 #include <map>
 #include <memory>
@@ -171,7 +171,7 @@ private:
 };
 
 
-GFont::GFont()
+INLINE GFont::GFont()
 	: m_dc(nullptr)
 	, m_font(nullptr)
 	, m_gbuf(new char[buf_size])
@@ -184,12 +184,12 @@ GFont::GFont()
 }
 
 
-GFont::~GFont()
+INLINE GFont::~GFont()
 {
 	delete[] m_gbuf;
 }
 
-void GFont::initFont(HDC dc, HFONT font)
+INLINE void GFont::initFont(HDC dc, HFONT font)
 {
 	m_dc = dc;
 	m_font = font;
@@ -199,7 +199,7 @@ void GFont::initFont(HDC dc, HFONT font)
 }
 
 template<class CharT>
-void GFont::measureText(double& w, double& h, const CharT* str)
+INLINE void GFont::measureText(double& w, double& h, const CharT* str)
 {
 	h = height();
 
@@ -236,6 +236,11 @@ INLINE GGlyph& GFont::getGlyph(unsigned chr)
 }
 
 // Read in a single glyph
+// This routine is tied to the Windows way of representing
+// glyph information.
+// Use: GetGlyphOutlineA() to get the contour information
+// then turn that into our own path information
+// ready to be rendered.
 INLINE bool GFont::initGlyph(GGlyph &g, unsigned chr, bool hinted)
 {
 	if (m_font == nullptr)
@@ -362,17 +367,17 @@ struct GFontFace
 	static std::shared_ptr<GFontFace> getFontFace(const TCHAR* typeface, int fontHeight, bool bold, bool italic);
 };
 
-GFontFace::GFontFace() :fFontHandle(nullptr), fDC(nullptr) {}
+INLINE GFontFace::GFontFace() :fFontHandle(nullptr), fDC(nullptr) {}
 
-GFontFace::GFontFace(HFONT handle) : fFontHandle(handle), fDC(nullptr) {}
+INLINE GFontFace::GFontFace(HFONT handle) : fFontHandle(handle), fDC(nullptr) {}
 
-GFontFace::GFontFace(const TCHAR* typeface, int fontHeight, bool bold, bool italic)
+INLINE GFontFace::GFontFace(const TCHAR* typeface, int fontHeight, bool bold, bool italic)
 	: fFontHandle(nullptr), fDC(nullptr)
 {
 	initFromName(typeface, fontHeight, bold, italic);
 }
 
-GFontFace::~GFontFace()
+INLINE GFontFace::~GFontFace()
 {
 	if (nullptr != fFontHandle)
 		::DeleteObject(fFontHandle);
@@ -380,13 +385,13 @@ GFontFace::~GFontFace()
 	ReleaseDC(nullptr, fDC);
 }
 
-bool GFontFace::isValid()
+INLINE bool GFontFace::isValid()
 {
 	return nullptr != fFontHandle;
 }
 
 // Get an instance of a font for the DeviceContext
-bool GFontFace::getFont(GFont & font, bool flipY)
+INLINE bool GFontFace::getFont(GFont & font, bool flipY)
 {
 	font.initFont(fDC, fFontHandle);
 	font.flip_y(flipY);
@@ -394,7 +399,7 @@ bool GFontFace::getFont(GFont & font, bool flipY)
 	return true;
 }
 
-bool GFontFace::initFromName(const TCHAR* typeface, int fontHeight, bool bold, bool italic)
+INLINE bool GFontFace::initFromName(const TCHAR* typeface, int fontHeight, bool bold, bool italic)
 {
 	// Font parameters
 	int fontWidth = 0;
@@ -441,7 +446,7 @@ bool GFontFace::initFromName(const TCHAR* typeface, int fontHeight, bool bold, b
 	return true;
 }
 
-std::shared_ptr<GFontFace> GFontFace::getFontFace(const TCHAR* tfacename, int fontHeight, bool bold, bool italic)
+INLINE std::shared_ptr<GFontFace> GFontFace::getFontFace(const TCHAR* tfacename, int fontHeight, bool bold, bool italic)
 {
 	/*
 	// First look to see if the typeface name exists

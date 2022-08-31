@@ -119,7 +119,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\src;..\src\core</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,6 +157,7 @@
     <ClInclude Include="..\src\core\apphost.h" />
     <ClInclude Include="..\src\core\binstream.hpp" />
     <ClInclude Include="..\src\core\bitbang.hpp" />
+    <ClInclude Include="..\src\core\codec_pnm.hpp" />
     <ClInclude Include="..\src\core\draw2d.hpp" />
     <ClInclude Include="..\src\core\draw2dcontext.hpp" />
     <ClInclude Include="..\src\core\fixed.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="..\src\core\imagecodec.hpp" />
     <ClInclude Include="..\src\core\locklessqueue.hpp" />
     <ClInclude Include="..\src\core\maths.hpp" />
+    <ClInclude Include="..\src\core\NativeWindow.hpp" />
     <ClInclude Include="..\src\core\vdjmemory.h" />
     <ClInclude Include="..\src\core\vdjview.hpp" />
     <ClInclude Include="..\src\core\pixeltypes.hpp" />

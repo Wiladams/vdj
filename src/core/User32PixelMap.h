@@ -14,15 +14,17 @@
 
 #include "bitbang.hpp"
 #include "pixeltypes.hpp"
-#include "vdjview.hpp"
+#include "sampler.hpp"
+
 #include "agg/agg_rendering_buffer.h"
+
 
 #include <windows.h>
 #include <cstdio>
 
 namespace alib {
-    
-    class U32DIBSection : public agg::row_accessor<uint8_t>, public ISample2D<PixelRGBA>
+    //rendering_buffer
+    class U32DIBSection : public agg::rendering_buffer, public ISample2D<PixelRGBA>
     {
         // for interacting with win32
         BITMAPINFO fBMInfo{ {0} };
@@ -34,138 +36,73 @@ namespace alib {
         static const int alignment = 4;
         
     public:
-        U32DIBSection(const size_t awidth, const size_t aheight)
-        {
-            int stride = alib::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
+        U32DIBSection(const size_t awidth, const size_t aheight);
+        virtual ~U32DIBSection();
 
-            fBMInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-            fBMInfo.bmiHeader.biWidth = (LONG)awidth;
-            fBMInfo.bmiHeader.biHeight = -(LONG)aheight;	// top-down DIB Section
-            fBMInfo.bmiHeader.biPlanes = 1;
-            fBMInfo.bmiHeader.biBitCount = bitsPerPixel;
-            fBMInfo.bmiHeader.biSizeImage = (DWORD)(stride * aheight);
-            fBMInfo.bmiHeader.biClrImportant = 0;
-            fBMInfo.bmiHeader.biClrUsed = 0;
-            fBMInfo.bmiHeader.biCompression = BI_RGB;
+        BITMAPINFO getBitmapInfo();
+        HDC getDC();
 
-            // We'll create a DIBSection so we have an actual backing
-            // storage for the context to draw into
-            // BUGBUG - check for nullptr and fail if found
-            uint8_t* data;
-            fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, (void**)&data, nullptr, 0);
-
-            // Create a GDI Device Context
-            fBitmapDC = ::CreateCompatibleDC(nullptr);
-
-            // select the DIBSection into the memory context so we can 
-            // peform operations with it
-            ::SelectObject(fBitmapDC, fDIBHandle);
-
-            attach(data, awidth, aheight, stride);
-        }
-
-        virtual ~U32DIBSection()
-        {
-            // and destroy it
-            ::DeleteObject(fDIBHandle);
-        }
-
-        INLINE BITMAPINFO getBitmapInfo() { return fBMInfo; }
-        INLINE HDC getDC() { return fBitmapDC; }                // Memory DC we can use for GDI
-
-        PixelRGBA getPixel(size_t x, size_t y)
-        {
-            return ((PixelRGBA*)row_ptr(y))[x];
-        }
-
-        PixelRGBA getValue(double u, double v) override
-        {
-            u = alib::Clamp(u, 0, 1);
-            v = alib::Clamp(v, 0, 1);
-
-            size_t px = size_t((u * ((double)width() - 1)) + 0.5);
-            size_t py = size_t((v * ((double)height() - 1)) + 0.5);
-
-            return ((PixelRGBA*)row_ptr(py))[px];
-        }
+        PixelRGBA getPixel(size_t x, size_t y);
+        PixelRGBA getValue(double u, double v) override;
     };
     
-    /*
-    class User32PixelMap : public agg::row_accessor<uint8_t>
+    INLINE U32DIBSection::U32DIBSection(const size_t awidth, const size_t aheight)
     {
-        // for interacting with win32
-        BITMAPINFO fBMInfo{ {0} };
-        HBITMAP fDIBHandle = nullptr;
-        HGDIOBJ fOriginDIBHandle = nullptr;
-        HDC     fBitmapDC = nullptr;
+        int stride = alib::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
 
-        uint8_t* fData = nullptr;
-        size_t fDataSize = 0;       // How much data is allocated
-        ptrdiff_t fStride=0;
+        fBMInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        fBMInfo.bmiHeader.biWidth = (LONG)awidth;
+        fBMInfo.bmiHeader.biHeight = -(LONG)aheight;	// top-down DIB Section
+        fBMInfo.bmiHeader.biPlanes = 1;
+        fBMInfo.bmiHeader.biBitCount = bitsPerPixel;
+        fBMInfo.bmiHeader.biSizeImage = (DWORD)(stride * aheight);
+        fBMInfo.bmiHeader.biClrImportant = 0;
+        fBMInfo.bmiHeader.biClrUsed = 0;
+        fBMInfo.bmiHeader.biCompression = BI_RGB;
 
-        // A couple of constants
-        static const int bitsPerPixel = 32;
-        static const int alignment = 4;
+        // We'll create a DIBSection so we have an actual backing
+        // storage for the context to draw into
+        // BUGBUG - check for nullptr and fail if found
+        uint8_t* data;
+        fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, (void**)&data, nullptr, 0);
 
-    public:
-        User32PixelMap(const size_t awidth, const size_t aheight)
-        {
-            init(awidth, aheight);
-        }
+        // Create a GDI Device Context
+        fBitmapDC = ::CreateCompatibleDC(nullptr);
 
-        virtual ~User32PixelMap()
-        {
-            // BUGBUG
-            // unload the dib section
-            ::SelectObject(fBitmapDC, fOriginDIBHandle);
+        // select the DIBSection into the memory context so we can 
+        // peform operations with it
+        ::SelectObject(fBitmapDC, fDIBHandle);
 
-            // and destroy it
-            ::DeleteObject(fDIBHandle);
-        }
+        attach(data, awidth, aheight, stride);
+    }
 
-        bool init(size_t awidth, size_t aheight)
-        {
-            fStride = alib::GetAlignedByteCount(awidth, bitsPerPixel, alignment);
+    INLINE U32DIBSection::~U32DIBSection()
+    {
+        // and destroy it
+        ::DeleteObject(fDIBHandle);
+    }
 
-            fBMInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-            fBMInfo.bmiHeader.biWidth = (LONG)awidth;
-            fBMInfo.bmiHeader.biHeight = -(LONG)aheight;	// top-down DIB Section
-            fBMInfo.bmiHeader.biPlanes = 1;
-            fBMInfo.bmiHeader.biBitCount = bitsPerPixel;
-            fBMInfo.bmiHeader.biSizeImage = (DWORD)(fStride * aheight);
-            fBMInfo.bmiHeader.biClrImportant = 0;
-            fBMInfo.bmiHeader.biClrUsed = 0;
-            fBMInfo.bmiHeader.biCompression = BI_RGB;
-            fDataSize = fBMInfo.bmiHeader.biSizeImage;
+    INLINE BITMAPINFO U32DIBSection::getBitmapInfo() { return fBMInfo; }
+    INLINE HDC U32DIBSection::getDC() { return fBitmapDC; }
 
-            // We'll create a DIBSection so we have an actual backing
-            // storage for the context to draw into
-            // BUGBUG - check for nullptr and fail if found
-            fDIBHandle = ::CreateDIBSection(nullptr, &fBMInfo, DIB_RGB_COLORS, (void**)&fData, nullptr, 0);
+    INLINE PixelRGBA U32DIBSection::getPixel(size_t x, size_t y)
+    {
+        // Data is in BGRA format
+        auto data = row_ptr(y) + x * 4;
+        return PixelRGBA(data[2], data[1], data[0], data[3]);
+    }
 
-            //Recreate(awidth, aheight, Simd::View<Simd::Allocator>::Format::Bgra32, data, alignment);
+    INLINE PixelRGBA U32DIBSection::getValue(double u, double v)
+    {
+        u = alib::Clamp(u, 0, 1);
+        v = alib::Clamp(v, 0, 1);
 
-            // Create a GDI Device Context
-            fBitmapDC = ::CreateCompatibleDC(nullptr);
+        size_t px = size_t((u * ((double)width() - 1)) + 0.5);
+        size_t py = size_t((v * ((double)height() - 1)) + 0.5);
 
-            // select the DIBSection into the memory context so we can 
-            // peform operations with it
-            fOriginDIBHandle = ::SelectObject(fBitmapDC, fDIBHandle);
+        // Data is in BGRA format
+        auto data = row_ptr(py) + px * 4;
+        return PixelRGBA(data[2], data[1], data[0], data[3]);
+    }
 
-            // Do some setup to the DC to make it suitable
-            // for drawing with GDI if we choose to do that
-            ::SetBkMode(fBitmapDC, TRANSPARENT);
-            ::SetGraphicsMode(fBitmapDC, GM_ADVANCED);
-
-
-            attach(fData, awidth, aheight, fStride);
-
-            return true;
-        }
-
-        INLINE BITMAPINFO getBitmapInfo() { return fBMInfo; }
-        INLINE HDC getDC() { return fBitmapDC; }                // Memory DC we can use for GDI
-
-    };
-    */
 } // namespace alib

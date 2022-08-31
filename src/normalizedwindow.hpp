@@ -189,7 +189,7 @@ namespace vdj
 			if (nullptr != fBackground)
 				return fBackground->getValue(myu, myv);
 
-			return alib::PixelRGBA(0x0);
+			return alib::PixelRGBA(0x0,0,0,0);
 		}
 
 	};

@@ -1,10 +1,18 @@
 #pragma once
 
 #include "apidefs.h"
-//#include "vdjview.hpp"
+
 #include "agg/agg_rendering_buffer.h"
 #include "agg/agg_renderer_base.h"
 #include "agg/agg_pixfmt_rgba.h"
+
+#include "agg/agg_renderer_scanline.h"
+#include "agg/agg_rasterizer_scanline_aa.h"
+#include "agg/agg_dda_line.h"
+#include "agg/agg_conv_curve.h"
+#include "agg/agg_scanline_p.h"
+
+#include "GFont.h"
 
 #include <memory>
 #include <algorithm>
@@ -22,19 +30,31 @@ namespace alib {
 
 	struct Draw2DContext
 	{
-        agg::row_accessor<uint8_t> fView;
+        // Rendering pipeline bits
+        agg::row_accessor<uint8_t> fRenderBuffer;
+        agg::pixfmt_bgra32 fPixelFormatter;
+        agg::renderer_base<agg::pixfmt_bgra32> fRendererBase;
+        agg::renderer_scanline_aa_solid<agg::renderer_base<agg::pixfmt_bgra32> > fRenderer;
+        agg::rasterizer_scanline_aa<> fRasterizer;
+        agg::scanline_p8 fScanContainer;
+
+        // rendering state
         Draw2DState fDrawState;
 
         Draw2DContext()
         {}
 
         Draw2DContext(uint8_t *data, size_t awidth, size_t aheight, ptrdiff_t stride)
-            : fView(data, awidth, aheight, stride)
-        {}
+        {
+            attach(data, awidth, aheight, stride);
+        }
 
         void attach(uint8_t* data, size_t awidth, size_t aheight, ptrdiff_t stride)
         {
-            fView.attach(data, awidth, aheight, stride);
+            fRenderBuffer.attach(data, awidth, aheight, stride);
+            fPixelFormatter.attach(fRenderBuffer);
+            fRendererBase.attach(fPixelFormatter);
+            fRenderer.attach(fRendererBase);
         }
 
         // Attribute state to be set
@@ -71,30 +91,12 @@ namespace alib {
         void fillCircle(Real centerX, Real centerY, Real radius, const PixelRGBA& c);
 
         void strokeCubicBezier(const GeoCubicBezier<Real>& bez, size_t segments, const PixelRGBA& c);
-        void sampledBezier(const PixelBezier& bez, const int segments, ISample1D<PixelRGBA>& c)
-        {
-            // Get starting point
-            auto lp = bez.eval(0);
+        void sampledBezier(const PixelBezier& bez, const int segments, ISample1D<PixelRGBA>& c);
 
-            int i = 1;
-            while (i <= segments) {
-                double u = (double)i / segments;
-
-                auto p = bez.eval(u);
-
-                // draw line segment from last point to current point
-                line(lp.x(), lp.y(), p.x(), p.y(), c.getValue(u));
-
-                // Assign current to last
-                lp = p;
-
-                i = i + 1;
-            }
-        }
         void sampleRect(const PixelRect& dstisect, const RectD& srcExt, ISample2D<PixelRGBA>& src);
         
         void blit(const Real x, const Real y, agg::rendering_buffer& src);
-
+        void render_text(double x, double y, const TCHAR* str, GFont& font, bool hinted = false);
 	};
 
 
@@ -106,51 +108,48 @@ namespace alib {
     // Drawing
     INLINE void Draw2DContext::clear(const PixelRGBA& c)
     {
-        agg::pixfmt_bgra32 pixf(fView);
-        agg::renderer_base<agg::pixfmt_bgra32> rbase(pixf);
-
-        rbase.fill(c);
+        fRendererBase.fill(c);
     }
 
     INLINE void Draw2DContext::copyHLine(const Real x_, const Real y_, const Real w_, const PixelRGBA& c)
     {
         // quick reject on y-axis
-        if ((y_ < 0) || (y_ > fView.height()-1))
+        if ((y_ < 0) || (y_ > fRenderBuffer.height()-1))
             return;
 
         Real y = y_;
         Real x = x_ < 0 ? 0 : x_;
-        Real w = x + w_ > fView.width() ? fView.width() - x : w_;
+        Real w = x + w_ > fRenderBuffer.width() ? fRenderBuffer.width() - x : w_;
         
-        agg::pixfmt_bgra32 pixf(fView);
-        pixf.copy_hline(x, y, w, c);
+        //agg::pixfmt_bgra32 pixf(fRenderBuffer);
+        fPixelFormatter.copy_hline(x, y, w, c);
  
     }
 
     INLINE void Draw2DContext::blendHLine(const Real x_, const Real y_, const Real w_, const agg::rgba8& c)
     {
         // quick reject on y-axis
-        if ((y_ < 0) || (y_ > fView.height() - 1))
+        if ((y_ < 0) || (y_ > fRenderBuffer.height() - 1))
             return;
 
-        agg::pixfmt_bgra32 pixf(fView);
+        //agg::pixfmt_bgra32 pixf(fRenderBuffer);
 
         Real y = y_;
         Real x = x_ < 0 ? 0 : x_;
-        Real w = x + w_ > fView.width() ? fView.width() - x : w_;
+        Real w = x + w_ > fRenderBuffer.width() ? fRenderBuffer.width() - x : w_;
 
-        pixf.blend_hline(x, y, w, agg::rgba8(), 0);
+        fPixelFormatter.blend_hline(x, y, w, agg::rgba8(), 0);
     }
 
 
     INLINE void Draw2DContext::copyVLine(const Real x, const Real y, const Real l, const PixelRGBA& c)
     {
         // quick reject if out of range
-        if (x < 0 || x >= fView.width())
+        if (x < 0 || x >= fRenderBuffer.width())
             return;
 
-        agg::pixfmt_bgra32 pixf(fView);
-        pixf.copy_vline(x, y, l, c);
+        //agg::pixfmt_bgra32 pixf(fRenderBuffer);
+        fPixelFormatter.copy_vline(x, y, l, c);
     }
 
     INLINE void Draw2DContext::copyVLine(const GeoSpan<Real>& s, const PixelRGBA& c)
@@ -161,10 +160,10 @@ namespace alib {
     INLINE
     void Draw2DContext::line(Real sx1, Real sy1, Real sx2, Real sy2, const PixelRGBA& color, Real swidth)
     {
-        agg::pixfmt_bgra32 pixf(fView);
+        //agg::pixfmt_bgra32 pixf(fRenderBuffer);
         
-        const ptrdiff_t w = fView.width() - 1;
-        const ptrdiff_t h = fView.height() - 1;
+        const ptrdiff_t w = fRenderBuffer.width() - 1;
+        const ptrdiff_t h = fRenderBuffer.height() - 1;
 
         ptrdiff_t x1 = alib::Round(sx1);
         ptrdiff_t y1 = alib::Round(sy1);
@@ -239,7 +238,7 @@ namespace alib {
                     
                 }
 
-                agg::pixfmt_bgra32 pixf(fView);
+                //agg::pixfmt_bgra32 pixf(fRenderBuffer);
             }
         }
 
@@ -274,12 +273,12 @@ namespace alib {
                     if (inverse)
                     {
                         if (y < w)
-                            pixf.copy_pixel(y, x, color);
+                            fPixelFormatter.copy_pixel(y, x, color);
                     }
                     else
                     {
                         if (y < h)
-                            pixf.copy_pixel(x, y, color);
+                            fPixelFormatter.copy_pixel(x, y, color);
                     }
                 }
 
@@ -326,7 +325,7 @@ namespace alib {
             for (size_t i = 0; i < intersections.size(); i += 2)
             {
                 Real left = std::max<Real>(0, intersections[i + 0]);
-                Real right = std::min<Real>(fView.width(), intersections[i + 1]);
+                Real right = std::min<Real>(fRenderBuffer.width(), intersections[i + 1]);
 
                 copyHLine(left, y, right - left, c);
             }
@@ -356,7 +355,7 @@ namespace alib {
     {
         // We calculate clip area up front
         // so we don't have to do clipLine for every single line
-        GeoRect<Real> pmapRect(0, 0, fView.width() - 1, fView.height() - 1);
+        GeoRect<Real> pmapRect(0, 0, fRenderBuffer.width() - 1, fRenderBuffer.height() - 1);
         GeoRect<Real> dstRect = pmapRect.intersection(GeoRect<Real>{ x,y,w,h });
 
         // If the rectangle is outside the frame of the pixel map
@@ -365,7 +364,7 @@ namespace alib {
             return;
 
         // Do a line by line draw
-        agg::pixfmt_bgra32 pixf(fView);
+        //agg::pixfmt_bgra32 pixf(fRenderBuffer);
  
         for (ptrdiff_t row = dstRect.top(); row < dstRect.bottom(); ++row)
         {
@@ -402,14 +401,13 @@ namespace alib {
         // Initial u and v values
         double u = srcExt.left();
         double v = srcExt.top();
-        agg::pixfmt_bgra32 pixf(fView);
 
         for (ptrdiff_t row = dstisect.y(); row < dstisect.y() + dstisect.h() - 1; row++)
         {
             for (ptrdiff_t col = dstisect.left(); col < dstisect.left() + dstisect.w() - 1; col++)
             {
                 auto c = src.getValue(u, v);
-                pixf.blend_pixel(col, row, c, 255);
+                fPixelFormatter.blend_pixel(col, row, c, 255);
                 u += uadv;
             }
             v += vadv;
@@ -475,7 +473,7 @@ namespace alib {
 
     INLINE void Draw2DContext::blit(const Real x, const Real y, agg::rendering_buffer & src)
     {
-        PixelRect bounds(0, 0, fView.width(), fView.height());
+        PixelRect bounds(0, 0, fRenderBuffer.width(), fRenderBuffer.height());
         PixelRect dstFrame(x, y, src.width(), src.height());
 
         // Intersection of boundary and destination frame
@@ -490,11 +488,38 @@ namespace alib {
         int srcX = dstX - x;
         int srcY = dstY - y;
 
-        agg::pixfmt_bgra32 pixf(fView);
-        agg::renderer_base<agg::pixfmt_bgra32> rbase(pixf);
+        agg::pixfmt_bgra32 srcpix(src);
 
-        rbase.blend_from(rbase, srcRect, dstX, dstY, 255);
+        auto dstPtr = fPixelFormatter.row_ptr(dstY);
+        int rowCount = 0;
+        for (int srcrow = srcY; srcrow < srcY + dstisect.fHeight; srcrow++)
+        {
+            auto srcPtr = srcpix.row_ptr(srcrow);
+        }
 
+        //fRendererBase.blend_from(fRendererBase, srcRect, dstX, dstY, 255);
+
+    }
+
+    INLINE void Draw2DContext::sampledBezier(const PixelBezier& bez, const int segments, ISample1D<PixelRGBA>& c)
+    {
+        // Get starting point
+        auto lp = bez.eval(0);
+
+        int i = 1;
+        while (i <= segments) {
+            double u = (double)i / segments;
+
+            auto p = bez.eval(u);
+
+            // draw line segment from last point to current point
+            line(lp.x(), lp.y(), p.x(), p.y(), c.getValue(u));
+
+            // Assign current to last
+            lp = p;
+
+            i = i + 1;
+        }
     }
 
     //
@@ -520,21 +545,37 @@ namespace alib {
         // Initial u and v values
         double u = srcExt.left();
         double v = srcExt.top();
-        
-        agg::pixfmt_bgra32 pixf(fView);
-
 
         for (ptrdiff_t row = dstisect.y(); row < dstisect.y() + dstisect.h() - 1; row++)
         {
             for (ptrdiff_t col = dstisect.left(); col < dstisect.left() + dstisect.w() - 1; col++)
             {
                 auto c = src.getValue(u, v);
-                pixf.blend_pixel(col, row, c, 255);
+                fPixelFormatter.blend_pixel(col, row, c, 255);
 
                 u += uadv;
             }
             v += vadv;
             u = srcExt.left();
+        }
+    }
+
+    INLINE void Draw2DContext::render_text(double x, double y, const TCHAR* str, GFont& font, bool hinted)
+    {
+        fScanContainer.reset(0,1024);
+        fRenderer.color(PixelRGBA(0, 0, 0));
+
+        while (*str)
+        {
+            GGlyph& gl = font.getGlyph(*str++);
+            gl.start_point(x, y);
+
+            agg::conv_curve<GGlyph> curve(gl);
+
+            fRasterizer.add_path(curve);
+            agg::render_scanlines(fRasterizer, fScanContainer, fRenderer);
+            x += gl.inc_x();
+            y += gl.inc_y();
         }
     }
 }

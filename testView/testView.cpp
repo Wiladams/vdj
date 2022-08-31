@@ -7,12 +7,11 @@
 using namespace vdj;
 using namespace alib;
 
+constexpr size_t CANVAS_WIDTH = 1280;
+constexpr size_t CANVAS_HEIGHT = 1080;
 
-constexpr size_t CANVAS_WIDTH = 1920;
-constexpr size_t CANVAS_HEIGHT = 1200;
-
-constexpr size_t CAPTURE_WIDTH = 600;
-constexpr size_t CAPTURE_HEIGHT = 1200;
+constexpr size_t CAPTURE_WIDTH = 1280;
+constexpr size_t CAPTURE_HEIGHT = 1080;
 
 // Source Samplers
 std::shared_ptr<ScreenSnapshot> screenCapture = nullptr;
@@ -22,15 +21,17 @@ std::shared_ptr< SamplerWrapper> screenCap2 = nullptr;
 //GeoCubicBezier<float> c1(1, 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2.0), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2.0), CANVAS_WIDTH - 1, 1);
 //GeoCubicBezier<float> c2(1, CANVAS_HEIGHT - 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2.0), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT / 2.0), CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1);
 
-GeoCubicBezier<float> c1(1, 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT *0.25), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT * 0.25), CANVAS_WIDTH - 1, 1);
-GeoCubicBezier<float> c2(1, CANVAS_HEIGHT - 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT * 0.75), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT * 0.75), CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1);
+//GeoCubicBezier<Real> c1(0, CANVAS_HEIGHT*0.25, (CANVAS_WIDTH * 0.25), 0, CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), 0, CANVAS_WIDTH - 1, CANVAS_HEIGHT * 0.25);
 
+//pinched in the middle
+GeoCubicBezier<Real> c1(1, 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT *0.25), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT * 0.25), CANVAS_WIDTH - 1, 1);
+GeoCubicBezier<Real> c2(1, CANVAS_HEIGHT - 1, (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT * 0.75), CANVAS_WIDTH - (CANVAS_WIDTH * 0.25), (CANVAS_HEIGHT * 0.75), CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1);
 
 
 // 
 // Draw a bezier line using a single line sampler
-template <typename T>
-void sampledBezierLoft(PixelView& pmap, const GeoCubicBezier<T>& c1, const ptrdiff_t loft, ISample2D<PixelRGBA>& c)
+//template <typename T>
+void sampledBezierLoft(agg::rendering_buffer & pmap, const GeoCubicBezier<Real>& c1, const ptrdiff_t loft, ISample2D<PixelRGBA>& c)
 {
 	auto p1 = c1.eval(0);
 
@@ -44,8 +45,8 @@ void sampledBezierLoft(PixelView& pmap, const GeoCubicBezier<T>& c1, const ptrdi
 		// sample vertical line
 		for (ptrdiff_t y = p1.y(); y <= y2; y++)
 		{
-			auto v = alib::Map(y, p1.y(), y2, 0.0, 1.0);
-			pmap.getPixel(p1.x(), y) = c.getValue(u, v);
+			auto v = (y-p1.y()) / (double)loft;
+			((PixelRGBA*)pmap.row_ptr(y))[(ptrdiff_t)p1.x()] = c.getValue(u, v);
 		}
 	}
 }
@@ -56,8 +57,8 @@ void sampledBezierLoft(PixelView& pmap, const GeoCubicBezier<T>& c1, const ptrdi
 // but this is not strictly required
 // This is a very specialized drawing routine
 // so it should not be a part of the drawingcontext
-template <typename T>
-void sampledBezierSurface(agg::row_accessor<uint8_t>& pmap, const GeoCubicBezier<T>& c1, const GeoCubicBezier<T>& c2, ISample2D<PixelRGBA>& c)
+//template <typename T>
+void sampledBezierSurface(agg::row_accessor<uint8_t>& pmap, const GeoCubicBezier<Real>& c1, const GeoCubicBezier<Real>& c2, ISample2D<PixelRGBA>& c)
 {
 	auto p1 = c1.eval(0);
 	auto p2 = c2.eval(0);
@@ -75,7 +76,16 @@ void sampledBezierSurface(agg::row_accessor<uint8_t>& pmap, const GeoCubicBezier
 		for (ptrdiff_t y = p1.y(); y <= p2.y(); y++)
 		{
 			auto v = alib::Map(y, p1.y(), p2.y(), 0.0, 1.0);
-			((PixelRGBA *)pmap.row_ptr(y))[(ptrdiff_t)p1.x()] = c.getValue(u1, v);
+			//auto v = (y-p1.y()) / (p2.y()-p1.y());
+			//((PixelRGBA *)pmap.row_ptr(y))[(ptrdiff_t)p1.x()] = c.getValue(u1, v);
+			auto cvalue = c.getValue(u1,v);
+
+			// Data is in BGRA format
+			auto data = pmap.row_ptr(y) + (ptrdiff_t)p1.x() * 4;
+			data[0] = cvalue.b;
+			data[1] = cvalue.g;
+			data[2] = cvalue.r;
+			data[3] = cvalue.a;
 		}
 	}
 }
@@ -102,8 +112,6 @@ void drawLines()
 		if (u > 1.0)
 			u = 0.0;
 	}
-
-
 }
 
 void drawShapes()
@@ -113,18 +121,21 @@ void drawShapes()
 
 void onFrame()
 {
-
+	// Capture the current screen
 	screenCapture->next();
 
-	gCtxt.clear(PixelRGBA(0,0,0));
+	// clear our canvas
+	background(PixelRGBA(0, 0, 0));
 
-	drawShapes();
+	//drawShapes();
 
 	sampledBezierSurface(*gAppSurface, c1, c2, *screenCapture);
-	//sampledBezierLoft(*gAppSurface, c1, CAPTURE_HEIGHT, *screenCapture);
+	//sampledBezierLoft(*gAppSurface, c1, CAPTURE_HEIGHT/2, *screenCapture);
 
-	gCtxt.strokeCubicBezier(c1, 60, PixelRGBA(0,0,0));
-	gCtxt.strokeCubicBezier(c2, 60, PixelRGBA(0,0,0));
+	//gCtxt.strokeCubicBezier(c1, 60, PixelRGBA(0,0,0));
+	//gCtxt.strokeCubicBezier(c2, 60, PixelRGBA(0,0,0));
+
+	//gCtxt.sampleRect(PixelRect(0, 0, canvasWidth, canvasHeight), RectD(0, 0, 1.0, 1.0), *screenCapture);
 }
 
 void setup()
@@ -133,17 +144,16 @@ void setup()
 	c2.calcSpeeds();
 
 	setCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
-	setFrameRate(10);
+	setFrameRate(15);
 
 	// Setup screen captures
-	screenCapture = ScreenSnapshot::createForDisplay(0, 0, displayWidth/2, displayHeight/2);
+	screenCapture = ScreenSnapshot::createForDisplay(0, 0, CAPTURE_WIDTH, CAPTURE_HEIGHT);
 
 	//screenCap1 = std::make_shared<vdj::SamplerWrapper>(screenCapture, alib::RectD(0, 0, 0.5, 1.0));
 	//screenCap2 = std::make_shared<vdj::SamplerWrapper>(screenCapture, alib::RectD(0.50, 0, 0.5, 1.0));
 
-	//gCtxt.clear(PixelRGBA(0xffff00ff));
-	gCtxt.clear(PixelRGBA(0,0,0,0));
+	background(PixelRGBA(0, 0, 0));
 
-	windowOpacity(0.5f);
+	//windowOpacity(0.5f);
 	//layered();
 }

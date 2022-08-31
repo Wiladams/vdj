@@ -843,6 +843,9 @@ bool isLayered()
     return gIsLayered;
 }
 
+// Set an opacity value between 0.0 and 1.0
+// 1.0 == fully opaque (not transparency)
+// less than that makes the whole window more transparent
 void windowOpacity(float o)
 {
     gAppWindow->setOpacity(o);

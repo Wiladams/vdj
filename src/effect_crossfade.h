@@ -17,9 +17,9 @@ class CrossFadeEffect : public vdj::AnimationWindow
 	{
 		uint32_t a = (uint32_t)(u * 255.0);
 		return alib::PixelRGBA(
-			alib::lerp255(bg.r(), fg.r(), a),
-			alib::lerp255(bg.g(), fg.g(), a),
-			alib::lerp255(bg.b(), fg.b(), a), 255);
+			alib::lerp255(bg.r, fg.r, a),
+			alib::lerp255(bg.g, fg.g, a),
+			alib::lerp255(bg.b, fg.b, a), 255);
 	}
 
 public:

@@ -43,10 +43,10 @@ public:
         // If we end up out of frame
         // return transparent
         if ((u1<0) || (u1>1.0))
-            return alib::PixelRGBA(0x0);
+            return alib::PixelRGBA(0x0,0,0,0);
 
         if ((v1<0) || (v1>1.0))
-            return alib::PixelRGBA(0x0);
+            return alib::PixelRGBA(0x0,0,0,0);
 
         // get value from our wrapped sampler
         alib::PixelRGBA co = fBackground->getValue(u1, v1);
